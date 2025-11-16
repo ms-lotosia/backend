@@ -1,0 +1,25 @@
+package com.lotosia.contentservice.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+/**
+ * @author: nijataghayev
+ */
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ContactUsResponse {
+
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String subject;
+    private String message;
+    private LocalDateTime createdAt;
+}

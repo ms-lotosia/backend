@@ -1,0 +1,8 @@
+rootProject.name = 'backend'
+
+include 'api-gateway'
+include 'service-discovery'
+include 'identity-service'
+include 'content-service'
+include 'support-service'
+include 'product-service'
