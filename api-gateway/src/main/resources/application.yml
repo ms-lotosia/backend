@@ -4,6 +4,33 @@ server:
 spring:
   application:
     name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: identity-service
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=0
+
+        - id: content-service
+          uri: lb://content-service
+          predicates:
+            - Path=/api/v1/contactUs
+            - Path=/api/v1/faqs
+          filters:
+            - StripPrefix=0
+
+        - id: support-service
+          uri: lb://support-service
+          predicates:
+            - Path=/api/v1/complaints
+            - Path=/api/v1/suggestions
+          filters:
+            -StripPrefix=0
+
+
 
 eureka:
   client:
