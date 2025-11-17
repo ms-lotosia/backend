@@ -64,8 +64,9 @@ public class AuthService {
         }
 
         blackListedTokes.add(token);
-        String email = jwtUtil.getEmailFromToken(token);
-        jwtUtil.invalidateToken(email);
+
+        redisTemplate.delete("TOKEN:" + token);
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
