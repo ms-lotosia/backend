@@ -5,8 +5,10 @@ import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.exception.EmailAlreadyInUseException;
 import com.lotosia.identityservice.exception.InvalidCredentialsException;
+import com.lotosia.identityservice.exception.NotFoundException;
 import com.lotosia.identityservice.repository.UserRepository;
 import com.lotosia.identityservice.util.JwtUtil;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -38,21 +40,20 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
-        if(!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException("Invalid credentials");
         }
 
+        String accessToken = jwtUtil.createTokenWithRole(
+                user.getEmail(),
+                user.getRoles()
+        );
 
-        Set<String> roles = user.getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-
-        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), roles);
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
 
         return buildAuthResponseDto(user, accessToken, refreshToken);
     }
+
 
     public ResponseEntity<?> logout(String authHeader) {
         String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
@@ -68,6 +69,33 @@ public class AuthService {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    public String refreshAccessToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new IllegalArgumentException("Refresh token is required");
+        }
+
+        try {
+            String email = jwtUtil.getEmailFromToken(refreshToken);
+
+            String redisKey = "refresh:" + refreshToken;
+            String storedEmail = redisTemplate.opsForValue().get(redisKey);
+
+            if (storedEmail == null || !storedEmail.equals(email)) {
+                throw new SecurityException("Invalid or expired refresh token");
+            }
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException(
+                            "USER_NOT_FOUND",
+                            String.format("User with this email does not exist: %s", email)
+                    ));
+            return jwtUtil.createTokenWithRole(email, user.getRoles());
+
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new SecurityException("Invalid refresh token" + e.getMessage());
+        }
+    }
+
     public boolean isUserExists(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -76,6 +104,7 @@ public class AuthService {
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyInUseException("Email is already in use");
         }
+
         User newUser = new User();
         newUser.setFirstName(firstName);
         newUser.setLastName(lastName);
@@ -89,14 +118,9 @@ public class AuthService {
 
         User savedUser = userRepository.save(newUser);
 
-        Set<String> roleNames = savedUser.getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-
         String accessToken = jwtUtil.createTokenWithRole(
                 savedUser.getEmail(),
-                roleNames
+                savedUser.getRoles()
         );
 
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail());
@@ -109,11 +133,10 @@ public class AuthService {
         authResponse.setAccessToken(accessToken);
         authResponse.setRefreshToken(refreshToken);
 
-        if(user != null){
+        if (user != null) {
             authResponse.setEmail(user.getEmail());
             authResponse.setFirstName(user.getFirstName());
             authResponse.setLastName(user.getLastName());
-
 
 
             Set<String> roleNames = user.getRoles()

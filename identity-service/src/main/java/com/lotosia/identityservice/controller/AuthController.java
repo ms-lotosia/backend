@@ -2,6 +2,7 @@ package com.lotosia.identityservice.controller;
 
 import com.lotosia.identityservice.dto.AuthResponse;
 import com.lotosia.identityservice.dto.LoginRequest;
+import com.lotosia.identityservice.dto.RefreshTokenRequest;
 import com.lotosia.identityservice.dto.RegisterRequest;
 import com.lotosia.identityservice.entity.Otp;
 import com.lotosia.identityservice.service.AuthService;
@@ -83,5 +84,19 @@ public class AuthController {
     @PostMapping(path = "/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
         return authService.logout(token);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshAccessToken(@RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        try {
+            String newAccessToken = authService.refreshAccessToken(refreshToken);
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }

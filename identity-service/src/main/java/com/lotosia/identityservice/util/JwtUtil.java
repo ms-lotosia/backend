@@ -1,5 +1,6 @@
 package com.lotosia.identityservice.util;
 
+import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.service.RedisTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -36,16 +38,22 @@ public class JwtUtil {
         this.redisTemplate = redisTemplate;
     }
 
-    public String createTokenWithRole(String username, Set<String> roles) {
+    public String createTokenWithRole(String username, Set<Role> roles) {
+        List<String> roleNames = roles.stream()
+                .map(Role::getName)
+                .toList();
+
         String token = Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roles)
+                .claim("roles", roleNames)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
                 .compact();
 
-        redisTemplate.opsForValue().set(username, token, JWT_EXPIRATION, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue()
+                .set("TOKEN:" + token, username, JWT_EXPIRATION, TimeUnit.MILLISECONDS);
+
         return token;
     }
 

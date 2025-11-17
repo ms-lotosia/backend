@@ -56,6 +56,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, HttpServletRequest req) {
+        return buildResponse(
+                "NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND,
+                req.getRequestURI()
+        );
+    }
+
     private ResponseEntity<ApiError> buildResponse(
             String code, String message, HttpStatus status, String path) {
 
