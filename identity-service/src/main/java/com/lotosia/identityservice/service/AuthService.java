@@ -1,6 +1,7 @@
 package com.lotosia.identityservice.service;
 
 import com.lotosia.identityservice.dto.AuthResponse;
+import com.lotosia.identityservice.dto.RegisterRequest;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.exception.EmailAlreadyInUseException;
@@ -9,6 +10,9 @@ import com.lotosia.identityservice.exception.NotFoundException;
 import com.lotosia.identityservice.repository.UserRepository;
 import com.lotosia.identityservice.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -17,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -61,6 +66,42 @@ public class AuthService {
         redisTemplate.opsForValue().set(redisKey, "1", expiration, TimeUnit.MILLISECONDS);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    public void sendResetPasswordLink(String email){
+        User user  =  userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
+
+        String redisKey = email + ":resit";
+        String existingToken = redisTemplate.opsForValue().get(redisKey);
+
+        if(existingToken != null){
+            redisTemplate.delete(redisKey);
+        }
+
+        String resetToken = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(redisKey, resetToken, 1, TimeUnit.HOURS);
+
+        String resetLink = "https://lotosia.vercel.app/reset-password?token=" + resetToken;
+        emailService.sendResetPasswordEmailHtml(email, resetLink);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        String email = redisTemplate.keys("*:reset").stream()
+                .filter(key -> {
+                    String value = redisTemplate.opsForValue().get(key);
+                    return value != null && value.equals(token);
+                })
+                .map(key -> key.replace(":reset", ""))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired reset token"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
+        validatePassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        redisTemplate.delete(email + ":reset");
     }
 
     public String refreshAccessToken(String refreshToken) {
@@ -136,5 +177,17 @@ public class AuthService {
         }
 
         return authResponse;
+    }
+
+    private void validatePassword(String password) {
+        RegisterRequest tempDto = new RegisterRequest();
+        tempDto.setPassword(password);
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(tempDto);
+        for (ConstraintViolation<RegisterRequest> violation : violations) {
+            if ("password".equals(violation.getPropertyPath().toString())) {
+                throw new IllegalArgumentException(violation.getMessage());
+            }
+        }
     }
 }

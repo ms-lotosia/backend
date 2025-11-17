@@ -4,6 +4,7 @@ import com.lotosia.identityservice.dto.AuthResponse;
 import com.lotosia.identityservice.dto.LoginRequest;
 import com.lotosia.identityservice.dto.RefreshTokenRequest;
 import com.lotosia.identityservice.dto.RegisterRequest;
+import com.lotosia.identityservice.dto.ResetPasswordRequest;
 import com.lotosia.identityservice.entity.Otp;
 import com.lotosia.identityservice.service.AuthService;
 import com.lotosia.identityservice.service.OtpService;
@@ -84,6 +85,18 @@ public class AuthController {
     @PostMapping(path = "/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
         return authService.logout(token);
+    }
+
+    @PostMapping("/send-reset-password-link")
+    public ResponseEntity<Void> sendResetPasswordLink(@RequestParam String email) {
+        authService.sendResetPasswordLink(email);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/refresh-token")
