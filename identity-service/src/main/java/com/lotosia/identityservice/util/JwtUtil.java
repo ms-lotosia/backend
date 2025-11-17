@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
 
     private static final String SECRET_KEY = "my-hardcoded-secret-key-for-testing-purposes";
@@ -29,19 +31,11 @@ public class JwtUtil {
     private static final long JWT_EXPIRATION = 24 * 60 * 60 * 1000L;
     private static final long REFRESH_EXPIRATION = 24 * 60 * 60 * 1000L;
 
-    private final RedisTokenService redisTokenService;
     private final RedisTemplate<String, String> redisTemplate;
 
 
-    public JwtUtil(RedisTokenService redisTokenService, RedisTemplate<String, String> redisTemplate) {
-        this.redisTokenService = redisTokenService;
-        this.redisTemplate = redisTemplate;
-    }
-
     public String createTokenWithRole(String username, Set<Role> roles) {
-        List<String> roleNames = roles.stream()
-                .map(Role::getName)
-                .toList();
+        List<String> roleNames = roles.stream().map(Role::getName).toList();
 
         String token = Jwts.builder()
                 .setSubject(username)
@@ -51,8 +45,12 @@ public class JwtUtil {
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
                 .compact();
 
-        redisTemplate.opsForValue()
-                .set("TOKEN:" + token, username, JWT_EXPIRATION, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(
+                "TOKEN:" + token,
+                username,
+                JWT_EXPIRATION,
+                TimeUnit.MILLISECONDS
+        );
 
         return token;
     }
@@ -65,33 +63,48 @@ public class JwtUtil {
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
                 .compact();
 
-        redisTemplate.opsForValue().set(username + ":refresh", refreshToken, REFRESH_EXPIRATION, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(
+                username + ":refresh",
+                refreshToken,
+                REFRESH_EXPIRATION,
+                TimeUnit.MILLISECONDS
+        );
+
         return refreshToken;
+    }
+
+    public long getExpirationTime(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(SIGNING_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getExpiration().getTime() - System.currentTimeMillis();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(SIGNING_KEY)
-                    .build()
-                    .parseClaimsJws(token);
-            String username = getEmailFromToken(token);
-            String storedToken = redisTemplate.opsForValue().get(username);
-            return storedToken != null;
+            Jwts.parserBuilder().setSigningKey(SIGNING_KEY).build().parseClaimsJws(token);
+            String username = redisTemplate.opsForValue().get("TOKEN:" + token);
+            return username != null;
         } catch (Exception e) {
             return false;
         }
     }
 
-    public void invalidateToken(String email) {
-        redisTemplate.delete(email);
-        redisTemplate.delete(email + ":refresh");
+    public void invalidateToken(String token) {
+        String username = redisTemplate.opsForValue().get("TOKEN:" + token);
+        if (username != null) {
+            redisTemplate.delete("TOKEN:" + token);
+            redisTemplate.delete(username + ":refresh");
+        }
     }
 
     public String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // Remove "Bearer " prefix
+            return bearerToken.substring(7);
         }
         return null;
     }

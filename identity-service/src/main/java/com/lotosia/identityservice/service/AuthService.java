@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -27,9 +27,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
-    private final Set<String> blackListedTokes = new HashSet<>();
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -44,28 +41,24 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid credentials");
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(
-                user.getEmail(),
-                user.getRoles()
-        );
-
+        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getRoles());
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
 
         return buildAuthResponseDto(user, accessToken, refreshToken);
     }
 
-
     public ResponseEntity<?> logout(String authHeader) {
         String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
 
-        if (blackListedTokes.contains(token)) {
+        String redisKey = "blacklist:" + token;
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("You are already logged out.");
         }
 
-        blackListedTokes.add(token);
-
-        redisTemplate.delete("TOKEN:" + token);
+        long expiration = jwtUtil.getExpirationTime(token);
+        redisTemplate.opsForValue().set(redisKey, "1", expiration, TimeUnit.MILLISECONDS);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -77,7 +70,6 @@ public class AuthService {
 
         try {
             String email = jwtUtil.getEmailFromToken(refreshToken);
-
             String redisKey = "refresh:" + refreshToken;
             String storedEmail = redisTemplate.opsForValue().get(redisKey);
 
@@ -90,10 +82,11 @@ public class AuthService {
                             "USER_NOT_FOUND",
                             String.format("User with this email does not exist: %s", email)
                     ));
+
             return jwtUtil.createTokenWithRole(email, user.getRoles());
 
         } catch (JwtException | IllegalArgumentException e) {
-            throw new SecurityException("Invalid refresh token" + e.getMessage());
+            throw new SecurityException("Invalid refresh token: " + e.getMessage());
         }
     }
 
@@ -119,11 +112,7 @@ public class AuthService {
 
         User savedUser = userRepository.save(newUser);
 
-        String accessToken = jwtUtil.createTokenWithRole(
-                savedUser.getEmail(),
-                savedUser.getRoles()
-        );
-
+        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getRoles());
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail());
 
         return buildAuthResponseDto(savedUser, accessToken, refreshToken);
@@ -139,9 +128,7 @@ public class AuthService {
             authResponse.setFirstName(user.getFirstName());
             authResponse.setLastName(user.getLastName());
 
-
-            Set<String> roleNames = user.getRoles()
-                    .stream()
+            Set<String> roleNames = user.getRoles().stream()
                     .map(Role::getName)
                     .collect(Collectors.toSet());
 
