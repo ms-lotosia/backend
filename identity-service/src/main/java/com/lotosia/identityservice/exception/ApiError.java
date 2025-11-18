@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.time.LocalDateTime;
 
 /**
  * @author: nijataghayev
@@ -20,4 +20,6 @@ public class ApiError {
     private String message;
     private int status;
     private String path;
+    @Builder.Default
+    private LocalDateTime timestamp = LocalDateTime.now();
 }
