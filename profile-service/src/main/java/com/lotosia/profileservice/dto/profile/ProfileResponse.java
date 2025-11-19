@@ -1,8 +1,6 @@
-package com.lotosia.profileservice.dto;
+package com.lotosia.profileservice.dto.profile;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Size;
+import com.lotosia.profileservice.dto.userpreference.UserPreferenceResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,18 +14,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProfileRequest {
+public class ProfileResponse {
 
-    @NotNull
+    private Long id;
     private Long userId;
-
-    @Size(max = 20)
     private String phoneNumber;
-
-    @PastOrPresent
     private LocalDate birthDate;
-
-    @Size(max = 255)
     private String profileImageUrl;
+    private UserPreferenceResponse userPreference;
 }
 

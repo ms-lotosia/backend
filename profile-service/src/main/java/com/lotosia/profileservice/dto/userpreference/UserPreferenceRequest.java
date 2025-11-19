@@ -1,5 +1,6 @@
-package com.lotosia.profileservice.dto;
+package com.lotosia.profileservice.dto.userpreference;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,12 +12,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserPreferenceResponse {
+public class UserPreferenceRequest {
 
-    private Long id;
-    private Long profileId;
+    @Size(max = 10)
     private String language;
+
+    @Size(max = 5)
     private String currency;
+
     private Boolean emailNotification;
 }
 

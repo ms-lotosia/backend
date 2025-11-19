@@ -1,7 +1,7 @@
 package com.lotosia.profileservice.controller;
 
-import com.lotosia.profileservice.dto.ProfileRequest;
-import com.lotosia.profileservice.dto.ProfileResponse;
+import com.lotosia.profileservice.dto.profile.ProfileRequest;
+import com.lotosia.profileservice.dto.profile.ProfileResponse;
 import com.lotosia.profileservice.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

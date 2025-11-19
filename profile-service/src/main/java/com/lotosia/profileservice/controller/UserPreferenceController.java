@@ -1,7 +1,7 @@
 package com.lotosia.profileservice.controller;
 
-import com.lotosia.profileservice.dto.UserPreferenceRequest;
-import com.lotosia.profileservice.dto.UserPreferenceResponse;
+import com.lotosia.profileservice.dto.userpreference.UserPreferenceRequest;
+import com.lotosia.profileservice.dto.userpreference.UserPreferenceResponse;
 import com.lotosia.profileservice.service.UserPreferenceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

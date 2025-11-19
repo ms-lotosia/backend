@@ -1,8 +1,8 @@
 package com.lotosia.profileservice.service;
 
-import com.lotosia.profileservice.dto.ProfileRequest;
-import com.lotosia.profileservice.dto.ProfileResponse;
-import com.lotosia.profileservice.dto.UserPreferenceResponse;
+import com.lotosia.profileservice.dto.profile.ProfileRequest;
+import com.lotosia.profileservice.dto.profile.ProfileResponse;
+import com.lotosia.profileservice.dto.userpreference.UserPreferenceResponse;
 import com.lotosia.profileservice.entity.Profile;
 import com.lotosia.profileservice.exception.ResourceNotFoundException;
 import com.lotosia.profileservice.repository.ProfileRepository;
