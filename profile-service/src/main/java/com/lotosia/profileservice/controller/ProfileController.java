@@ -1,0 +1,52 @@
+package com.lotosia.profileservice.controller;
+
+import com.lotosia.profileservice.dto.ProfileRequest;
+import com.lotosia.profileservice.dto.ProfileResponse;
+import com.lotosia.profileservice.service.ProfileService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/profiles")
+@RequiredArgsConstructor
+public class ProfileController {
+
+    private final ProfileService profileService;
+
+    @PostMapping
+    public ResponseEntity<ProfileResponse> create(@Valid @RequestBody ProfileRequest request) {
+        return ResponseEntity.ok(profileService.create(request));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProfileResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(profileService.getById(id));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<ProfileResponse> getByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(profileService.getByUserId(userId));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProfileResponse> update(@PathVariable Long id,
+                                                  @Valid @RequestBody ProfileRequest request) {
+        return ResponseEntity.ok(profileService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        profileService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+
