@@ -1,6 +1,8 @@
 package com.lotosia.identityservice.service;
 
+import com.lotosia.identityservice.client.ProfileClient;
 import com.lotosia.identityservice.dto.AuthResponse;
+import com.lotosia.identityservice.dto.ProfileRequest;
 import com.lotosia.identityservice.dto.RegisterRequest;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
@@ -37,6 +39,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private final EmailService emailService;
+    private final ProfileClient profileClient;
 
     public AuthResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
@@ -68,14 +71,14 @@ public class AuthService {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    public void sendResetPasswordLink(String email){
-        User user  =  userRepository.findByEmail(email)
+    public void sendResetPasswordLink(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
 
         String redisKey = email + ":resit";
         String existingToken = redisTemplate.opsForValue().get(redisKey);
 
-        if(existingToken != null){
+        if (existingToken != null) {
             redisTemplate.delete(redisKey);
         }
 
@@ -152,6 +155,16 @@ public class AuthService {
         newUser.getRoles().add(roleUser);
 
         User savedUser = userRepository.save(newUser);
+
+        try {
+            ProfileRequest profileRequest = ProfileRequest.builder()
+                    .userId(savedUser.getId())
+                    .build();
+
+            profileClient.createProfile(profileRequest);
+        } catch (Exception e) {
+
+        }
 
         String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getRoles());
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail());
