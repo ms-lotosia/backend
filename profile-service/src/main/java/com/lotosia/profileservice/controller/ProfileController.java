@@ -3,6 +3,7 @@ package com.lotosia.profileservice.controller;
 import com.lotosia.profileservice.dto.profile.ProfileRequest;
 import com.lotosia.profileservice.dto.profile.ProfileResponse;
 import com.lotosia.profileservice.service.ProfileService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/profiles")
 @RequiredArgsConstructor
+@Tag(name = "Profile Controller")
 public class ProfileController {
 
     private final ProfileService profileService;

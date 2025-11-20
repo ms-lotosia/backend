@@ -1,6 +1,7 @@
 package com.lotosia.profileservice.dto.address;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,12 +16,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AddressRequest {
+public class CreateAddressRequest {
+
+    @NotNull
+    private Long profileId;
 
     @Size(min = 3, max = 50)
+    @NotBlank
     private String firstName;
 
     @Size(min = 3, max = 70)
+    @NotBlank
     private String lastName;
 
     @Size(max = 20)
@@ -46,5 +52,5 @@ public class AddressRequest {
     @NotBlank
     private String country;
 
-    private Boolean isDefault;
+    private Boolean isDefault = false;
 }

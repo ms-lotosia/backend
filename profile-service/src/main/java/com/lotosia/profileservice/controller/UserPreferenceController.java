@@ -3,6 +3,7 @@ package com.lotosia.profileservice.controller;
 import com.lotosia.profileservice.dto.userpreference.UserPreferenceRequest;
 import com.lotosia.profileservice.dto.userpreference.UserPreferenceResponse;
 import com.lotosia.profileservice.service.UserPreferenceService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/preferences")
 @RequiredArgsConstructor
+@Tag(name = "User Preference Controller")
 public class UserPreferenceController {
 
     private final UserPreferenceService userPreferenceService;

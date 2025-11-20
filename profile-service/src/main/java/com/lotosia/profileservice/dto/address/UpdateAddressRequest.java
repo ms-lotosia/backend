@@ -1,5 +1,8 @@
 package com.lotosia.profileservice.dto.address;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,14 +11,14 @@ import lombok.NoArgsConstructor;
 /**
  * @author: nijataghayev
  */
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AddressResponse {
+public class UpdateAddressRequest {
+
+    @NotNull
     private Long id;
-    private Long profileId;
     private String firstName;
     private String lastName;
     private String phoneNumber;
