@@ -4,6 +4,7 @@ import com.lotosia.productservice.dto.category.CategoryResponse;
 import com.lotosia.productservice.dto.category.CreateCategory;
 import com.lotosia.productservice.dto.category.UpdateCategory;
 import com.lotosia.productservice.entity.Category;
+import com.lotosia.productservice.exception.AlreadyExistsException;
 import com.lotosia.productservice.exception.ResourceNotFoundException;
 import com.lotosia.productservice.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,10 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public CategoryResponse create(CreateCategory request) {
+        if (categoryRepository.existsByName(request.getName())) {
+            throw new AlreadyExistsException("Category already exists: " + request.getName());
+        }
+
         Category category = new Category();
         category.setName(request.getName());
         category.setDescription(request.getDescription());
@@ -34,11 +39,11 @@ public class CategoryService {
         Category category = categoryRepository.findById(request.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        if (category.getName() != null) {
+        if (request.getName() != null) {
             category.setName(request.getName());
         }
 
-        if (category.getDescription() != null) {
+        if (request.getDescription() != null) {
             category.setDescription(request.getDescription());
         }
 
@@ -47,6 +52,9 @@ public class CategoryService {
     }
 
     public void delete(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
         categoryRepository.deleteById(id);
     }
 
