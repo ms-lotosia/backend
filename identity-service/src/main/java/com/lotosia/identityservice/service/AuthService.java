@@ -1,7 +1,9 @@
 package com.lotosia.identityservice.service;
 
+import com.lotosia.identityservice.client.BasketClient;
 import com.lotosia.identityservice.client.ProfileClient;
 import com.lotosia.identityservice.dto.AuthResponse;
+import com.lotosia.identityservice.dto.CreateBasketRequest;
 import com.lotosia.identityservice.dto.ProfileRequest;
 import com.lotosia.identityservice.dto.RegisterRequest;
 import com.lotosia.identityservice.entity.Role;
@@ -40,6 +42,7 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
     private final EmailService emailService;
     private final ProfileClient profileClient;
+    private final BasketClient basketClient;
 
     public AuthResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
@@ -163,7 +166,15 @@ public class AuthService {
 
             profileClient.createProfile(profileRequest);
         } catch (Exception e) {
+        }
 
+        try {
+            CreateBasketRequest basketRequest = CreateBasketRequest.builder()
+                    .userId(savedUser.getId())
+                    .build();
+
+            basketClient.createBasket(basketRequest);
+        } catch (Exception e) {
         }
 
         String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getRoles());
