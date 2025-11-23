@@ -32,3 +32,4 @@ public class UpdateProduct {
     private Long categoryId;
 }
 
+

@@ -20,13 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final FileStorageService fileStorageService;
 
     public ProfileResponse create(ProfileRequest request) {
         Profile profile = new Profile();
         profile.setUserId(request.getUserId());
         profile.setPhoneNumber(request.getPhoneNumber());
         profile.setBirthDate(request.getBirthDate());
-        profile.setProfileImageUrl(request.getProfileImageUrl());
+        
+        // Save profile picture and get URL
+        String profileImageUrl = fileStorageService.saveFile(request.getProfileImageUrl());
+        profile.setProfileImageUrl(profileImageUrl);
         
         Profile saved = profileRepository.save(profile);
         return toResponse(saved);
@@ -49,7 +53,12 @@ public class ProfileService {
         profile.setUserId(request.getUserId());
         profile.setPhoneNumber(request.getPhoneNumber());
         profile.setBirthDate(request.getBirthDate());
-        profile.setProfileImageUrl(request.getProfileImageUrl());
+        
+        // Save profile picture if provided
+        if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().isEmpty()) {
+            String profileImageUrl = fileStorageService.saveFile(request.getProfileImageUrl());
+            profile.setProfileImageUrl(profileImageUrl);
+        }
         
         Profile saved = profileRepository.save(profile);
         return toResponse(saved);

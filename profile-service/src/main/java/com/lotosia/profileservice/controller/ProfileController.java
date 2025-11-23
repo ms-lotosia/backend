@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,8 +25,8 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
-    @PostMapping
-    public ResponseEntity<ProfileResponse> create(@Valid @RequestBody ProfileRequest request) {
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<ProfileResponse> create(@Valid @ModelAttribute ProfileRequest request) {
         return ResponseEntity.ok(profileService.create(request));
     }
 
@@ -39,9 +40,9 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getByUserId(userId));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<ProfileResponse> update(@PathVariable Long id,
-                                                  @Valid @RequestBody ProfileRequest request) {
+                                                  @Valid @ModelAttribute ProfileRequest request) {
         return ResponseEntity.ok(profileService.update(id, request));
     }
 
