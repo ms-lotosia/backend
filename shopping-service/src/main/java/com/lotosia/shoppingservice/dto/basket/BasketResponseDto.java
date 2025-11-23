@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -21,5 +22,5 @@ public class BasketResponseDto {
     private Long userId;
     private List<BasketProductDto> products;
     private Integer totalItems;
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 }
