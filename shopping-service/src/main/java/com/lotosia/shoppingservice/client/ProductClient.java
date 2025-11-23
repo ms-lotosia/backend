@@ -1,6 +1,6 @@
 package com.lotosia.shoppingservice.client;
 
-import com.lotosia.shoppingservice.dto.ProductResponse;
+import com.lotosia.shoppingservice.dto.basket.ProductResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

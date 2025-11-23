@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Shopping Service API")
                         .version("1.0.0")
-                        .description("Shopping Management Service for Lotosia System");
+                        .description("Shopping Management Service for Lotosia System"));
     }
 }

@@ -1,4 +1,4 @@
-package com.lotosia.shoppingservice.dto;
+package com.lotosia.shoppingservice.dto.basket;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
