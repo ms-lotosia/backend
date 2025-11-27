@@ -12,10 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 public class CardService {
@@ -24,12 +20,10 @@ public class CardService {
 
     @Transactional
     public CardResponse addCard(Long userId, CardRequest request) {
-        // Check if card already exists
         if (cardRepository.existsByUserIdAndCardNumberAndIsActiveTrue(userId, request.getCardNumber())) {
             throw new IllegalArgumentException("Card with this number already exists");
         }
 
-        // If this is set as default, unset other default cards
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             cardRepository.findByUserIdAndIsDefaultTrueAndIsActiveTrue(userId)
                     .ifPresent(card -> {
@@ -61,7 +55,6 @@ public class CardService {
         Card card = cardRepository.findByUserIdAndIdAndIsActiveTrue(userId, cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + cardId));
 
-        // Unset other default cards
         cardRepository.findByUserIdAndIsDefaultTrueAndIsActiveTrue(userId)
                 .ifPresent(defaultCard -> {
                     defaultCard.setIsDefault(false);

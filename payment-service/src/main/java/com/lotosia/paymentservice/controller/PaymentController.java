@@ -4,7 +4,6 @@ import com.lotosia.paymentservice.dto.PaymentRequest;
 import com.lotosia.paymentservice.dto.PaymentResponse;
 import com.lotosia.paymentservice.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springdoc.core.annotations.ParameterObject;
 
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
 
 @RestController
 @RequestMapping("/api/v1/payments")

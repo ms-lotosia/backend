@@ -20,10 +20,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -42,7 +38,6 @@ public class PaymentService {
         payment.setDescription(request.getDescription());
         payment.setTransactionId(generateTransactionId());
 
-        // If payment method is CARD, validate and set card
         if (request.getPaymentMethod() == PaymentMethod.CARD) {
             if (request.getCardId() == null) {
                 throw new IllegalArgumentException("Card ID is required for card payments");
@@ -54,9 +49,7 @@ public class PaymentService {
             payment.setCard(card);
         }
 
-        // Process payment (simulate payment processing)
         try {
-            // In a real implementation, this would call a payment gateway
             boolean paymentSuccess = processPaymentWithGateway(payment);
 
             if (paymentSuccess) {
@@ -117,9 +110,6 @@ public class PaymentService {
     }
 
     private boolean processPaymentWithGateway(Payment payment) {
-        // Simulate payment processing
-        // In a real implementation, this would integrate with a payment gateway like Stripe, PayPal, etc.
-        // For now, we'll simulate a successful payment
         return true;
     }
 

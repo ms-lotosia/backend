@@ -8,10 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "cards")
 @Getter
