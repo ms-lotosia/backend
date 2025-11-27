@@ -2,8 +2,12 @@ package com.lotosia.shoppingservice.controller;
 
 import com.lotosia.shoppingservice.dto.order.CreateOrderRequest;
 import com.lotosia.shoppingservice.dto.order.OrderResponse;
+import com.lotosia.shoppingservice.dto.order.OrderStatusUpdate;
 import com.lotosia.shoppingservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -26,5 +30,13 @@ public class OrderController {
                                 @RequestBody CreateOrderRequest request) {
 
         return orderService.createOrder(userId, request);
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long orderId,
+                                          @RequestBody OrderStatusUpdate request) {
+
+        orderService.updateOrderStatus(orderId, request.getStatus());
+        return ResponseEntity.ok("Status updated");
     }
 }

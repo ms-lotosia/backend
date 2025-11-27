@@ -87,6 +87,35 @@ public class OrderService {
         return mapToDto(savedOrder);
     }
 
+    public void updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        switch (newStatus) {
+
+            case PREPARING:
+                throw new RuntimeException("Bu status manual olaraq verilə bilməz");
+
+            case IN_COURIER:
+                if (order.getStatus() != OrderStatus.PREPARING) {
+                    throw new RuntimeException("Sifariş yalnız PREPARING olduqda kuryerə verilə bilər");
+                }
+                break;
+
+            case DELIVERED:
+                if (order.getStatus() != OrderStatus.IN_COURIER) {
+                    throw new RuntimeException("Sifariş yalnız kuryerdə olduqda çatdırılmış kimi qeyd edilə bilər");
+                }
+                break;
+
+            default:
+                throw new RuntimeException("Uyğunsuz status");
+        }
+
+        order.setStatus(newStatus);
+        orderRepository.save(order);
+    }
+
     private OrderResponse mapToDto(Order order) {
         return OrderResponse.builder()
                 .orderId(order.getId())
