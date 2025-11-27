@@ -37,12 +37,12 @@ public class OrderItem extends BaseEntity {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
-    @Column(name = "unit_price", nullable = false, precision = 19, scale = 4)
-    private BigDecimal unitPrice;
+    @Column(name = "price")
+    private BigDecimal price;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "total_price", nullable = false, precision = 19, scale = 4)
+    @Column(name = "total_price")
     private BigDecimal totalPrice;
 }

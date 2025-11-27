@@ -102,4 +102,11 @@ public class BasketService {
                 .totalPrice(totalPrice)
                 .build();
     }
+
+    public void clearBasket(Long userId){
+        basketRepository.findByUserId(userId).ifPresent(b -> {
+            b.setProductQuantities(new HashMap<>());
+            basketRepository.save(b);
+        });
+    }
 }

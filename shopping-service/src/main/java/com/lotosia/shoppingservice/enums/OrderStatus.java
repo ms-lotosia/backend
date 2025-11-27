@@ -5,10 +5,8 @@ package com.lotosia.shoppingservice.enums;
  */
 
 public enum OrderStatus {
-    PENDING,
-    PAID,
-    CASH_ON_DELIVERY,
-    CANCELLED,
-    SHIPPED,
-    COMPLETED
+    PREPARING,
+    IN_COURIER,
+    DELIVERED,
+    CANCELLED
 }
