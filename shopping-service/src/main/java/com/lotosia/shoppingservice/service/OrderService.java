@@ -116,6 +116,14 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+    public boolean hasUserReceivedProduct(Long userId, Long productId) {
+        return orderRepository.existsByUserIdAndItems_ProductIdAndStatus(
+                userId,
+                productId,
+                OrderStatus.DELIVERED
+        );
+    }
+
     private OrderResponse mapToDto(Order order) {
         return OrderResponse.builder()
                 .orderId(order.getId())
