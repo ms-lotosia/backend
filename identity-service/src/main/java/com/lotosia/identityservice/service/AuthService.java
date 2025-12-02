@@ -52,8 +52,8 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid credentials");
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getRoles());
-        String refreshToken = jwtUtil.createRefreshToken(user.getEmail());
+        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRoles());
+        String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
 
         return buildAuthResponseDto(user, accessToken, refreshToken);
     }
@@ -130,7 +130,7 @@ public class AuthService {
                             String.format("User with this email does not exist: %s", email)
                     ));
 
-            return jwtUtil.createTokenWithRole(email, user.getRoles());
+            return jwtUtil.createTokenWithRole(email, user.getId(), user.getRoles());
 
         } catch (JwtException | IllegalArgumentException e) {
             throw new SecurityException("Invalid refresh token: " + e.getMessage());
@@ -177,8 +177,8 @@ public class AuthService {
         } catch (Exception e) {
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getRoles());
-        String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail());
+        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRoles());
+        String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail(), savedUser.getId());
 
         return buildAuthResponseDto(savedUser, accessToken, refreshToken);
     }

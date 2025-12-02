@@ -34,11 +34,12 @@ public class JwtUtil {
     private final RedisTemplate<String, String> redisTemplate;
 
 
-    public String createTokenWithRole(String username, Set<Role> roles) {
+    public String createTokenWithRole(String username, Long userId, Set<Role> roles) {
         List<String> roleNames = roles.stream().map(Role::getName).toList();
 
         String token = Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId)
                 .claim("roles", roleNames)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
@@ -55,9 +56,10 @@ public class JwtUtil {
         return token;
     }
 
-    public String createRefreshToken(String username) {
+    public String createRefreshToken(String username, Long userId) {
         String refreshToken = Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
@@ -116,6 +118,16 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    public Long getUserIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(SIGNING_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", Long.class);
     }
 
     public long getJwtExpiration() {
