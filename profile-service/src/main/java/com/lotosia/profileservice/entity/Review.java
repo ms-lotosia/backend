@@ -1,8 +1,11 @@
 package com.lotosia.profileservice.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,10 +27,20 @@ public class Review extends BaseAuditableEntity {
 
     private Long userId;
     private Long productId;
-    private Long orderId;
+
+    @Column(nullable = false)
     private String comment;
 
-    @Size(min = 1, max = 5)
+    @Min(1)
+    @Max(5)
+    @Column(nullable = false)
     private Integer rating;
+
+    @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdDate = LocalDateTime.now();
+    }
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author: nijataghayev
@@ -13,9 +14,9 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    boolean existsByUserIdAndProductId(Long userId, Long productId);
+    List<Review> findByProductId(Long productId);
 
-    List<Review> findAllByProductId(Long productId);
+    List<Review> findByUserId(Long userId);
 
-    List<Review> findAllByUserId(Long userId);
+    Optional<Review> findByUserIdAndProductId(Long userId, Long productId);
 }

@@ -21,9 +21,6 @@ public class ReviewRequest {
     @NotNull
     private Long productId;
 
-    @NotNull
-    private Long orderId;
-
     @NotBlank
     @Size(min = 1, max = 500)
     private String comment;
