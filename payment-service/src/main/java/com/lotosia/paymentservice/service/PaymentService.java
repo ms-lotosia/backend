@@ -2,6 +2,7 @@ package com.lotosia.paymentservice.service;
 
 import com.lotosia.paymentservice.dto.PaymentRequest;
 import com.lotosia.paymentservice.dto.PaymentResponse;
+import com.lotosia.paymentservice.dto.event.PaymentProcessedEvent;
 import com.lotosia.paymentservice.entity.Card;
 import com.lotosia.paymentservice.entity.Payment;
 import com.lotosia.paymentservice.enums.PaymentMethod;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,6 +28,8 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final CardRepository cardRepository;
+    private final KafkaProducerService kafkaProducerService;
+
 
     @Transactional
     public PaymentResponse processPayment(Long userId, PaymentRequest request) {
@@ -62,6 +66,18 @@ public class PaymentService {
         }
 
         Payment saved = paymentRepository.save(payment);
+        PaymentProcessedEvent paymentProcessedEvent = new PaymentProcessedEvent(
+                saved.getId(),
+                saved.getUserId(),
+                saved.getOrderId(),
+                saved.getAmount(),
+                saved.getPaymentMethod(),
+                saved.getStatus(),
+                saved.getTransactionId(),
+                LocalDateTime.now()
+                );
+
+        kafkaProducerService.sendPaymentProcessedEvent(paymentProcessedEvent);
         return mapToDto(saved);
     }
 
