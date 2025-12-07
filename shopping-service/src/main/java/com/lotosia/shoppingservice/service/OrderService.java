@@ -14,7 +14,6 @@ import com.lotosia.shoppingservice.enums.OrderStatus;
 import com.lotosia.shoppingservice.exception.ResourceNotFoundException;
 import com.lotosia.shoppingservice.repository.BasketRepository;
 import com.lotosia.shoppingservice.repository.OrderRepository;
-import com.lotosia.paymentservice.enums.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -125,14 +124,14 @@ public class OrderService {
         );
     }
 
-    public void handlePaymentProcessed(Long orderId, PaymentStatus paymentStatus) {
+    public void handlePaymentProcessed(Long orderId, String paymentStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        if (PaymentStatus.COMPLETED.equals(paymentStatus)) {
+        if ("COMPLETED".equals(paymentStatus)) {
             // Payment successful - order can proceed
             // Order status remains PREPARING or you can update it as needed
-        } else if (PaymentStatus.FAILED.equals(paymentStatus)) {
+        } else if ("FAILED".equals(paymentStatus)) {
             // Payment failed - you might want to cancel or mark order
             // order.setStatus(OrderStatus.CANCELLED);
         }

@@ -1,7 +1,5 @@
 package com.lotosia.paymentservice.dto.event;
 
-import com.lotosia.paymentservice.enums.PaymentMethod;
-import com.lotosia.paymentservice.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,8 +15,8 @@ public class PaymentProcessedEvent {
     private Long userId;
     private Long orderId;
     private BigDecimal amount;
-    private PaymentMethod paymentMethod;
-    private PaymentStatus status;
+    private String paymentMethod;  // Changed to String to avoid cross-service dependency
+    private String status;  // Changed to String to avoid cross-service dependency
     private String transactionId;
     private LocalDateTime processedAt;
 }

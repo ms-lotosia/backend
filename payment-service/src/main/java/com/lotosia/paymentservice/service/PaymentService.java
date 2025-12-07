@@ -71,8 +71,8 @@ public class PaymentService {
                 saved.getUserId(),
                 saved.getOrderId(),
                 saved.getAmount(),
-                saved.getPaymentMethod(),
-                saved.getStatus(),
+                saved.getPaymentMethod() != null ? saved.getPaymentMethod().name() : null,
+                saved.getStatus() != null ? saved.getStatus().name() : null,
                 saved.getTransactionId(),
                 LocalDateTime.now()
                 );
