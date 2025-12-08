@@ -1,17 +1,17 @@
 server:
-  port: 8001
+  port: 8081
 
 spring:
   application:
     name: identity-service
   data:
     redis:
-      host: redis
+      host: localhost
       port: 6379
   datasource:
-    url: jdbc:postgresql://postgres-identity:5432/lotosia
+    url: jdbc:postgresql://localhost:5432/identity_db
     username: postgres
-    password: nicat
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -46,17 +46,20 @@ jwt:
 eureka:
   client:
     service-url:
-      defaultZone: http://service-discovery:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
 
 logging:
   level:
-    com.healthcare: DEBUG
+    com.lotosia: DEBUG
     org.springframework.security: DEBUG
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
