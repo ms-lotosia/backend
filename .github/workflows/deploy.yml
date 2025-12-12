@@ -41,15 +41,7 @@ jobs:
           git fetch origin "$base_branch" --prune --depth=1 || true
           base_ref="origin/${base_branch}"
 
-          full_services="api-gateway
-service-discovery
-identity-service
-content-service
-support-service
-product-service
-profile-service
-shopping-service
-payment-service"
+          full_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service"
 
           services=$(git diff --name-only "$base_ref"...HEAD \
             | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service)\// {print $1}' \
