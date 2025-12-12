@@ -35,3 +35,20 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# macOS artifacts
+.DS_Store
+
+# Local environment and secrets
+.env
+*.env
+
+# Cursor / tool metadata
+.cursor/
+
+# Gradle temporary user home used in CI/local runs
+.gradle-tmp/
+
+# Logs and reports
+*.log
+logs/
