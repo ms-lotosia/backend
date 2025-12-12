@@ -37,12 +37,20 @@ jobs:
       - name: Detect changed services
         id: detect
         run: |
-          git fetch origin master --prune --depth=1 || true
-          base_ref="${GITHUB_BASE_REF:-origin/master}"
+          base_branch="${GITHUB_BASE_REF:-master}"
+          git fetch origin "$base_branch" --prune --depth=1 || true
+          base_ref="origin/${base_branch}"
+
           services=$(git diff --name-only "$base_ref"...HEAD \
             | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service)\// {print $1}' \
-            | sort -u)
-          services_json=$(printf '%s\n' "$services" | jq -R . | jq -s .)
+            | sort -u | sed '/^$/d')
+
+          if [ -z "$services" ]; then
+            services_json='[]'
+          else
+            services_json=$(printf '%s\n' "$services" | jq -R . | jq -s .)
+          fi
+
           echo "services_json=$services_json" >> "$GITHUB_OUTPUT"
           echo "Detected services: $services_json"
 
