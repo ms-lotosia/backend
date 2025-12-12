@@ -22,17 +22,6 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   GITHUB_OWNER: ${{ github.repository_owner }}
 
-services-list: &services-list
-  - api-gateway
-  - service-discovery
-  - identity-service
-  - content-service
-  - support-service
-  - product-service
-  - profile-service
-  - shopping-service
-  - payment-service
-
 jobs:
   detect-services:
     name: Detect Changed Services
