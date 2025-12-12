@@ -1,0 +1,258 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.netflix.eureka",
+    "module": "eureka-core",
+    "version": "2.0.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.netflix.eureka",
+          "module": "eureka-client",
+          "version": {
+            "requires": "2.0.1"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-core",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-ec2",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-autoscaling",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-sts",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-route53",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "jakarta.servlet",
+          "module": "jakarta.servlet-api",
+          "version": {
+            "requires": "5.0.0"
+          }
+        },
+        {
+          "group": "jakarta.inject",
+          "module": "jakarta.inject-api",
+          "version": {
+            "requires": "2.0.1"
+          }
+        },
+        {
+          "group": "com.thoughtworks.xstream",
+          "module": "xstream",
+          "version": {
+            "requires": "1.4.19"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.dataformat",
+          "module": "jackson-dataformat-xml",
+          "version": {
+            "requires": "2.10.5"
+          }
+        },
+        {
+          "group": "com.fasterxml.woodstox",
+          "module": "woodstox-core",
+          "version": {
+            "requires": "6.2.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "eureka-core-2.0.1.jar",
+          "url": "eureka-core-2.0.1.jar",
+          "size": 240726,
+          "sha512": "aff8a2a1c41da17e4094467b57eb878d72e0a3e0d6d38373450abba2b4bed6b492ae3ed7e9ce95b7fe34e697dcb0f966d6f5f36f3035c64abfe2133ecc7aa288",
+          "sha256": "93a0ef18b41162118e0819cdee9bd8025ca81d08220ed6677e868d6c99b063e2",
+          "sha1": "c6b08ac4e05fd56a93823c53cb4f7052631135cb",
+          "md5": "ffc706635794bc9b253a1faa61e02589"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.netflix.eureka",
+          "module": "eureka-client",
+          "version": {
+            "requires": "2.0.1"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-core",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-ec2",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-autoscaling",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-sts",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "com.amazonaws",
+          "module": "aws-java-sdk-route53",
+          "version": {
+            "requires": "1.11.277"
+          }
+        },
+        {
+          "group": "jakarta.servlet",
+          "module": "jakarta.servlet-api",
+          "version": {
+            "requires": "5.0.0"
+          }
+        },
+        {
+          "group": "jakarta.inject",
+          "module": "jakarta.inject-api",
+          "version": {
+            "requires": "2.0.1"
+          }
+        },
+        {
+          "group": "com.thoughtworks.xstream",
+          "module": "xstream",
+          "version": {
+            "requires": "1.4.19"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.dataformat",
+          "module": "jackson-dataformat-xml",
+          "version": {
+            "requires": "2.10.5"
+          }
+        },
+        {
+          "group": "com.fasterxml.woodstox",
+          "module": "woodstox-core",
+          "version": {
+            "requires": "6.2.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "eureka-core-2.0.1.jar",
+          "url": "eureka-core-2.0.1.jar",
+          "size": 240726,
+          "sha512": "aff8a2a1c41da17e4094467b57eb878d72e0a3e0d6d38373450abba2b4bed6b492ae3ed7e9ce95b7fe34e697dcb0f966d6f5f36f3035c64abfe2133ecc7aa288",
+          "sha256": "93a0ef18b41162118e0819cdee9bd8025ca81d08220ed6677e868d6c99b063e2",
+          "sha1": "c6b08ac4e05fd56a93823c53cb4f7052631135cb",
+          "md5": "ffc706635794bc9b253a1faa61e02589"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "eureka-core-2.0.1-javadoc.jar",
+          "url": "eureka-core-2.0.1-javadoc.jar",
+          "size": 654962,
+          "sha512": "a7e12f2afaa9dfac530cfca6f592901668f9c721555c54476d9c66ec612123c5b175683cbd68369f6c255822175ede29a9c0b7a67043e6b8dbe8245240cf9172",
+          "sha256": "d3ad0e98df887997b5d62e5f7e477f6312cf55c1d360d17ed465ff9ae02502fb",
+          "sha1": "189e1ed7b695d9973acfaecdf52a8e7c87ca54c6",
+          "md5": "748a61449adf8f0305e6672d66d7cdd4"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "eureka-core-2.0.1-sources.jar",
+          "url": "eureka-core-2.0.1-sources.jar",
+          "size": 145428,
+          "sha512": "2d47af14e0964daea3aa889cdf6b2419a635935d4d1f444b8b348be5c39882b4d0bd625e5ecf6d5c6aaebfb29f08b93ecdc68d63cd3901a6375e6659d5a4cf36",
+          "sha256": "78ebfa2faf0a0ac79d74541ab9b67289ffc6f8dfde1642d6c4959bf0c55cace1",
+          "sha1": "e88fcc89ba244495667e6579d19b295bda163455",
+          "md5": "823d37c9950236ecfbc8d4ca71519f68"
+        }
+      ]
+    }
+  ]
+}

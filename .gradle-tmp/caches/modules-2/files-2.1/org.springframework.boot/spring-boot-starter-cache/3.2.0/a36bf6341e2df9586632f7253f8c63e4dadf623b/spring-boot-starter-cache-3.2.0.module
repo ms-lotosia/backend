@@ -1,0 +1,188 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.springframework.boot",
+    "module": "spring-boot-starter-cache",
+    "version": "3.2.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.6.3"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter",
+          "version": {
+            "requires": "3.2.0"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-context-support",
+          "version": {
+            "requires": "6.1.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-starter-cache-3.2.0.jar",
+          "url": "spring-boot-starter-cache-3.2.0.jar",
+          "size": 4758,
+          "sha512": "f84487c4130979025409dfe5523f0f94f1890d9b749e1f5f1b89dc90b15cd8682d63f782c4d0565b4845b7bca380344af0b34a7cdd8d338f66ced35e918656e6",
+          "sha256": "985fcc9b1eb00e482f4e21d4ad1628761af157fb29b836b3601083c24452b2d8",
+          "sha1": "bcdd3dd28886f772a8d514006764479912a77f9e",
+          "md5": "ba9f48499d10fb9c6be0e952381706a5"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter",
+          "version": {
+            "requires": "3.2.0"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-context-support",
+          "version": {
+            "requires": "6.1.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-starter-cache-3.2.0.jar",
+          "url": "spring-boot-starter-cache-3.2.0.jar",
+          "size": 4758,
+          "sha512": "f84487c4130979025409dfe5523f0f94f1890d9b749e1f5f1b89dc90b15cd8682d63f782c4d0565b4845b7bca380344af0b34a7cdd8d338f66ced35e918656e6",
+          "sha256": "985fcc9b1eb00e482f4e21d4ad1628761af157fb29b836b3601083c24452b2d8",
+          "sha1": "bcdd3dd28886f772a8d514006764479912a77f9e",
+          "md5": "ba9f48499d10fb9c6be0e952381706a5"
+        }
+      ]
+    },
+    {
+      "name": "mavenOptionalApiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "spring-boot-starter-cache-3.2.0.jar",
+          "url": "spring-boot-starter-cache-3.2.0.jar",
+          "size": 4758,
+          "sha512": "f84487c4130979025409dfe5523f0f94f1890d9b749e1f5f1b89dc90b15cd8682d63f782c4d0565b4845b7bca380344af0b34a7cdd8d338f66ced35e918656e6",
+          "sha256": "985fcc9b1eb00e482f4e21d4ad1628761af157fb29b836b3601083c24452b2d8",
+          "sha1": "bcdd3dd28886f772a8d514006764479912a77f9e",
+          "md5": "ba9f48499d10fb9c6be0e952381706a5"
+        }
+      ],
+      "capabilities": [
+        {
+          "group": "org.springframework.boot",
+          "name": "spring-boot-starter-cache-maven-optional",
+          "version": "3.2.0"
+        }
+      ]
+    },
+    {
+      "name": "mavenOptionalRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-starter-cache-3.2.0.jar",
+          "url": "spring-boot-starter-cache-3.2.0.jar",
+          "size": 4758,
+          "sha512": "f84487c4130979025409dfe5523f0f94f1890d9b749e1f5f1b89dc90b15cd8682d63f782c4d0565b4845b7bca380344af0b34a7cdd8d338f66ced35e918656e6",
+          "sha256": "985fcc9b1eb00e482f4e21d4ad1628761af157fb29b836b3601083c24452b2d8",
+          "sha1": "bcdd3dd28886f772a8d514006764479912a77f9e",
+          "md5": "ba9f48499d10fb9c6be0e952381706a5"
+        }
+      ],
+      "capabilities": [
+        {
+          "group": "org.springframework.boot",
+          "name": "spring-boot-starter-cache-maven-optional",
+          "version": "3.2.0"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-starter-cache-3.2.0-javadoc.jar",
+          "url": "spring-boot-starter-cache-3.2.0-javadoc.jar",
+          "size": 4740,
+          "sha512": "86d8c57bdfe2bb2851092481abacb18782fd2af8a732d033f7bf387edd69f4683ab510c588a6b30c39109f923741ef2f90fd4e7697a1420806dc0e0c653784e9",
+          "sha256": "d4dc66bb6bfb17cdb801f8adb90d31603f413a98add55f22f77a754c465ba048",
+          "sha1": "15ab222f52a27a1d92047c90bf012e651ab7aed3",
+          "md5": "7a85dcf794a26836979507fd00c36bde"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-starter-cache-3.2.0-sources.jar",
+          "url": "spring-boot-starter-cache-3.2.0-sources.jar",
+          "size": 4738,
+          "sha512": "6e3034bf3c5362a8a8a38312664bce018fb2ca2834f7955c01c87b0bf1955826b38f7ef6361abde041f2611b77d9c0b928127d0c9e06c20106b5f126828e2f13",
+          "sha256": "25b5377826e2e23c7fcd2def9d19f53b07c64600c05cf7601de8cbc88c100764",
+          "sha1": "e7ddf6aa2b1dc018b0c2937ac9af47dc12350738",
+          "md5": "0eed3012eef14ff1047835577e0c028b"
+        }
+      ]
+    }
+  ]
+}
