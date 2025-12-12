@@ -22,6 +22,17 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   GITHUB_OWNER: ${{ github.repository_owner }}
 
+services-list: &services-list
+  - api-gateway
+  - service-discovery
+  - identity-service
+  - content-service
+  - support-service
+  - product-service
+  - profile-service
+  - shopping-service
+  - payment-service
+
 jobs:
   detect-services:
     name: Detect Changed Services
@@ -75,15 +86,21 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/files-2.1
+            ~/.gradle/wrapper
+          key: gradle-deps-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-deps-
+
       - name: Cache Gradle build cache
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches/build-cache-*
           key: gradle-cache-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: gradle-cache-
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
 
       - name: Build and test ${{ matrix.service }}
         run: ./gradlew :${{ matrix.service }}:build --no-daemon --build-cache --parallel
@@ -147,6 +164,7 @@ jobs:
         with:
           context: .
           file: ./${{ matrix.service }}/Dockerfile
+          target: ci-build
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -167,10 +185,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Write SSH private key
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Prepare remote directory
         env:
@@ -179,7 +197,10 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           DEST_PATH="$DEPLOY_PATH"
-          ssh -o StrictHostKeyChecking=no -i private_key.pem "$SSH_USER@$SSH_HOST" "mkdir -p $DEST_PATH"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_HOST_KEY }}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          ssh "$SSH_USER@$SSH_HOST" "mkdir -p $DEST_PATH"
 
       - name: Upload docker-compose.yml to server
         env:
@@ -188,7 +209,7 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           DEST_PATH="$DEPLOY_PATH"
-          scp -o StrictHostKeyChecking=no -i private_key.pem infrastructure/docker-compose.yml "$SSH_USER@$SSH_HOST:$DEST_PATH/docker-compose.yml"
+          scp infrastructure/docker-compose.yml "$SSH_USER@$SSH_HOST:$DEST_PATH/docker-compose.yml"
 
       - name: Deploy services on server
         env:
@@ -200,19 +221,17 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           DEST_PATH="$DEPLOY_PATH"
-          ssh -o StrictHostKeyChecking=no -i private_key.pem "$SSH_USER@$SSH_HOST" \
+          ssh "$SSH_USER@$SSH_HOST" \
             "echo '${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u '${{ secrets.GHCR_USERNAME || github.actor }}' --password-stdin && \
              cd $DEST_PATH && \
              docker-compose pull && \
              docker-compose up -d --remove-orphans && \
              docker system prune -f"
 
-      - name: Cleanup private key
-        run: rm -f private_key.pem
-
   dependency-check:
     name: Dependency Vulnerability Check
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
 
     steps:
       - name: Checkout code
@@ -236,7 +255,8 @@ jobs:
         with:
           project: 'MS-Lotosia Backend'
           path: '.'
-          format: 'HTML'
+          format: 'SARIF'
+          out: 'reports'
           args: >
             --failOnCVSS 7
             --enableRetired
@@ -244,6 +264,12 @@ jobs:
         continue-on-error: true
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 || '/usr/lib/jvm/java-17-openjdk-amd64' }}
+
+      - name: Upload SARIF to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/dependency-check-report.sarif
 
       - name: Upload dependency check results
         if: always()
