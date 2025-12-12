@@ -41,16 +41,32 @@ jobs:
           git fetch origin "$base_branch" --prune --depth=1 || true
           base_ref="origin/${base_branch}"
 
+          full_services="api-gateway
+service-discovery
+identity-service
+content-service
+support-service
+product-service
+profile-service
+shopping-service
+payment-service"
+
           services=$(git diff --name-only "$base_ref"...HEAD \
             | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service)\// {print $1}' \
             | sort -u | sed '/^$/d')
 
           if [ -z "$services" ]; then
-            services_json='[]'
+            services="$full_services"
           else
             services_json=$(printf '%s\n' "$services" | jq -R . | jq -s .)
           fi
 
+          # If still empty for any reason, fall back to all services
+          if [ -z "$services" ]; then
+            services="$full_services"
+          fi
+
+          services_json=$(printf '%s\n' "$services" | jq -R . | jq -s .)
           echo "services_json=$services_json" >> "$GITHUB_OUTPUT"
           echo "Detected services: $services_json"
 
@@ -214,7 +230,7 @@ jobs:
             "echo '${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u '${{ secrets.GHCR_USERNAME || github.actor }}' --password-stdin && \
              cd $DEST_PATH && \
              docker-compose pull && \
-             docker-compose up -d --remove-orphans && \
+             docker-compose up -d --pull always --remove-orphans && \
              docker system prune -f"
 
   dependency-check:
