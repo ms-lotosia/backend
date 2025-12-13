@@ -24,8 +24,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: #lotosia@gmail.com
-    password: #rddv pydu eguv xtba
+    username: lotosia2025@gmail.com
+    password: fdbx msci etvv sqrc
     properties:
       mail:
         smtp:
@@ -35,7 +35,7 @@ spring:
           connectiontimeout: 10000
           timeout: 10000
           writetimeout: 10000
-    from: #lotosia@gmail.com
+    from: lotosia2025@gmail.com
 
 jwt:
   secret-key: my-hardcoded-secret-key-for-testing-purposes
