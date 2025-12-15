@@ -20,7 +20,7 @@ public class FileStorageService {
     @Value("${file.upload-dir:uploads/products}")
     private String uploadDir;
 
-    @Value("${file.base-url:http:
+    @Value("${file.base-url:http://localhost:8080/api/v1/files/products}")
     private String baseUrl;
 
     public List<String> saveFiles(MultipartFile[] files) {
