@@ -175,16 +175,21 @@ jobs:
       - name: Prepare remote directory
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_HOST_KEY }}" >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+          chmod 700 ~/.ssh
+          if [ -n "${{ secrets.DEPLOY_HOST_KEY }}" ]; then
+            echo "${{ secrets.DEPLOY_HOST_KEY }}" >> ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          fi
+          chmod 600 ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=accept-new ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
 
       - name: Upload docker-compose.yml
-        run: scp infrastructure/docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
+        run: scp -o StrictHostKeyChecking=accept-new infrastructure/docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
       - name: Deploy services on server
         run: |
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          ssh -o StrictHostKeyChecking=accept-new ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "echo '${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u '${{ secrets.GHCR_USERNAME || github.actor }}' --password-stdin && \
              cd ${{ secrets.DEPLOY_PATH }} && \
              docker-compose pull && \
