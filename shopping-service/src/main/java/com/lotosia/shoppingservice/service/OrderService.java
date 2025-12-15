@@ -20,11 +20,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -159,6 +154,4 @@ public class OrderService {
                 )
                 .build();
     }
-
-
 }

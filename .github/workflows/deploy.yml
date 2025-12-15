@@ -51,7 +51,6 @@ jobs:
             changed_services="$all_services"
           fi
 
-          # compact JSON for GitHub Actions output
           services_json=$(printf '%s\n' $changed_services | jq -R . | jq -s -c .)
           echo "services_json=$services_json" >> "$GITHUB_OUTPUT"
           echo "Detected services: $services_json"

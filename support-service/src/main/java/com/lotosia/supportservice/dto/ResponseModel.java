@@ -7,11 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
-
-/**
- * @author: nijataghayev
- */
-
 @Data
 @Builder
 @FieldDefaults(level = PRIVATE)

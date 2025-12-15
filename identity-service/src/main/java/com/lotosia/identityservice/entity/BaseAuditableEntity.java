@@ -8,11 +8,6 @@ import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-
-/**
- * @author: nijataghayev
- */
-
 @Getter
 @Setter
 @MappedSuperclass

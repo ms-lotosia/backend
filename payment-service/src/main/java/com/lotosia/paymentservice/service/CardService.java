@@ -109,5 +109,3 @@ public class CardService {
         return "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
     }
 }
-
-

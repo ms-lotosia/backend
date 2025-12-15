@@ -16,11 +16,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 public class OtpService {

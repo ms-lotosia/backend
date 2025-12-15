@@ -9,11 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "otp_details")
 @Getter

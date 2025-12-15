@@ -38,5 +38,3 @@ public class CardRequest {
 
     private Boolean isDefault = false;
 }
-
-

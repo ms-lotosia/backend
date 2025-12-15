@@ -5,11 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-
-/**
- * @author: nijataghayev
- */
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

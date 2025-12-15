@@ -6,11 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,5 +19,3 @@ public class ProductResponse {
     private Long categoryId;
     private String categoryName;
 }
-
-

@@ -1,11 +1,19 @@
 rootProject.name = 'backend'
 
-include 'api-gateway'
-include 'service-discovery'
-include 'identity-service'
-include 'content-service'
-include 'support-service'
-include 'product-service'
-include 'profile-service'
-include 'shopping-service'
-include 'payment-service'
+def services = [
+        'api-gateway',
+        'service-discovery',
+        'identity-service',
+        'content-service',
+        'support-service',
+        'product-service',
+        'profile-service',
+        'shopping-service',
+        'payment-service'
+]
+
+services.each { service ->
+    if (file("${rootDir}/${service}").exists()) {
+        include service
+    }
+}

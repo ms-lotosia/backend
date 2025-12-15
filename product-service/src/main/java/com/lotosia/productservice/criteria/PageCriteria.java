@@ -8,11 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.USE_DEFAULTS;
-
-/**
- * @author: nijataghayev
- */
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,5 +19,3 @@ public class PageCriteria {
     @JsonInclude(value = USE_DEFAULTS)
     Integer count = 10;
 }
-
-

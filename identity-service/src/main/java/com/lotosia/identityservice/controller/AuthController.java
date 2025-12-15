@@ -22,11 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.util.Optional;
-
-/**
- * @author: nijataghayev
- */
-
 @RestController
 @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor

@@ -51,5 +51,3 @@ public class Payment extends BaseAuditableEntity {
     @Column(name = "description")
     private String description;
 }
-
-

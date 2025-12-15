@@ -16,11 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @RestController
 @RequestMapping("/api/v1/favorites")
 @RequiredArgsConstructor
@@ -62,4 +57,3 @@ public class FavoriteProductController {
         return ResponseEntity.ok(favoriteProductService.isFavorite(userId, productId));
     }
 }
-

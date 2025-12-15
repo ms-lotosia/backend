@@ -13,11 +13,6 @@ import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -41,10 +36,4 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
 
-//
-//    @Column(name = "phone_number")
-//    private String phoneNumber;
-//
-//    @Column(name = "date_of_birth")
-//    private LocalDate dateOfBirth;
 }

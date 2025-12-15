@@ -13,4 +13,3 @@ public interface UserPreferenceRepository extends JpaRepository<UserPreference, 
 
     void deleteByProfileId(Long profileId);
 }
-

@@ -12,11 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -82,4 +77,3 @@ public class FavoriteProductService {
                 .build();
     }
 }
-

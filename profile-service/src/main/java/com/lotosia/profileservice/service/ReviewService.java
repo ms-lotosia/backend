@@ -11,11 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 public class ReviewService {

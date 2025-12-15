@@ -13,11 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(
         name = "categories",

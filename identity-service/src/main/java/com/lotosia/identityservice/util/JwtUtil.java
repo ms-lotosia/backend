@@ -16,11 +16,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-/**
- * @author: nijataghayev
- */
-
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
@@ -32,8 +27,6 @@ public class JwtUtil {
     private static final long REFRESH_EXPIRATION = 24 * 60 * 60 * 1000L;
 
     private final RedisTemplate<String, String> redisTemplate;
-
-
     public String createTokenWithRole(String username, Long userId, Set<Role> roles) {
         List<String> roleNames = roles.stream().map(Role::getName).toList();
 

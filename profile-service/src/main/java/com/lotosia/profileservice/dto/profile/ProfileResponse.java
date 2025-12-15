@@ -23,4 +23,3 @@ public class ProfileResponse {
     private String profileImageUrl;
     private UserPreferenceResponse userPreference;
 }
-

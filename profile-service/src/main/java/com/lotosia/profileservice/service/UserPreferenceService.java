@@ -10,11 +10,6 @@ import com.lotosia.profileservice.repository.UserPreferenceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 @Transactional

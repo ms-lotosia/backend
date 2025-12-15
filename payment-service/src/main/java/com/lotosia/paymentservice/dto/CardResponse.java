@@ -21,5 +21,3 @@ public class CardResponse {
     private Boolean isActive;
     private LocalDateTime createdDate;
 }
-
-

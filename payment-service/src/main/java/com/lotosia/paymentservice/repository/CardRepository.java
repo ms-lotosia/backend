@@ -18,5 +18,3 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     boolean existsByUserIdAndCardNumberAndIsActiveTrue(Long userId, String cardNumber);
 }
-
-

@@ -15,11 +15,6 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "products")
 @Getter

@@ -4,11 +4,6 @@ import com.lotosia.identityservice.entity.Role;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-
-/**
- * @author: nijataghayev
- */
-
 @Repository
 public interface RoleRepository {
 

@@ -29,8 +29,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final CardRepository cardRepository;
     private final KafkaProducerService kafkaProducerService;
-
-
     @Transactional
     public PaymentResponse processPayment(Long userId, PaymentRequest request) {
         Payment payment = new Payment();
@@ -160,5 +158,3 @@ public class PaymentService {
         return "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
     }
 }
-
-

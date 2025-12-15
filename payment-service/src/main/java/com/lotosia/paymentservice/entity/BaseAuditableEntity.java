@@ -31,5 +31,3 @@ public abstract class BaseAuditableEntity extends BaseEntity {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 }
-
-

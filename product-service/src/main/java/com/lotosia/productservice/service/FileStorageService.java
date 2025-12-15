@@ -13,11 +13,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @Slf4j
 public class FileStorageService {
@@ -25,7 +20,7 @@ public class FileStorageService {
     @Value("${file.upload-dir:uploads/products}")
     private String uploadDir;
 
-    @Value("${file.base-url:http://localhost:8080/api/v1/files/products}")
+    @Value("${file.base-url:http:
     private String baseUrl;
 
     public List<String> saveFiles(MultipartFile[] files) {
@@ -67,5 +62,3 @@ public class FileStorageService {
         return UUID.randomUUID().toString() + extension;
     }
 }
-
-

@@ -26,11 +26,6 @@ import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
-
-/**
- * @author: nijataghayev
- */
-
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
@@ -96,4 +91,3 @@ public class ProductController {
         productService.deleteProduct(id);
     }
 }
-

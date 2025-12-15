@@ -19,4 +19,3 @@ public class UserPreferenceResponse {
     private String currency;
     private Boolean emailNotification;
 }
-

@@ -1,6 +1,4 @@
 package com.lotosia.profileservice.dto.favoriteproduct;
-
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

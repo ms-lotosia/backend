@@ -13,11 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "order_items")
 @Getter

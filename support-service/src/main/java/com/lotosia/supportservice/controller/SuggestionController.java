@@ -18,11 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.HttpStatus.CREATED;
-
-/**
- * @author: nijataghayev
- */
-
 @RestController
 @RequestMapping("/api/v1/suggestions")
 @Tag(name = "Suggestion Controller")

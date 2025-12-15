@@ -2,11 +2,6 @@ package com.lotosia.contentservice.exception;
 
 import lombok.Getter;
 import lombok.Setter;
-
-/**
- * @author: nijataghayev
- */
-
 @Getter
 @Setter
 public class BadRequestException extends RuntimeException {

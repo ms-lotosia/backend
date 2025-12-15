@@ -2,11 +2,6 @@ package com.lotosia.identityservice.exception;
 
 import lombok.Getter;
 import lombok.Setter;
-
-/**
- * @author: nijataghayev
- */
-
 @Getter
 @Setter
 public class NotFoundException extends RuntimeException {

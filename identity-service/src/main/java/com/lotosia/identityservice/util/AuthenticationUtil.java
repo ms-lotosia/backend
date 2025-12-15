@@ -7,11 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-
-/**
- * @author: nijataghayev
- */
-
 @Component
 public class AuthenticationUtil {
 

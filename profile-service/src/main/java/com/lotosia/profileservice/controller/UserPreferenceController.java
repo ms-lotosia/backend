@@ -47,4 +47,3 @@ public class UserPreferenceController {
         return ResponseEntity.noContent().build();
     }
 }
-

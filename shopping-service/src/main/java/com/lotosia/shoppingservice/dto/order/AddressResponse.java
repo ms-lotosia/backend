@@ -3,11 +3,6 @@ package com.lotosia.shoppingservice.dto.order;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-/**
- * @author: nijataghayev
- */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

@@ -72,5 +72,3 @@ public class CardController {
         return ResponseEntity.noContent().build();
     }
 }
-
-

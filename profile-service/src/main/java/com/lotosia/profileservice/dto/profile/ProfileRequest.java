@@ -31,4 +31,3 @@ public class ProfileRequest {
     @Size(max = 255)
     private MultipartFile profileImageUrl;
 }
-

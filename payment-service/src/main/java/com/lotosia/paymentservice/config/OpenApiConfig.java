@@ -17,5 +17,3 @@ public class OpenApiConfig {
                         .description("Payment Management Service for Lotosia System"));
     }
 }
-
-

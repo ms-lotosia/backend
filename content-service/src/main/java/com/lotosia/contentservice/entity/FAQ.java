@@ -7,11 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "faqs")
 @Getter

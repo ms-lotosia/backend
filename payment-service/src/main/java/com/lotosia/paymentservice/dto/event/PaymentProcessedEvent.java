@@ -20,4 +20,3 @@ public class PaymentProcessedEvent {
     private String transactionId;
     private LocalDateTime processedAt;
 }
-

@@ -1,6 +1,4 @@
 package com.lotosia.paymentservice.service;
-
-
 import com.lotosia.paymentservice.dto.event.PaymentProcessedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

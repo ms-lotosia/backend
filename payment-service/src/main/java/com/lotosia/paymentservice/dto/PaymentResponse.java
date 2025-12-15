@@ -26,5 +26,3 @@ public class PaymentResponse {
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
 }
-
-

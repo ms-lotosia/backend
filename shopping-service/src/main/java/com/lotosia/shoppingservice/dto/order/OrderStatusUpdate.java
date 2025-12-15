@@ -1,9 +1,4 @@
 package com.lotosia.shoppingservice.dto.order;
-
-/**
- * @author: nijataghayev
- */
-
 import com.lotosia.shoppingservice.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,6 +1,4 @@
 package com.lotosia.profileservice.client;
-
-
 import com.lotosia.profileservice.dto.favoriteproduct.ProductResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

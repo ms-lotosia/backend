@@ -52,4 +52,3 @@ public class ProfileController {
         return ResponseEntity.noContent().build();
     }
 }
-

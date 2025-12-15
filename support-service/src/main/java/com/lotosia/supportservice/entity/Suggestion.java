@@ -10,11 +10,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-
-/**
- * @author: nijataghayev
- */
-
 @Entity
 @Table(name = "suggestions")
 @Getter

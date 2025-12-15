@@ -15,8 +15,8 @@ public class PaymentProcessedEvent {
     private Long userId;
     private Long orderId;
     private BigDecimal amount;
-    private String paymentMethod;  // Changed from enum to String
-    private String status;  // Changed from enum to String
+    private String paymentMethod;  
+    private String status;  
     private String transactionId;
     private LocalDateTime processedAt;
 }

@@ -16,11 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
-
-/**
- * @author: nijataghayev
- */
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -207,4 +202,3 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(error);
     }
 }
-

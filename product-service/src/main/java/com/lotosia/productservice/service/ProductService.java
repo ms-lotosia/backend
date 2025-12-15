@@ -18,11 +18,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-/**
- * @author: nijataghayev
- */
-
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -71,7 +66,7 @@ public class ProductService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found for id: " + request.getCategoryId()));
 
-        // Save uploaded images and get URLs
+        
         List<String> imageUrls = fileStorageService.saveFiles(request.getImages());
 
         Product product = new Product();
@@ -90,7 +85,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found for id: " + request.getId()));
 
         if (request.getName() != null && !request.getName().isEmpty()) {
-            // Check if name already exists for a different product
+            
             if (productRepository.existsByName(request.getName()) && 
                 !product.getName().equals(request.getName())) {
                 throw new AlreadyExistsException("Product already exists: " + request.getName());
@@ -153,4 +148,3 @@ public class ProductService {
         return dto;
     }
 }
-

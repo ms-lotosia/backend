@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database for Identity Service
+
   postgres-identity:
     image: postgres:15-alpine
     container_name: postgres-identity
@@ -9,19 +7,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: identity_db
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_identity_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PostgreSQL Database for Content Service
   postgres-content:
     image: postgres:15-alpine
     container_name: postgres-content
@@ -29,19 +23,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: content_db
-    ports:
-      - "5433:5432"
     volumes:
       - postgres_content_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PostgreSQL Database for Support Service
   postgres-support:
     image: postgres:15-alpine
     container_name: postgres-support
@@ -49,19 +39,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: support_db
-    ports:
-      - "5434:5432"
     volumes:
       - postgres_support_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PostgreSQL Database for Product Service
   postgres-product:
     image: postgres:15-alpine
     container_name: postgres-product
@@ -69,19 +55,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: product_db
-    ports:
-      - "5435:5432"
     volumes:
       - postgres_product_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PostgreSQL Database for Profile Service
   postgres-profile:
     image: postgres:15-alpine
     container_name: postgres-profile
@@ -89,19 +71,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: profile_db
-    ports:
-      - "5436:5432"
     volumes:
       - postgres_profile_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PostgreSQL Database for Shopping Service
   postgres-shopping:
     image: postgres:15-alpine
     container_name: postgres-shopping
@@ -109,19 +87,15 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: shopping_db
-    ports:
-      - "5437:5432"
     volumes:
       - postgres_shopping_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # PostgreSQL Database for Payment Service
   postgres-payment:
     image: postgres:15-alpine
     container_name: postgres-payment
@@ -129,259 +103,212 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: payment_db
-    ports:
-      - "5438:5432"
     volumes:
       - postgres_payment_data:/var/lib/postgresql/data
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Redis
   redis:
     image: redis:7-alpine
     container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Zookeeper (Required for Kafka)
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "2181"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Kafka
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-      - "9093:9093"
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:29092"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Eureka Service Discovery
   service-discovery:
     build:
-      context: ./service-discovery
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: service-discovery/Dockerfile
     container_name: service-discovery
     ports:
       - "8761:8761"
-    networks:
-      - microservices-network
+    networks: [microservices-network]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # API Gateway
   api-gateway:
     build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: api-gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "8080:8080"
     depends_on:
-      - service-discovery
-    environment:
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
-    networks:
-      - microservices-network
+      service-discovery:
+        condition: service_healthy
+    networks: [microservices-network]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Identity Service
   identity-service:
     build:
-      context: ./identity-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: identity-service/Dockerfile
     container_name: identity-service
-    ports:
-      - "8081:8081"
     depends_on:
       - postgres-identity
       - redis
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
-  # Content Service
   content-service:
     build:
-      context: ./content-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: content-service/Dockerfile
     container_name: content-service
-    ports:
-      - "8082:8082"
     depends_on:
       - postgres-content
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
-  # Support Service
   support-service:
     build:
-      context: ./support-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: support-service/Dockerfile
     container_name: support-service
-    ports:
-      - "8083:8083"
     depends_on:
       - postgres-support
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-support:5432/support_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-your-email@gmail.com}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-your-app-password}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      SPRING_MAIL_FROM: ${SPRING_MAIL_USERNAME:-your-email@gmail.com}
+      SITE_TEAM_NOTIFICATION_EMAIL: ${SPRING_MAIL_USERNAME:-your-email@gmail.com}
+    networks: [microservices-network]
 
-  # Product Service
   product-service:
     build:
-      context: ./product-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: product-service/Dockerfile
     container_name: product-service
-    ports:
-      - "8084:8084"
     depends_on:
       - postgres-product
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/product_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
-  # Profile Service
   profile-service:
     build:
-      context: ./profile-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: profile-service/Dockerfile
     container_name: profile-service
-    ports:
-      - "8085:8085"
     depends_on:
       - postgres-profile
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-profile:5432/profile_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
-  # Shopping Service
   shopping-service:
     build:
-      context: ./shopping-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: shopping-service/Dockerfile
     container_name: shopping-service
-    ports:
-      - "8086:8086"
     depends_on:
       - postgres-shopping
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-shopping:5432/shopping_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+      SPRING_KAFKA_CONSUMER_GROUP_ID: shopping-service-group
+    networks: [microservices-network]
 
-  # Payment Service
   payment-service:
     build:
-      context: ./payment-service
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: payment-service/Dockerfile
     container_name: payment-service
-    ports:
-      - "8087:8087"
     depends_on:
       - postgres-payment
-      - service-discovery
       - kafka
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-payment:5432/payment_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-discovery:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    networks:
-      - microservices-network
+    networks: [microservices-network]
 
 volumes:
   postgres_identity_data:
