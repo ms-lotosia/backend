@@ -25,3 +25,5 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 FROM runtime AS ci-build
+
+WORKDIR /workspace/app

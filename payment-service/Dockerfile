@@ -12,7 +12,7 @@ RUN chmod +x gradlew
 
 RUN ./gradlew :payment-service:bootJar --no-daemon -x test
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 WORKDIR /workspace/app
 
@@ -21,3 +21,7 @@ COPY --from=build /workspace/app/payment-service/build/libs/payment-service-*.ja
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+FROM runtime AS ci-build
+
+WORKDIR /workspace/app

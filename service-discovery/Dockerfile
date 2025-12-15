@@ -12,7 +12,7 @@ RUN chmod +x gradlew
 
 RUN ./gradlew :service-discovery:bootJar --no-daemon -x test
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 WORKDIR /workspace/app
 
@@ -23,3 +23,7 @@ COPY --from=build /workspace/app/service-discovery/build/libs/service-discovery-
 EXPOSE 8761
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+FROM runtime AS ci-build
+
+WORKDIR /workspace/app
