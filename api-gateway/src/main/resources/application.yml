@@ -30,6 +30,40 @@ spring:
           filters:
             -StripPrefix=0
 
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/cards
+            - Path=/api/v1/payments
+          filters:
+            - StripPrefix=0
+
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/v1/categories
+            - Path=/api/v1/products
+          filters:
+            - StripPrefix=0
+
+        - id: profile-service
+          uri: lb://profile-service
+          predicates:
+            - Path=/api/v1/addresses
+            - Path=/api/v1/favorites
+            - Path=/api/v1/profiles
+            - Path=/api/v1/reviews
+            - Path=/api/v1/preferences
+          filters:
+            - StripPrefix=0
+
+        - id: shopping-service
+          uri: lb://shopping-service
+          predicates:
+            - Path=/api/v1/baskets
+            - Path=/api/v1/orders
+          filters:
+            - StripPrefix=0
 
 
 eureka:
