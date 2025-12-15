@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: identity-service
+    name: support-service
   data:
     redis:
       host: redis
