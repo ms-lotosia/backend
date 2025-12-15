@@ -12,7 +12,7 @@ RUN chmod +x gradlew
 
 RUN ./gradlew :api-gateway:bootJar --no-daemon -x test
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 WORKDIR /workspace/app
 
@@ -23,3 +23,5 @@ COPY --from=build /workspace/app/api-gateway/build/libs/api-gateway-*.jar app.ja
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+FROM runtime AS ci-build
