@@ -93,14 +93,12 @@ jobs:
       - name: Build and test ${{ matrix.service }}
         run: ./gradlew :${{ matrix.service }}:build --no-daemon --build-cache --parallel
 
-      - name: Upload JAR
+      - name: Cache built JARs for Docker build
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@v4
+        uses: actions/cache/save@v4
         with:
-          name: jar-${{ matrix.service }}
           path: ${{ matrix.service }}/build/libs/*.jar
-          retention-days: 1
-          if-no-files-found: ignore
+          key: jar-${{ matrix.service }}-${{ github.sha }}
 
       - name: Upload test results
         if: failure()
@@ -108,7 +106,7 @@ jobs:
         with:
           name: test-results-${{ matrix.service }}
           path: ${{ matrix.service }}/build/test-results/
-          retention-days: 3
+          retention-days: 1
           if-no-files-found: ignore
 
   build-docker-images:
@@ -132,11 +130,17 @@ jobs:
           registry: ${{ env.REGISTRY }}
           platforms: linux/amd64
 
-      - name: Download built JAR
-        uses: actions/download-artifact@v4
+      - name: Restore built JAR from cache
+        uses: actions/cache/restore@v4
         with:
-          name: jar-${{ matrix.service }}
-          path: jars/
+          path: ${{ matrix.service }}/build/libs/*.jar
+          key: jar-${{ matrix.service }}-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Copy JAR to build context
+        run: |
+          mkdir -p jars
+          cp ${{ matrix.service }}/build/libs/*.jar jars/
 
       - name: Extract metadata
         id: meta
@@ -244,5 +248,5 @@ jobs:
         with:
           name: dependency-check-report
           path: reports/
-          retention-days: 3
+          retention-days: 1
           if-no-files-found: ignore
