@@ -94,19 +94,22 @@ jobs:
         run: ./gradlew :${{ matrix.service }}:build --no-daemon --build-cache --parallel
 
       - name: Upload JAR
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: jar-${{ matrix.service }}
           path: ${{ matrix.service }}/build/libs/*.jar
           retention-days: 1
+          if-no-files-found: ignore
 
       - name: Upload test results
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.service }}
           path: ${{ matrix.service }}/build/test-results/
-          retention-days: 30
+          retention-days: 3
+          if-no-files-found: ignore
 
   build-docker-images:
     name: Build Docker Images
@@ -236,9 +239,10 @@ jobs:
           sarif_file: reports/dependency-check-report.sarif
 
       - name: Upload dependency check results
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
           path: reports/
-          retention-days: 30
+          retention-days: 3
+          if-no-files-found: ignore
