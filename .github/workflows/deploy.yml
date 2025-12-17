@@ -16,7 +16,6 @@ defaults:
 
 env:
   JAVA_VERSION: '17'
-  GRADLE_VERSION: '8.10'
   DOCKER_BUILDKIT: 1
   REGISTRY: ghcr.io
   IMAGE_TAG: ${{ github.sha }}
@@ -26,6 +25,7 @@ jobs:
   detect-services:
     name: Detect Changed Services
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       services_json: ${{ steps.detect.outputs.services_json }}
     steps:
@@ -37,11 +37,14 @@ jobs:
       - name: Detect changed services
         id: detect
         run: |
-          base_branch="${GITHUB_BASE_REF:-master}"
-          git fetch origin "$base_branch" --prune --depth=1 || true
-          base_ref="origin/${base_branch}"
-
           all_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service media-service"
+
+          if [ -n "$GITHUB_BASE_REF" ]; then
+            base_ref="origin/${GITHUB_BASE_REF}"
+            git fetch origin "$GITHUB_BASE_REF" --prune --depth=1 || true
+          else
+            base_ref="HEAD~1"
+          fi
 
           changed_services=$(git diff --name-only "$base_ref"...HEAD \
             | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)\// {print $1}' \
@@ -58,6 +61,7 @@ jobs:
   build-and-test:
     name: Build and Test (Java Services)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: detect-services
     if: ${{ needs.detect-services.outputs.services_json != '[]' }}
     strategy:
@@ -95,30 +99,6 @@ jobs:
       - name: Build and test ${{ matrix.service }}
         run: ./gradlew :${{ matrix.service }}:build --no-daemon --build-cache --parallel
 
-      - name: Prepare JAR for caching
-        if: github.event_name == 'push'
-        id: prepare-cache
-        run: |
-          SERVICE_PATH="${{ matrix.service }}/build/libs"
-          echo "Checking path: $SERVICE_PATH"
-          
-          if [ -d "$SERVICE_PATH" ] && [ -n "$(ls -A $SERVICE_PATH/*.jar 2>/dev/null)" ]; then
-            echo "JAR files found:"
-            ls -lh "$SERVICE_PATH"
-            echo "should_cache=true" >> $GITHUB_OUTPUT
-          else
-            echo "No JAR files to cache for ${{ matrix.service }}"
-            echo "should_cache=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Save JAR to cache
-        if: github.event_name == 'push' && steps.prepare-cache.outputs.should_cache == 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ matrix.service }}/build/libs
-          key: jar-${{ matrix.service }}-${{ github.sha }}
-        continue-on-error: true
-
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
@@ -131,8 +111,9 @@ jobs:
   build-and-test-nodejs:
     name: Build and Test (Node.js Services)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: detect-services
-    if: contains(needs.detect-services.outputs.services_json, 'media-service')
+    if: ${{ contains(fromJson(needs.detect-services.outputs.services_json), 'media-service') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -165,6 +146,7 @@ jobs:
   build-docker-images:
     name: Build Docker Images (Java Services)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: [detect-services, build-and-test]
     if: github.event_name == 'push' && needs.detect-services.outputs.services_json != '[]'
     strategy:
@@ -185,40 +167,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           platforms: linux/amd64
 
-      - name: Restore built JAR from cache
-        id: cache-jar
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ matrix.service }}/build/libs
-          key: jar-${{ matrix.service }}-${{ github.sha }}
-        continue-on-error: true
-
-      - name: Set up JDK 17 (if cache miss)
-        if: steps.cache-jar.outputs.cache-hit != 'true'
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: temurin
-          cache: gradle
-
-      - name: Rebuild JAR (if cache miss)
-        if: steps.cache-jar.outputs.cache-hit != 'true'
-        run: |
-          echo "Cache miss - rebuilding ${{ matrix.service }}"
-          ./gradlew :${{ matrix.service }}:bootJar --no-daemon
-
-      - name: Copy JAR to build context
-        run: |
-          mkdir -p jars
-          if [ -d "${{ matrix.service }}/build/libs" ]; then
-            cp ${{ matrix.service }}/build/libs/*.jar jars/
-            echo "JAR files copied:"
-            ls -lh jars/
-          else
-            echo "Error: ${{ matrix.service }}/build/libs directory not found"
-            exit 1
-          fi
-
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -233,22 +181,19 @@ jobs:
         with:
           context: .
           file: ./${{ matrix.service }}/Dockerfile
-          target: ci-build
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
-            JAR_PATH=jars
 
   build-docker-images-nodejs:
     name: Build Docker Images (Node.js Services)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [detect-services, build-and-test-nodejs]
-    if: github.event_name == 'push' && contains(needs.detect-services.outputs.services_json, 'media-service')
+    if: ${{ github.event_name == 'push' && contains(fromJson(needs.detect-services.outputs.services_json), 'media-service') }}
     permissions:
       contents: read
       packages: write
@@ -287,8 +232,13 @@ jobs:
   deploy-to-server:
     name: Deploy to Server
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [build-docker-images, build-docker-images-nodejs]
-    if: always() && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'development') && (needs.build-docker-images.result == 'success' || needs.build-docker-images-nodejs.result == 'success')
+    if: |
+      github.event_name == 'push' &&
+      (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'development') &&
+      (needs.build-docker-images.result == 'success' || needs.build-docker-images.result == 'skipped') &&
+      (needs.build-docker-images-nodejs.result == 'success' || needs.build-docker-images-nodejs.result == 'skipped')
     steps:
       - uses: actions/checkout@v4
 
@@ -320,8 +270,17 @@ jobs:
             "echo '${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u '${{ secrets.GHCR_USERNAME || github.actor }}' --password-stdin && \
              cd ${{ secrets.DEPLOY_PATH }} && \
              docker-compose pull && \
-             docker-compose up -d --pull always --remove-orphans && \
-             docker system prune -f"
+             docker-compose up -d --remove-orphans"
+      
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && docker-compose ps"
+      
+      - name: Cleanup old images
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "docker image prune -a --filter 'until=168h' -f"
 
       - name: Cleanup SSH keys
         if: always()
@@ -332,6 +291,7 @@ jobs:
   dependency-check:
     name: Dependency Vulnerability Check
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'development')
     steps:
       - uses: actions/checkout@v4
