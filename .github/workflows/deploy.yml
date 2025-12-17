@@ -151,15 +151,31 @@ jobs:
         id: cache-jar
         uses: actions/cache/restore@v4
         with:
-          path: ${{ matrix.service }}/build/libs/
+          path: ${{ matrix.service }}/build/libs
           key: jar-${{ matrix.service }}-${{ github.sha }}
-          fail-on-cache-miss: true
+        continue-on-error: true
+
+      - name: Set up JDK 17 (if cache miss)
+        if: steps.cache-jar.outputs.cache-hit != 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      - name: Rebuild JAR (if cache miss)
+        if: steps.cache-jar.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss - rebuilding ${{ matrix.service }}"
+          ./gradlew :${{ matrix.service }}:bootJar --no-daemon
 
       - name: Copy JAR to build context
         run: |
           mkdir -p jars
           if [ -d "${{ matrix.service }}/build/libs" ]; then
-            cp ${{ matrix.service }}/build/libs/*.jar jars/ 2>/dev/null || echo "No JAR files found"
+            cp ${{ matrix.service }}/build/libs/*.jar jars/
+            echo "JAR files copied:"
+            ls -lh jars/
           else
             echo "Error: ${{ matrix.service }}/build/libs directory not found"
             exit 1
