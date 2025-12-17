@@ -193,7 +193,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [detect-services, build-and-test-nodejs]
-    if: ${{ github.event_name == 'push' && contains(fromJson(needs.detect-services.outputs.services_json), 'media-service') }}
+    if: |
+      github.event_name == 'push' && 
+      contains(fromJson(needs.detect-services.outputs.services_json), 'media-service') &&
+      needs.build-and-test-nodejs.result == 'success'
     permissions:
       contents: read
       packages: write
