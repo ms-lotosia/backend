@@ -39,19 +39,25 @@ jobs:
         run: |
           all_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service media-service"
 
-          if [ -n "$GITHUB_BASE_REF" ]; then
-            base_ref="origin/${GITHUB_BASE_REF}"
-            git fetch origin "$GITHUB_BASE_REF" --prune --depth=1 || true
-          else
-            base_ref="HEAD~1"
-          fi
-
-          changed_services=$(git diff --name-only "$base_ref"...HEAD \
-            | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)\// {print $1}' \
-            | sort -u | sed '/^$/d')
-
-          if [ -z "$changed_services" ]; then
+          if git log -1 --pretty=%B | grep -qiE "\[rebuild\]|\[rebuild-all\]"; then
+            echo "Found [rebuild] in commit message - rebuilding all services"
             changed_services="$all_services"
+          else
+            if [ -n "$GITHUB_BASE_REF" ]; then
+              base_ref="origin/${GITHUB_BASE_REF}"
+              git fetch origin "$GITHUB_BASE_REF" --prune --depth=1 || true
+            else
+              base_ref="HEAD~1"
+            fi
+
+            changed_services=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null \
+              | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)\// {print $1}' \
+              | sort -u | sed '/^$/d')
+
+            if [ -z "$changed_services" ]; then
+              echo "No specific service changes detected - rebuilding all services"
+              changed_services="$all_services"
+            fi
           fi
 
           services_json=$(printf '%s\n' $changed_services | jq -R . | jq -s -c .)
