@@ -93,23 +93,27 @@ jobs:
       - name: Build and test ${{ matrix.service }}
         run: ./gradlew :${{ matrix.service }}:build --no-daemon --build-cache --parallel
 
-      - name: Check and cache built JARs
+      - name: Prepare JAR for caching
         if: github.event_name == 'push'
+        id: prepare-cache
         run: |
-          if [ -d "${{ matrix.service }}/build/libs" ]; then
+          SERVICE_PATH="${{ matrix.service }}/build/libs"
+          echo "Checking path: $SERVICE_PATH"
+          
+          if [ -d "$SERVICE_PATH" ] && [ -n "$(ls -A $SERVICE_PATH/*.jar 2>/dev/null)" ]; then
             echo "JAR files found:"
-            ls -lh ${{ matrix.service }}/build/libs/
-            echo "cache_exists=true" >> $GITHUB_ENV
+            ls -lh "$SERVICE_PATH"
+            echo "should_cache=true" >> $GITHUB_OUTPUT
           else
-            echo "No build/libs directory for ${{ matrix.service }}"
-            echo "cache_exists=false" >> $GITHUB_ENV
+            echo "No JAR files to cache for ${{ matrix.service }}"
+            echo "should_cache=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Save JAR to cache
-        if: github.event_name == 'push' && env.cache_exists == 'true'
+        if: github.event_name == 'push' && steps.prepare-cache.outputs.should_cache == 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{ matrix.service }}/build/libs/
+          path: ${{ matrix.service }}/build/libs
           key: jar-${{ matrix.service }}-${{ github.sha }}
         continue-on-error: true
 
