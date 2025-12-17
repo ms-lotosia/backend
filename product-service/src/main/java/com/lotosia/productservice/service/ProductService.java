@@ -119,6 +119,13 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found for id: " + id));
 
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
+            try {
+                fileStorageService.deleteFiles(product.getImages());
+            } catch (Exception ignored) {
+            }
+        }
+
         productRepository.delete(product);
     }
 
