@@ -50,4 +50,4 @@ FROM build AS ci-build
 
 ARG JAR_PATH=jars
 
-COPY ${JAR_PATH}/*.jar /workspace/app/content-service/build/libs/ || true
+RUN mkdir -p /workspace/app/content-service/build/libs/
