@@ -22,8 +22,8 @@ public class FileStorageService {
 
         List<String> filePaths = new ArrayList<>();
 
-        for (MultipartFile file : files) {
-            if (file != null && !file.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
                 MediaUploadResponse response = mediaService.uploadProductImage(file, PRODUCTS_DIRECTORY);
                 
                 if (response != null && response.isSuccess() && response.getData() != null) {
