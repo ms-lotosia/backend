@@ -97,7 +97,7 @@ jobs:
         if: github.event_name == 'push'
         uses: actions/cache/save@v4
         with:
-          path: ${{ matrix.service }}/build/libs/*.jar
+          path: ${{ matrix.service }}/build/libs/
           key: jar-${{ matrix.service }}-${{ github.sha }}
 
       - name: Upload test results
@@ -131,16 +131,22 @@ jobs:
           platforms: linux/amd64
 
       - name: Restore built JAR from cache
+        id: cache-jar
         uses: actions/cache/restore@v4
         with:
-          path: ${{ matrix.service }}/build/libs/*.jar
+          path: ${{ matrix.service }}/build/libs/
           key: jar-${{ matrix.service }}-${{ github.sha }}
           fail-on-cache-miss: true
 
       - name: Copy JAR to build context
         run: |
           mkdir -p jars
-          cp ${{ matrix.service }}/build/libs/*.jar jars/
+          if [ -d "${{ matrix.service }}/build/libs" ]; then
+            cp ${{ matrix.service }}/build/libs/*.jar jars/ 2>/dev/null || echo "No JAR files found"
+          else
+            echo "Error: ${{ matrix.service }}/build/libs directory not found"
+            exit 1
+          fi
 
       - name: Extract metadata
         id: meta
