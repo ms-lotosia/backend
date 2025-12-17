@@ -140,12 +140,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'media-service/package-lock.json'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: media-service/node_modules
+          key: node-modules-${{ hashFiles('media-service/package-lock.json') }}
+          restore-keys: |
+            node-modules-
 
       - name: Install dependencies
         working-directory: ./media-service
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Build media-service
         working-directory: ./media-service
