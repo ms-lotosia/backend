@@ -245,11 +245,21 @@ jobs:
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 || '/usr/lib/jvm/java-17-openjdk-amd64' }}
 
+      - name: Check if SARIF report exists
+        id: check_sarif
+        run: |
+          if [ -f "reports/dependency-check-report.sarif" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload SARIF to code scanning
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        if: steps.check_sarif.outputs.exists == 'true'
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: reports/dependency-check-report.sarif
+        continue-on-error: true
 
       - name: Upload dependency check results
         if: failure()
