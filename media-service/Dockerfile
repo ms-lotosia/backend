@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.6
+
 FROM node:18-alpine
 
 WORKDIR /app
@@ -11,4 +13,3 @@ COPY . .
 EXPOSE 8085
 
 CMD ["node", "src/server.js"]
-
