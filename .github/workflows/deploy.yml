@@ -235,9 +235,10 @@ jobs:
     timeout-minutes: 15
     needs: [build-docker-images, build-docker-images-nodejs]
     if: |
+      always() &&
       github.event_name == 'push' &&
       (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'development') &&
-      (needs.build-docker-images.result == 'success' || needs.build-docker-images.result == 'skipped') &&
+      (needs.build-docker-images.result == 'success') &&
       (needs.build-docker-images-nodejs.result == 'success' || needs.build-docker-images-nodejs.result == 'skipped')
     steps:
       - uses: actions/checkout@v4
