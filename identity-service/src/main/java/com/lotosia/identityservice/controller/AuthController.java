@@ -31,6 +31,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final OtpService otpService;
+
     @PostMapping("/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(@Valid @RequestBody RegisterRequest dto) {
         if (authService.isUserExists(dto.getEmail())) {
