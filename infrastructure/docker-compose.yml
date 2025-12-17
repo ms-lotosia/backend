@@ -293,7 +293,7 @@ services:
     networks: [microservices-network]
 
   media-service:
-    build: ../media-service
+    image: ghcr.io/ms-lotosia/ms-lotosia/media-service:latest
     container_name: media-service
     ports:
       - "8085:8085"
