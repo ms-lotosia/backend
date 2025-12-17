@@ -245,12 +245,6 @@ services:
     ports:
       - "8761:8761"
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8761' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
     deploy:
       resources:
         limits:
@@ -266,15 +260,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8080' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -294,8 +281,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -304,12 +290,6 @@ services:
       SPRING_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8081' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -327,20 +307,13 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8082' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -358,8 +331,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-support:5432/support_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -374,12 +346,6 @@ services:
       SPRING_MAIL_FROM: ${SPRING_MAIL_USERNAME:-your-email@gmail.com}
       SITE_TEAM_NOTIFICATION_EMAIL: ${SPRING_MAIL_USERNAME:-your-email@gmail.com}
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8083' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -397,20 +363,13 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/product_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8084' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -428,20 +387,13 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-profile:5432/profile_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8086' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -459,8 +411,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-shopping:5432/shopping_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -468,12 +419,6 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SPRING_KAFKA_CONSUMER_GROUP_ID: shopping-service-group
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8087' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -491,20 +436,13 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-payment:5432/payment_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8088' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -520,8 +458,7 @@ services:
     ports:
       - "8085:8085"
     depends_on:
-      service-discovery:
-        condition: service_healthy
+      - service-discovery
     networks: [microservices-network]
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/health"]
