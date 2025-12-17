@@ -41,10 +41,10 @@ jobs:
           git fetch origin "$base_branch" --prune --depth=1 || true
           base_ref="origin/${base_branch}"
 
-          all_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service"
+          all_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service media-service"
 
           changed_services=$(git diff --name-only "$base_ref"...HEAD \
-            | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service)\// {print $1}' \
+            | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)\// {print $1}' \
             | sort -u | sed '/^$/d')
 
           if [ -z "$changed_services" ]; then
@@ -56,13 +56,15 @@ jobs:
           echo "Detected services: $services_json"
 
   build-and-test:
-    name: Build and Test
+    name: Build and Test (Java Services)
     runs-on: ubuntu-latest
     needs: detect-services
     if: ${{ needs.detect-services.outputs.services_json != '[]' }}
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-services.outputs.services_json) }}
+        exclude:
+          - service: media-service
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -126,14 +128,39 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+  build-and-test-nodejs:
+    name: Build and Test (Node.js Services)
+    runs-on: ubuntu-latest
+    needs: detect-services
+    if: contains(needs.detect-services.outputs.services_json, 'media-service')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'media-service/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./media-service
+        run: npm ci
+
+      - name: Build media-service
+        working-directory: ./media-service
+        run: echo "No build step required for Node.js service"
+
   build-docker-images:
-    name: Build Docker Images
+    name: Build Docker Images (Java Services)
     runs-on: ubuntu-latest
     needs: [detect-services, build-and-test]
     if: github.event_name == 'push' && needs.detect-services.outputs.services_json != '[]'
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-services.outputs.services_json) }}
+        exclude:
+          - service: media-service
       fail-fast: false
     permissions:
       contents: read
@@ -206,11 +233,51 @@ jobs:
             BUILDKIT_INLINE_CACHE=1
             JAR_PATH=jars
 
+  build-docker-images-nodejs:
+    name: Build Docker Images (Node.js Services)
+    runs-on: ubuntu-latest
+    needs: [detect-services, build-and-test-nodejs]
+    if: github.event_name == 'push' && contains(needs.detect-services.outputs.services_json, 'media-service')
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker
+        uses: ./.github/actions/setup-docker
+        with:
+          registry: ${{ env.REGISTRY }}
+          platforms: linux/amd64
+
+      - name: Extract metadata for media-service
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ms-lotosia/media-service
+          tags: |
+            type=sha
+            type=raw,value=latest,enable=true
+
+      - name: Build and push Docker image for media-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./media-service
+          file: ./media-service/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=media-service
+          cache-to: type=gha,mode=max,scope=media-service
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
   deploy-to-server:
     name: Deploy to Server
     runs-on: ubuntu-latest
-    needs: build-docker-images
-    if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'development')
+    needs: [build-docker-images, build-docker-images-nodejs]
+    if: always() && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master' || github.ref_name == 'development') && (needs.build-docker-images.result == 'success' || needs.build-docker-images-nodejs.result == 'success')
     steps:
       - uses: actions/checkout@v4
 
