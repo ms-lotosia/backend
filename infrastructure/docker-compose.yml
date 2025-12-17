@@ -162,10 +162,11 @@ services:
       - "8761:8761"
     networks: [microservices-network]
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8761' || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 90s
 
   api-gateway:
     image: ghcr.io/ms-lotosia/ms-lotosia/api-gateway:latest
@@ -177,10 +178,11 @@ services:
         condition: service_healthy
     networks: [microservices-network]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD-SHELL", "timeout 5 bash -c '</dev/tcp/localhost/8080' || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   identity-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/identity-service:latest
@@ -305,6 +307,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
 
 volumes:
   postgres_identity_data:
