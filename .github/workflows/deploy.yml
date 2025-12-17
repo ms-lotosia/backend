@@ -93,12 +93,25 @@ jobs:
       - name: Build and test ${{ matrix.service }}
         run: ./gradlew :${{ matrix.service }}:build --no-daemon --build-cache --parallel
 
-      - name: Cache built JARs for Docker build
+      - name: Check and cache built JARs
         if: github.event_name == 'push'
+        run: |
+          if [ -d "${{ matrix.service }}/build/libs" ]; then
+            echo "JAR files found:"
+            ls -lh ${{ matrix.service }}/build/libs/
+            echo "cache_exists=true" >> $GITHUB_ENV
+          else
+            echo "No build/libs directory for ${{ matrix.service }}"
+            echo "cache_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Save JAR to cache
+        if: github.event_name == 'push' && env.cache_exists == 'true'
         uses: actions/cache/save@v4
         with:
           path: ${{ matrix.service }}/build/libs/
           key: jar-${{ matrix.service }}-${{ github.sha }}
+        continue-on-error: true
 
       - name: Upload test results
         if: failure()
