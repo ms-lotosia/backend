@@ -281,7 +281,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -307,7 +308,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -331,7 +333,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-support:5432/support_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -363,7 +366,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/product_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -387,7 +391,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-profile:5432/profile_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -411,7 +416,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-shopping:5432/shopping_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -436,7 +442,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      - service-discovery
+      service-discovery:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-payment:5432/payment_db
       SPRING_DATASOURCE_USERNAME: postgres
