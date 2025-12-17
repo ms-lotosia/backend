@@ -13,8 +13,7 @@ RUN chmod +x gradlew
 RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew dependencies \
     --no-daemon \
-    --build-cache \
-    --scan=false
+    --build-cache
 
 COPY api-gateway/ api-gateway/
 
@@ -23,7 +22,6 @@ RUN --mount=type=cache,target=/root/.gradle \
     --no-daemon \
     --build-cache \
     --parallel \
-    --scan=false \
     -x test
 
 FROM eclipse-temurin:17-jre-jammy AS runtime
