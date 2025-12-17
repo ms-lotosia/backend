@@ -65,6 +65,13 @@ spring:
           filters:
             - StripPrefix=0
 
+        - id: media-service
+          uri: http://media-service:8085
+          predicates:
+            - Path=/api/v1/media/**
+          filters:
+            - StripPrefix=0
+
 
 eureka:
   client:

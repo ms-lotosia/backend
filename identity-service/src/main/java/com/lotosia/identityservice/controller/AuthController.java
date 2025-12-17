@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -30,7 +31,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final OtpService otpService;
-
     @PostMapping("/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(@Valid @RequestBody RegisterRequest dto) {
         if (authService.isUserExists(dto.getEmail())) {

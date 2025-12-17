@@ -292,6 +292,20 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
 
+  media-service:
+    build: ../media-service
+    container_name: media-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - service-discovery
+    networks: [microservices-network]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_identity_data:
   postgres_content_data:
