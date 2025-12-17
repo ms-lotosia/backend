@@ -175,33 +175,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Prepare remote directory
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
           if [ -n "${{ secrets.DEPLOY_HOST_KEY }}" ]; then
-            echo "${{ secrets.DEPLOY_HOST_KEY }}" >> ~/.ssh/known_hosts
+            echo "${{ secrets.DEPLOY_HOST_KEY }}" > ~/.ssh/known_hosts
           else
             ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
           fi
           chmod 600 ~/.ssh/known_hosts
-          ssh -o StrictHostKeyChecking=accept-new ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+          eval $(ssh-agent -s)
+          ssh-add ~/.ssh/deploy_key
+
+      - name: Prepare remote directory
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
 
       - name: Upload docker-compose.yml
-        run: scp -o StrictHostKeyChecking=accept-new infrastructure/docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
+        run: scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no infrastructure/docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
       - name: Deploy services on server
         run: |
-          ssh -o StrictHostKeyChecking=accept-new ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "echo '${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u '${{ secrets.GHCR_USERNAME || github.actor }}' --password-stdin && \
              cd ${{ secrets.DEPLOY_PATH }} && \
              docker-compose pull && \
              docker-compose up -d --pull always --remove-orphans && \
              docker system prune -f"
+
+      - name: Cleanup SSH keys
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
+          ssh-add -D 2>/dev/null || true
 
   dependency-check:
     name: Dependency Vulnerability Check
