@@ -156,9 +156,7 @@ services:
       retries: 5
 
   service-discovery:
-    build:
-      context: ../
-      dockerfile: service-discovery/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/service-discovery:latest
     container_name: service-discovery
     ports:
       - "8761:8761"
@@ -170,9 +168,7 @@ services:
       retries: 3
 
   api-gateway:
-    build:
-      context: ../
-      dockerfile: api-gateway/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/api-gateway:latest
     container_name: api-gateway
     ports:
       - "8080:8080"
@@ -187,9 +183,7 @@ services:
       retries: 3
 
   identity-service:
-    build:
-      context: ../
-      dockerfile: identity-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/identity-service:latest
     container_name: identity-service
     depends_on:
       - postgres-identity
@@ -206,9 +200,7 @@ services:
     networks: [microservices-network]
 
   content-service:
-    build:
-      context: ../
-      dockerfile: content-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/content-service:latest
     container_name: content-service
     depends_on:
       - postgres-content
@@ -222,9 +214,7 @@ services:
     networks: [microservices-network]
 
   support-service:
-    build:
-      context: ../
-      dockerfile: support-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/support-service:latest
     container_name: support-service
     depends_on:
       - postgres-support
@@ -246,9 +236,7 @@ services:
     networks: [microservices-network]
 
   product-service:
-    build:
-      context: ../
-      dockerfile: product-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/product-service:latest
     container_name: product-service
     depends_on:
       - postgres-product
@@ -262,9 +250,7 @@ services:
     networks: [microservices-network]
 
   profile-service:
-    build:
-      context: ../
-      dockerfile: profile-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/profile-service:latest
     container_name: profile-service
     depends_on:
       - postgres-profile
@@ -278,9 +264,7 @@ services:
     networks: [microservices-network]
 
   shopping-service:
-    build:
-      context: ../
-      dockerfile: shopping-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/shopping-service:latest
     container_name: shopping-service
     depends_on:
       - postgres-shopping
@@ -295,9 +279,7 @@ services:
     networks: [microservices-network]
 
   payment-service:
-    build:
-      context: ../
-      dockerfile: payment-service/Dockerfile
+    image: ghcr.io/ms-lotosia/ms-lotosia/payment-service:latest
     container_name: payment-service
     depends_on:
       - postgres-payment
