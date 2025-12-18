@@ -17,51 +17,42 @@ spring:
         - id: content-service
           uri: lb://content-service
           predicates:
-            - Path=/api/v1/contactUs/**
-            - Path=/api/v1/faqs/**
+            - Path=/api/v1/contactUs/**,/api/v1/faqs/**
           filters:
             - StripPrefix=0
 
         - id: support-service
           uri: lb://support-service
           predicates:
-            - Path=/api/v1/complaints/**
-            - Path=/api/v1/suggestions/**
+            - Path=/api/v1/complaints/**,/api/v1/suggestions/**
           filters:
             - StripPrefix=0
 
         - id: payment-service
           uri: lb://payment-service
           predicates:
-            - Path=/api/v1/cards/**
-            - Path=/api/v1/payments/**
+            - Path=/api/v1/cards/**,/api/v1/payments/**
           filters:
             - StripPrefix=0
 
         - id: product-service
           uri: lb://product-service
           predicates:
-            - Path=/api/v1/categories/**
-            - Path=/api/v1/products/**
+            - Path=/api/v1/categories/**,/api/v1/products/**
           filters:
             - StripPrefix=0
 
         - id: profile-service
           uri: lb://profile-service
           predicates:
-            - Path=/api/v1/addresses/**
-            - Path=/api/v1/favorites/**
-            - Path=/api/v1/profiles/**
-            - Path=/api/v1/reviews/**
-            - Path=/api/v1/preferences/**
+            - Path=/api/v1/addresses/**,/api/v1/favorites/**,/api/v1/profiles/**,/api/v1/reviews/**,/api/v1/preferences/**
           filters:
             - StripPrefix=0
 
         - id: shopping-service
           uri: lb://shopping-service
           predicates:
-            - Path=/api/v1/baskets/**
-            - Path=/api/v1/orders/**
+            - Path=/api/v1/baskets/**,/api/v1/orders/**
           filters:
             - StripPrefix=0
 
@@ -71,7 +62,6 @@ spring:
             - Path=/api/v1/media/**
           filters:
             - StripPrefix=0
-
 
 eureka:
   client:
@@ -87,4 +77,3 @@ management:
     health:
       probes:
         enabled: true
-
