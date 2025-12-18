@@ -13,25 +13,45 @@ class MediaController {
       }
 
       const filePath = req.file.path;
-      const directory = req.body.directory || '/uploads';
+      const directory = req.query.directory || req.body.directory || '/uploads';
 
       const result = await teraboxService.uploadFile(filePath, directory, false);
 
-      // Clean up temp file
       await fs.unlink(filePath);
+
+      const uploadedPath = result.fileDetails?.path || result.fileDetails?.name;
+      let thumbnailUrl = null;
+      let fileDetails = result.fileDetails;
+
+      if (uploadedPath) {
+        try {
+          const fileList = await teraboxService.fetchFileList(directory);
+          if (fileList?.data?.list) {
+            const uploadedFile = fileList.data.list.find(f => f.path === uploadedPath);
+            if (uploadedFile?.thumbs) {
+              thumbnailUrl = uploadedFile.thumbs.url3 || uploadedFile.thumbs.url2 || uploadedFile.thumbs.url1;
+              fileDetails = {
+                ...fileDetails,
+                fs_id: uploadedFile.fs_id,
+                thumbnailUrl: thumbnailUrl,
+                thumbnails: uploadedFile.thumbs
+              };
+            }
+          }
+        } catch (e) {
+        }
+      }
 
       res.status(200).json({
         success: true,
         message: 'Image uploaded successfully',
-        data: result.fileDetails
+        data: fileDetails
       });
     } catch (error) {
-      // Clean up temp file on error
       if (req.file && req.file.path) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error deleting temp file:', unlinkError);
         }
       }
 
@@ -138,4 +158,6 @@ class MediaController {
 }
 
 module.exports = new MediaController();
+
+
 

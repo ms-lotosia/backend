@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -25,6 +27,8 @@ public class MediaUploadResponse {
         private String md5;
         private Long category;
         private String isdir;
+        private String thumbnailUrl;
+        private Map<String, String> thumbnails;
     }
 }
 

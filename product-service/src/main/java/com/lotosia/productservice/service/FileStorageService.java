@@ -20,22 +20,25 @@ public class FileStorageService {
             return new ArrayList<>();
         }
 
-        List<String> filePaths = new ArrayList<>();
+        List<String> imageUrls = new ArrayList<>();
 
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
                 MediaUploadResponse response = mediaService.uploadProductImage(file, PRODUCTS_DIRECTORY);
                 
                 if (response != null && response.isSuccess() && response.getData() != null) {
-                    String filePath = response.getData().getPath();
-                    filePaths.add(filePath);
+                    String imageUrl = response.getData().getThumbnailUrl();
+                    if (imageUrl == null || imageUrl.isEmpty()) {
+                        imageUrl = response.getData().getPath();
+                    }
+                    imageUrls.add(imageUrl);
                 } else {
                     throw new RuntimeException("Upload failed for file: " + file.getOriginalFilename());
                 }
             }
         }
 
-        return filePaths;
+        return imageUrls;
     }
 
     public void deleteFiles(List<String> filePaths) {
