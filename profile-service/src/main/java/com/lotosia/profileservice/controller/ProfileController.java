@@ -1,5 +1,6 @@
 package com.lotosia.profileservice.controller;
 
+import com.lotosia.profileservice.dto.profile.CreateProfileRequest;
 import com.lotosia.profileservice.dto.profile.ProfileRequest;
 import com.lotosia.profileservice.dto.profile.ProfileResponse;
 import com.lotosia.profileservice.service.ProfileService;
@@ -28,6 +29,11 @@ public class ProfileController {
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ProfileResponse> create(@Valid @ModelAttribute ProfileRequest request) {
         return ResponseEntity.ok(profileService.create(request));
+    }
+
+    @PostMapping("/internal")
+    public ResponseEntity<ProfileResponse> createInternal(@Valid @RequestBody CreateProfileRequest request) {
+        return ResponseEntity.ok(profileService.createFromUserId(request));
     }
 
     @GetMapping("/{id}")

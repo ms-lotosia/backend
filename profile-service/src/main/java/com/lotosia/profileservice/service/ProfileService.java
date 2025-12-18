@@ -1,5 +1,6 @@
 package com.lotosia.profileservice.service;
 
+import com.lotosia.profileservice.dto.profile.CreateProfileRequest;
 import com.lotosia.profileservice.dto.profile.ProfileRequest;
 import com.lotosia.profileservice.dto.profile.ProfileResponse;
 import com.lotosia.profileservice.dto.userpreference.UserPreferenceResponse;
@@ -23,10 +24,16 @@ public class ProfileService {
         profile.setPhoneNumber(request.getPhoneNumber());
         profile.setBirthDate(request.getBirthDate());
         
-        // Save profile picture and get URL
         String profileImageUrl = fileStorageService.saveFile(request.getProfileImageUrl());
         profile.setProfileImageUrl(profileImageUrl);
         
+        Profile saved = profileRepository.save(profile);
+        return toResponse(saved);
+    }
+
+    public ProfileResponse createFromUserId(CreateProfileRequest request) {
+        Profile profile = new Profile();
+        profile.setUserId(request.getUserId());
         Profile saved = profileRepository.save(profile);
         return toResponse(saved);
     }

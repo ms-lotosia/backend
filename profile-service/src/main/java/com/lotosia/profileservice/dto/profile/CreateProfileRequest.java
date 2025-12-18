@@ -1,0 +1,20 @@
+package com.lotosia.profileservice.dto.profile;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreateProfileRequest {
+
+    @NotNull
+    private Long userId;
+}
+
