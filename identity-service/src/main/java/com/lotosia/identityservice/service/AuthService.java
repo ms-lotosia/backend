@@ -11,6 +11,7 @@ import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.exception.EmailAlreadyInUseException;
 import com.lotosia.identityservice.exception.InvalidCredentialsException;
 import com.lotosia.identityservice.exception.NotFoundException;
+import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
 import com.lotosia.identityservice.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
@@ -147,8 +149,11 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setPassword(hashedPassword);
 
-        Role roleUser = new Role();
-        roleUser.setName("USER");
+        Role roleUser = roleRepository.findByName("USER").orElseGet(() -> {
+            Role newRole = new Role();
+            newRole.setName("USER");
+            return newRole;
+        });
         roleUser.setUser(newUser);
         newUser.getRoles().add(roleUser);
 
