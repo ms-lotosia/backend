@@ -64,6 +64,30 @@ jobs:
           echo "services_json=$services_json" >> "$GITHUB_OUTPUT"
           echo "Detected services: $services_json"
 
+  cleanup-ghcr:
+    name: Cleanup old GHCR image versions (keep last 5)
+    runs-on: ubuntu-latest
+    needs: detect-services
+    if: |
+      github.event_name == 'push' &&
+      needs.detect-services.outputs.services_json != '[]'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-services.outputs.services_json) }}
+    steps:
+      - name: Delete old container package versions (keep last 5)
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: ${{ github.repository_owner }}
+          package-type: container
+          package-name: ms-lotosia/${{ matrix.service }}
+          min-versions-to-keep: 5
+          token: ${{ secrets.GHCR_DELETE_TOKEN || github.token }}
+
   build-and-test:
     name: Build and Test (Java Services)
     runs-on: ubuntu-latest
