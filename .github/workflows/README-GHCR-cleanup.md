@@ -12,7 +12,7 @@ The `deploy.yml` workflow now includes automatic cleanup of old GHCR package ver
 
 Your images are published as: `ghcr.io/<owner>/ms-lotosia/<service>`
 
-The cleanup targets the package name: `ms-lotosia/<service>` for each service in your matrix.
+The cleanup targets the full package name: `<owner>/ms-lotosia/<service>` for each service in your matrix.
 
 ## Authentication
 

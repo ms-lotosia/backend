@@ -84,7 +84,7 @@ jobs:
         with:
           owner: ${{ github.repository_owner }}
           package-type: container
-          package-name: ms-lotosia/${{ matrix.service }}
+          package-name: ${{ github.repository_owner }}/ms-lotosia/${{ matrix.service }}
           min-versions-to-keep: 5
           token: ${{ secrets.GHCR_DELETE_TOKEN || github.token }}
 
