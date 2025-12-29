@@ -245,12 +245,6 @@ services:
     ports:
       - "8761:8761"
     networks: [microservices-network]
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8761/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -266,7 +260,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_started
     networks: [microservices-network]
     deploy:
       resources:
@@ -288,7 +283,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-identity:5432/identity_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -315,7 +310,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -340,7 +335,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-support:5432/support_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -373,7 +368,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/product_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -398,7 +393,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-profile:5432/profile_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -423,7 +418,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-shopping:5432/shopping_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -449,7 +444,7 @@ services:
       kafka:
         condition: service_healthy
       service-discovery:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-payment:5432/payment_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -471,7 +466,8 @@ services:
     ports:
       - "8085:8085"
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_started
     networks: [microservices-network]
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/health"]
