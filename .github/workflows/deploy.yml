@@ -91,6 +91,7 @@ jobs:
         env:
           SERVICES_JSON: ${{ needs.detect-services.outputs.services_json }}
         run: |
+          set -euo pipefail
           services=$(echo "$SERVICES_JSON" | jq -r '.[]')
 
           tasks=()
@@ -106,36 +107,38 @@ jobs:
 
           ./gradlew "${tasks[@]}" --no-daemon --build-cache --parallel
 
-      - name: Prepare JARs for artifact upload
+      - name: Prepare JARs for artifact upload (stable names, avoids -plain.jar)
         env:
           SERVICES_JSON: ${{ needs.detect-services.outputs.services_json }}
         run: |
+          set -euo pipefail
           mkdir -p jars
           services=$(echo "$SERVICES_JSON" | jq -r '.[]')
 
           for s in $services; do
             [ "$s" = "media-service" ] && continue
 
-            # Find the bootJar (may be versioned like service-0.0.1-SNAPSHOT.jar)
             jar_dir="$s/build/libs"
-            if [ -d "$jar_dir" ]; then
-              # Find the JAR file (excluding plain.jar if bootJar exists)
-              boot_jar=$(find "$jar_dir" -name "$s-*.jar" | head -1)
-              plain_jar="$jar_dir/$s.jar"
-
-              if [ -n "$boot_jar" ]; then
-                cp "$boot_jar" "jars/$s.jar"
-                echo "Prepared bootJar $s.jar for upload (from $(basename "$boot_jar"))"
-              elif [ -f "$plain_jar" ]; then
-                cp "$plain_jar" "jars/$s.jar"
-                echo "Prepared plain JAR $s.jar for upload"
-              else
-                echo "Warning: No JAR found for $s"
-                ls -la "$jar_dir"
-              fi
-            else
-              echo "Warning: JAR directory not found for $s: $jar_dir"
+            if [ ! -d "$jar_dir" ]; then
+              echo "ERROR: JAR directory not found for $s: $jar_dir"
+              exit 1
             fi
+
+            # Prefer a non-plain runnable jar first
+            jar_candidate="$(ls -1 "$jar_dir"/*.jar 2>/dev/null | grep -v -- '-plain\.jar$' | head -n 1 || true)"
+            # Fallback: any jar
+            if [ -z "$jar_candidate" ]; then
+              jar_candidate="$(ls -1 "$jar_dir"/*.jar 2>/dev/null | head -n 1 || true)"
+            fi
+
+            if [ -z "$jar_candidate" ]; then
+              echo "ERROR: No JAR produced for $s. Contents of $jar_dir:"
+              ls -la "$jar_dir" || true
+              exit 1
+            fi
+
+            cp "$jar_candidate" "jars/$s.jar"
+            echo "Prepared jars/$s.jar from $(basename "$jar_candidate")"
           done
 
       - name: Upload JAR artifacts
@@ -144,6 +147,7 @@ jobs:
           name: java-service-jars
           path: jars/
           retention-days: 1
+          if-no-files-found: error
 
   build-and-test-nodejs:
     name: Build and Test (Node.js Services)
@@ -205,6 +209,7 @@ jobs:
           file: ./${{ matrix.service }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
@@ -241,10 +246,9 @@ jobs:
           file: ./media-service/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=media-service
           cache-to: type=gha,mode=max,scope=media-service
-
-
 
   deploy-to-server:
     name: Deploy to Server
