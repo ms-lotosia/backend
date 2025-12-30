@@ -39,24 +39,48 @@ jobs:
         run: |
           all_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service media-service"
 
+          # Files/paths that should trigger rebuilding ALL services if changed
+          shared_impact_regex='^(build\.gradle(\.kts)?|settings\.gradle(\.kts)?|gradle/|gradlew|gradlew\.bat|buildSrc/|libs/|infrastructure/|\.github/)'
+
+          # Services folder matcher
+          services_regex='^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)/'
+
+          # Commit message override
           if git log -1 --pretty=%B | grep -qiE "\[rebuild\]|\[rebuild-all\]"; then
-            echo "Found [rebuild] in commit message - rebuilding all services"
+            echo "Found [rebuild] / [rebuild-all] in commit message - rebuilding all services"
             changed_services="$all_services"
           else
-            if [ -n "$GITHUB_BASE_REF" ]; then
+            # Determine diff base
+            if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "$GITHUB_BASE_REF" ]; then
+              git fetch origin "$GITHUB_BASE_REF" --depth=1 || true
               base_ref="origin/${GITHUB_BASE_REF}"
-              git fetch origin "$GITHUB_BASE_REF" --prune --depth=1 || true
+              head_ref="HEAD"
             else
-              base_ref="HEAD~1"
+              # Push event: use event.before SHA (fast, accurate)
+              base_ref="${{ github.event.before }}"
+              head_ref="${{ github.sha }}"
             fi
 
-            changed_services=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null \
-              | awk -F/ '/^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)\// {print $1}' \
-              | sort -u | sed '/^$/d')
+            changed_files=$(git diff --name-only "$base_ref" "$head_ref" 2>/dev/null || true)
 
-            if [ -z "$changed_services" ]; then
-              echo "No specific service changes detected - rebuilding all services"
+            # If shared-impact files changed, rebuild all
+            if echo "$changed_files" | grep -qE "$shared_impact_regex"; then
+              echo "Shared-impact change detected - rebuilding all services"
               changed_services="$all_services"
+            else
+              # Otherwise rebuild only services whose directories changed
+              changed_services=$(echo "$changed_files" \
+                | awk -F/ -v re="$services_regex" '$0 ~ re {print $1}' \
+                | sort -u | sed '/^$/d')
+            fi
+
+            # If truly nothing relevant changed: build nothing
+            if [ -z "$changed_services" ]; then
+              echo "No service or shared-impact changes detected - skipping builds"
+              services_json="[]"
+              echo "services_json=$services_json" >> "$GITHUB_OUTPUT"
+              echo "Detected services: $services_json"
+              exit 0
             fi
           fi
 
