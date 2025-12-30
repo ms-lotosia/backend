@@ -13,4 +13,9 @@ public class RefreshTokenResponse {
 
     private String accessToken;
     private String type = "Bearer";
+
+    public RefreshTokenResponse(String accessToken) {
+        this.accessToken = accessToken;
+        this.type = "Bearer";
+    }
 }

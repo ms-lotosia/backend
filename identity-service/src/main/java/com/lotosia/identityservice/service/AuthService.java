@@ -190,7 +190,7 @@ public class AuthService {
         String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRoles());
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail(), savedUser.getId());
 
-        return buildAuthResponseDto(savedUser, accessToken, refreshToken);
+        return buildAuthResponseDto(savedUser, accessToken);
     }
 
     private AuthResponse buildAuthResponseDto(User user, String accessToken) {
