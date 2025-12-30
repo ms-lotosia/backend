@@ -65,6 +65,13 @@ public class JwtUtil {
                 TimeUnit.MILLISECONDS
         );
 
+        redisTemplate.opsForValue().set(
+                "refresh:" + refreshToken,
+                username,
+                REFRESH_EXPIRATION,
+                TimeUnit.MILLISECONDS
+        );
+
         return refreshToken;
     }
 
@@ -92,7 +99,11 @@ public class JwtUtil {
         String username = redisTemplate.opsForValue().get("TOKEN:" + token);
         if (username != null) {
             redisTemplate.delete("TOKEN:" + token);
-            redisTemplate.delete(username + ":refresh");
+            String refreshToken = redisTemplate.opsForValue().get(username + ":refresh");
+            if (refreshToken != null) {
+                redisTemplate.delete(username + ":refresh");
+                redisTemplate.delete("refresh:" + refreshToken);
+            }
         }
     }
 

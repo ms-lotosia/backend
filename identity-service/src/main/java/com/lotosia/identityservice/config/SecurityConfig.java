@@ -23,7 +23,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                "/api/v1/auth/request-otp",
+                                "/api/v1/auth/verify-otp",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/send-reset-password-link",
+                                "/api/v1/auth/reset-password",
+                                "/actuator/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        )
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/request-otp",

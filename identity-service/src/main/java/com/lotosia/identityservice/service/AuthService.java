@@ -13,6 +13,7 @@ import com.lotosia.identityservice.exception.InvalidCredentialsException;
 import com.lotosia.identityservice.exception.NotFoundException;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
+import com.lotosia.identityservice.util.CookieUtil;
 import com.lotosia.identityservice.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolation;
@@ -40,6 +41,7 @@ public class AuthService {
     private final EmailService emailService;
     private final ProfileClient profileClient;
     private final BasketClient basketClient;
+    private final CookieUtil cookieUtil;
 
     public AuthResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
@@ -52,7 +54,7 @@ public class AuthService {
         String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRoles());
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
 
-        return buildAuthResponseDto(user, accessToken, refreshToken);
+        return buildAuthResponseDto(user, accessToken);
     }
 
     public ResponseEntity<?> logout(String authHeader) {
@@ -127,6 +129,9 @@ public class AuthService {
                             String.format("User with this email does not exist: %s", email)
                     ));
 
+            redisTemplate.delete(redisKey);
+            redisTemplate.delete(email + ":refresh");
+
             return jwtUtil.createTokenWithRole(email, user.getId(), user.getRoles());
 
         } catch (JwtException | IllegalArgumentException e) {
@@ -136,6 +141,11 @@ public class AuthService {
 
     public boolean isUserExists(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND", "User not found"));
     }
 
     public AuthResponse registerUserWithHashedPassword(String firstName, String lastName, String email, String hashedPassword) {
@@ -183,10 +193,9 @@ public class AuthService {
         return buildAuthResponseDto(savedUser, accessToken, refreshToken);
     }
 
-    private AuthResponse buildAuthResponseDto(User user, String accessToken, String refreshToken) {
+    private AuthResponse buildAuthResponseDto(User user, String accessToken) {
         AuthResponse authResponse = new AuthResponse();
         authResponse.setAccessToken(accessToken);
-        authResponse.setRefreshToken(refreshToken);
 
         if (user != null) {
             authResponse.setEmail(user.getEmail());
