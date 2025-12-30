@@ -79,7 +79,7 @@ public class AuthController {
 
         otpService.clearOtpData(email);
 
-        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+        return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.CREATED);
     }
 
     @PostMapping(path = "/login")
@@ -125,7 +125,7 @@ public class AuthController {
 
             return ResponseEntity.ok(result.getRefreshTokenResponse());
         } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getmessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
