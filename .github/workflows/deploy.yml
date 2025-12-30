@@ -115,10 +115,26 @@ jobs:
 
           for s in $services; do
             [ "$s" = "media-service" ] && continue
-            jar_path="$s/build/libs/$s.jar"
-            if [ -f "$jar_path" ]; then
-              cp "$jar_path" "jars/$s.jar"
-              echo "Prepared $s.jar for upload"
+
+            # Find the bootJar (may be versioned like service-0.0.1-SNAPSHOT.jar)
+            jar_dir="$s/build/libs"
+            if [ -d "$jar_dir" ]; then
+              # Find the JAR file (excluding plain.jar if bootJar exists)
+              boot_jar=$(find "$jar_dir" -name "$s-*.jar" | head -1)
+              plain_jar="$jar_dir/$s.jar"
+
+              if [ -n "$boot_jar" ]; then
+                cp "$boot_jar" "jars/$s.jar"
+                echo "Prepared bootJar $s.jar for upload (from $(basename "$boot_jar"))"
+              elif [ -f "$plain_jar" ]; then
+                cp "$plain_jar" "jars/$s.jar"
+                echo "Prepared plain JAR $s.jar for upload"
+              else
+                echo "Warning: No JAR found for $s"
+                ls -la "$jar_dir"
+              fi
+            else
+              echo "Warning: JAR directory not found for $s: $jar_dir"
             fi
           done
 
