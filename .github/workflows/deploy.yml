@@ -73,7 +73,7 @@ jobs:
           echo "services_json=$services_json" >> "$GITHUB_OUTPUT"
 
   build-and-test:
-    name: Build and Test (Java Services)
+    name: Build Java Services
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: detect-services
@@ -87,7 +87,7 @@ jobs:
           distribution: temurin
           cache: gradle
 
-      - name: Build & test changed Java services
+      - name: Build bootable JARs for changed services
         env:
           SERVICES_JSON: ${{ needs.detect-services.outputs.services_json }}
         run: |
@@ -96,7 +96,7 @@ jobs:
           tasks=()
           for s in $services; do
             [ "$s" = "media-service" ] && continue
-            tasks+=(":$s:build")
+            tasks+=(":$s:bootJar")
           done
 
           if [ ${#tasks[@]} -eq 0 ]; then
@@ -105,6 +105,29 @@ jobs:
           fi
 
           ./gradlew "${tasks[@]}" --no-daemon --build-cache --parallel
+
+      - name: Prepare JARs for artifact upload
+        env:
+          SERVICES_JSON: ${{ needs.detect-services.outputs.services_json }}
+        run: |
+          mkdir -p jars
+          services=$(echo "$SERVICES_JSON" | jq -r '.[]')
+
+          for s in $services; do
+            [ "$s" = "media-service" ] && continue
+            jar_path="$s/build/libs/$s.jar"
+            if [ -f "$jar_path" ]; then
+              cp "$jar_path" "jars/$s.jar"
+              echo "Prepared $s.jar for upload"
+            fi
+          done
+
+      - name: Upload JAR artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-service-jars
+          path: jars/
+          retention-days: 1
 
   build-and-test-nodejs:
     name: Build and Test (Node.js Services)
@@ -140,6 +163,12 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download JAR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: java-service-jars
+          path: .
 
       - uses: ./.github/actions/setup-docker
         with:
