@@ -4,8 +4,12 @@ import com.lotosia.identityservice.client.BasketClient;
 import com.lotosia.identityservice.client.ProfileClient;
 import com.lotosia.identityservice.dto.AuthResponse;
 import com.lotosia.identityservice.dto.CreateBasketRequest;
+import com.lotosia.identityservice.dto.LoginResult;
 import com.lotosia.identityservice.dto.ProfileRequest;
+import com.lotosia.identityservice.dto.RefreshResult;
+import com.lotosia.identityservice.dto.RefreshTokenResponse;
 import com.lotosia.identityservice.dto.RegisterRequest;
+import com.lotosia.identityservice.dto.RegisterResult;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.exception.EmailAlreadyInUseException;
@@ -55,6 +59,13 @@ public class AuthService {
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
 
         return buildAuthResponseDto(user, accessToken);
+    }
+
+    public LoginResult loginWithTokens(String email, String password) {
+        AuthResponse authResponse = login(email, password);
+        User user = getUserByEmail(email);
+        String refreshToken = jwtUtil.createRefreshToken(email, user.getId());
+        return new LoginResult(authResponse, refreshToken);
     }
 
     public ResponseEntity<?> logout(String authHeader) {
@@ -139,6 +150,15 @@ public class AuthService {
         }
     }
 
+    public RefreshResult refreshWithTokens(String refreshToken) {
+        String newAccessToken = refreshAccessToken(refreshToken);
+        String email = jwtUtil.getEmailFromToken(refreshToken);
+        User user = getUserByEmail(email);
+        String newRefreshToken = jwtUtil.createRefreshToken(email, user.getId());
+        RefreshTokenResponse response = new RefreshTokenResponse(newAccessToken);
+        return new RefreshResult(response, newRefreshToken);
+    }
+
     public boolean isUserExists(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -191,6 +211,13 @@ public class AuthService {
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail(), savedUser.getId());
 
         return buildAuthResponseDto(savedUser, accessToken);
+    }
+
+    public RegisterResult registerWithTokens(String firstName, String lastName, String email, String hashedPassword) {
+        AuthResponse authResponse = registerUserWithHashedPassword(firstName, lastName, email, hashedPassword);
+        User user = getUserByEmail(email);
+        String refreshToken = jwtUtil.createRefreshToken(email, user.getId());
+        return new RegisterResult(authResponse, refreshToken);
     }
 
     private AuthResponse buildAuthResponseDto(User user, String accessToken) {

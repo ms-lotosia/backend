@@ -2,16 +2,17 @@ package com.lotosia.identityservice.controller;
 
 import com.lotosia.identityservice.dto.AuthResponse;
 import com.lotosia.identityservice.dto.LoginRequest;
+import com.lotosia.identityservice.dto.LoginResult;
+import com.lotosia.identityservice.dto.RefreshResult;
 import com.lotosia.identityservice.dto.RefreshTokenRequest;
 import com.lotosia.identityservice.dto.RefreshTokenResponse;
 import com.lotosia.identityservice.dto.RegisterRequest;
+import com.lotosia.identityservice.dto.RegisterResult;
 import com.lotosia.identityservice.dto.ResetPasswordRequest;
 import com.lotosia.identityservice.entity.Otp;
-import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.service.AuthService;
 import com.lotosia.identityservice.service.OtpService;
 import com.lotosia.identityservice.util.CookieUtil;
-import com.lotosia.identityservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,6 @@ public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
     private final CookieUtil cookieUtil;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(@Valid @RequestBody RegisterRequest dto) {
@@ -68,16 +68,14 @@ public class AuthController {
 
         Otp otpEntity = optionalOtpEntity.get();
 
-        AuthResponse authResponse = authService.registerUserWithHashedPassword(
+        RegisterResult result = authService.registerWithTokens(
                 otpEntity.getFirstName(),
                 otpEntity.getLastName(),
                 otpEntity.getEmail(),
                 otpEntity.getHashedPassword()
         );
 
-        User user = authService.getUserByEmail(email);
-        String refreshToken = jwtUtil.createRefreshToken(email, user.getId());
-        cookieUtil.addRefreshTokenCookie(response, refreshToken);
+        cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
         otpService.clearOtpData(email);
 
@@ -86,13 +84,11 @@ public class AuthController {
 
     @PostMapping(path = "/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        AuthResponse authResponse = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        LoginResult result = authService.loginWithTokens(loginRequest.getEmail(), loginRequest.getPassword());
 
-        User user = authService.getUserByEmail(loginRequest.getEmail());
-        String refreshToken = jwtUtil.createRefreshToken(loginRequest.getEmail(), user.getId());
-        cookieUtil.addRefreshTokenCookie(response, refreshToken);
+        cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
-        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+        return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.OK);
     }
 
     @PostMapping(path = "/logout")
@@ -123,17 +119,13 @@ public class AuthController {
         }
 
         try {
-            String newAccessToken = authService.refreshAccessToken(refreshToken);
+            RefreshResult result = authService.refreshWithTokens(refreshToken);
 
-            String email = jwtUtil.getEmailFromToken(refreshToken);
-            User user = authService.getUserByEmail(email);
-            String newRefreshToken = jwtUtil.createRefreshToken(email, user.getId());
-            cookieUtil.addRefreshTokenCookie(response, newRefreshToken);
+            cookieUtil.addRefreshTokenCookie(response, result.getNewRefreshToken());
 
-            RefreshTokenResponse refreshResponse = new RefreshTokenResponse(newAccessToken);
-            return ResponseEntity.ok(refreshResponse);
+            return ResponseEntity.ok(result.getRefreshTokenResponse());
         } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getmessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
