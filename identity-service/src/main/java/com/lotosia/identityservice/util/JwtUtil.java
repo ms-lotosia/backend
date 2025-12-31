@@ -101,7 +101,7 @@ public class JwtUtil {
             redisTemplate.delete("TOKEN:" + token);
             String refreshToken = redisTemplate.opsForValue().get(username + ":refresh");
             if (refreshToken != null) {
-                redisTemplate.delete(username + ":refresh");
+            redisTemplate.delete(username + ":refresh");
                 redisTemplate.delete("refresh:" + refreshToken);
             }
         }
