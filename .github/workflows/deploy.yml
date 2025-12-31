@@ -38,7 +38,7 @@ jobs:
         run: |
           all_services="api-gateway service-discovery identity-service content-service support-service product-service profile-service shopping-service payment-service media-service"
 
-          shared_impact_regex='^(build\.gradle(\.kts)?|settings\.gradle(\.kts)?|gradle/|gradlew|gradlew\.bat|buildSrc/|libs/|infrastructure/|\.github/)'
+          shared_impact_regex='^(build\.gradle(\.kts)?|settings\.gradle(\.kts)?|gradle/|gradlew|gradlew\.bat|buildSrc/|libs/|infrastructure/|\.github/|monitoring/)'
           services_regex='^(api-gateway|service-discovery|identity-service|content-service|support-service|product-service|profile-service|shopping-service|payment-service|media-service)/'
 
           if git log -1 --pretty=%B | grep -qiE "\[rebuild\]|\[rebuild-all\]"; then
