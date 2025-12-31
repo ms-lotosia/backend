@@ -1,0 +1,108 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'identity-service'
+    static_configs:
+      - targets: ['identity-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'content-service'
+    static_configs:
+      - targets: ['content-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'support-service'
+    static_configs:
+      - targets: ['support-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'product-service'
+    static_configs:
+      - targets: ['product-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'profile-service'
+    static_configs:
+      - targets: ['profile-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'shopping-service'
+    static_configs:
+      - targets: ['shopping-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['payment-service:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'service-discovery'
+    static_configs:
+      - targets: ['service-discovery:8761']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+
+  - job_name: 'media-service'
+    static_configs:
+      - targets: ['media-service:3000']
+    scrape_interval: 10s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'postgres-identity'
+    static_configs:
+      - targets: ['postgres-identity:5432']
+
+  - job_name: 'postgres-content'
+    static_configs:
+      - targets: ['postgres-content:5432']
+
+  - job_name: 'postgres-support'
+    static_configs:
+      - targets: ['postgres-support:5432']
+
+  - job_name: 'postgres-product'
+    static_configs:
+      - targets: ['postgres-product:5432']
+
+  - job_name: 'postgres-profile'
+    static_configs:
+      - targets: ['postgres-profile:5432']
+
+  - job_name: 'postgres-shopping'
+    static_configs:
+      - targets: ['postgres-shopping:5432']
+
+  - job_name: 'postgres-payment'
+    static_configs:
+      - targets: ['postgres-payment:5432']
+
+  - job_name: 'jaeger'
+    static_configs:
+      - targets: ['jaeger:14268']
