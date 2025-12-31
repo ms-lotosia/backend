@@ -68,41 +68,43 @@ scrape_configs:
 
   - job_name: 'media-service'
     static_configs:
-      - targets: ['media-service:3000']
+      - targets: ['media-service:8085']
+    metrics_path: '/metrics'
     scrape_interval: 10s
 
   - job_name: 'redis'
     static_configs:
-      - targets: ['redis:6379']
+      - targets: ['redis-exporter:9121']
 
   - job_name: 'postgres-identity'
     static_configs:
-      - targets: ['postgres-identity:5432']
+      - targets: ['postgres-exporter-identity:9187']
 
   - job_name: 'postgres-content'
     static_configs:
-      - targets: ['postgres-content:5432']
+      - targets: ['postgres-exporter-content:9187']
 
   - job_name: 'postgres-support'
     static_configs:
-      - targets: ['postgres-support:5432']
+      - targets: ['postgres-exporter-support:9187']
 
   - job_name: 'postgres-product'
     static_configs:
-      - targets: ['postgres-product:5432']
+      - targets: ['postgres-exporter-product:9187']
 
   - job_name: 'postgres-profile'
     static_configs:
-      - targets: ['postgres-profile:5432']
+      - targets: ['postgres-exporter-profile:9187']
 
   - job_name: 'postgres-shopping'
     static_configs:
-      - targets: ['postgres-shopping:5432']
+      - targets: ['postgres-exporter-shopping:9187']
 
   - job_name: 'postgres-payment'
     static_configs:
-      - targets: ['postgres-payment:5432']
+      - targets: ['postgres-exporter-payment:9187']
 
   - job_name: 'jaeger'
     static_configs:
       - targets: ['jaeger:14268']
+    metrics_path: '/metrics'

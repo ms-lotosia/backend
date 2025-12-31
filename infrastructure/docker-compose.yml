@@ -296,6 +296,150 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    environment:
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ""
+    networks: [microservices-network]
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-identity:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-identity
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-identity:5432/identity_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-identity:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-content:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-content
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-content:5432/content_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-content:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-support:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-support
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-support:5432/support_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-support:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-product:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-product
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-product:5432/product_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-product:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-profile:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-profile
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-profile:5432/profile_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-profile:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-shopping:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-shopping
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-shopping:5432/shopping_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-shopping:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  postgres-exporter-payment:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter-payment
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:postgres@postgres-payment:5432/payment_db?sslmode=disable
+    networks: [microservices-network]
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
     deploy:
       resources:
         limits:
