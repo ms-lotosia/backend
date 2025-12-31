@@ -26,43 +26,43 @@ scrape_configs:
 
   - job_name: 'identity-service'
     static_configs:
-      - targets: ['identity-service:8080']
+      - targets: ['identity-service:8081']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
   - job_name: 'content-service'
     static_configs:
-      - targets: ['content-service:8080']
+      - targets: ['content-service:8082']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
   - job_name: 'support-service'
     static_configs:
-      - targets: ['support-service:8080']
+      - targets: ['support-service:8083']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
   - job_name: 'product-service'
     static_configs:
-      - targets: ['product-service:8080']
+      - targets: ['product-service:8084']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
   - job_name: 'profile-service'
     static_configs:
-      - targets: ['profile-service:8080']
+      - targets: ['profile-service:8085']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
   - job_name: 'shopping-service'
     static_configs:
-      - targets: ['shopping-service:8080']
+      - targets: ['shopping-service:8086']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
   - job_name: 'payment-service'
     static_configs:
-      - targets: ['payment-service:8080']
+      - targets: ['payment-service:8087']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
 
