@@ -24,6 +24,7 @@ services:
           memory: 128M
           cpus: '0.25'
 
+  postgres-content:
     image: postgres:15-alpine
     container_name: postgres-content
     environment:
