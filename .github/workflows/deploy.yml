@@ -286,6 +286,11 @@ jobs:
       - name: Upload docker-compose.yml
         run: scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no infrastructure/docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
+      - name: Upload monitoring configuration
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}/monitoring"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r monitoring/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
       - name: Deploy services on server
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
