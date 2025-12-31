@@ -440,14 +440,6 @@ services:
         reservations:
           memory: 64M
           cpus: '0.1'
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: '0.25'
-        reservations:
-          memory: 64M
-          cpus: '0.1'
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
