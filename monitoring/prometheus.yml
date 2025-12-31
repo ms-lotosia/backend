@@ -2,109 +2,141 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
-rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
-
 scrape_configs:
-  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
+  # Spring Boot /actuator/prometheus
   - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['api-gateway:8080']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'service-discovery'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['service-discovery:8761']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'identity-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['identity-service:8081']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'content-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['content-service:8082']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'support-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['support-service:8083']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'product-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['product-service:8084']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'profile-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['profile-service:8085']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'shopping-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
     static_configs:
       - targets: ['shopping-service:8086']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
 
   - job_name: 'payment-service'
-    static_configs:
-      - targets: ['payment-service:8087']
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
-
-  - job_name: 'media-service'
     static_configs:
-      - targets: ['media-service:8085']
+      - targets: ['payment-service:8087']
+
+  # Non-Spring: media-service exposes /metrics on 8085
+  - job_name: 'media-service'
     metrics_path: '/metrics'
     scrape_interval: 10s
+    static_configs:
+      - targets: ['media-service:8085']
 
-  - job_name: 'redis'
+  # Exporters (HTTP)
+  - job_name: 'redis-exporter'
+    scrape_interval: 10s
     static_configs:
       - targets: ['redis-exporter:9121']
 
-  - job_name: 'postgres-identity'
+  - job_name: 'postgres-exporter-identity'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-identity:9187']
 
-  - job_name: 'postgres-content'
+  - job_name: 'postgres-exporter-content'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-content:9187']
 
-  - job_name: 'postgres-support'
+  - job_name: 'postgres-exporter-support'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-support:9187']
 
-  - job_name: 'postgres-product'
+  - job_name: 'postgres-exporter-product'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-product:9187']
 
-  - job_name: 'postgres-profile'
+  - job_name: 'postgres-exporter-profile'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-profile:9187']
 
-  - job_name: 'postgres-shopping'
+  - job_name: 'postgres-exporter-shopping'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-shopping:9187']
 
-  - job_name: 'postgres-payment'
+  - job_name: 'postgres-exporter-payment'
+    scrape_interval: 10s
     static_configs:
       - targets: ['postgres-exporter-payment:9187']
 
+  # Jaeger all-in-one metrics (admin port)
   - job_name: 'jaeger'
-    static_configs:
-      - targets: ['jaeger:14268']
     metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['jaeger:14269']
+
+  # External HTTP health probing via blackbox exporter (distroless-safe)
+  - job_name: 'spring-health'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://api-gateway:8080/actuator/health
+          - http://service-discovery:8761/actuator/health
+          - http://identity-service:8081/actuator/health
+          - http://content-service:8082/actuator/health
+          - http://support-service:8083/actuator/health
+          - http://product-service:8084/actuator/health
+          - http://profile-service:8085/actuator/health
+          - http://shopping-service:8086/actuator/health
+          - http://payment-service:8087/actuator/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
