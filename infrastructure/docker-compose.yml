@@ -178,7 +178,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     ports:
-      - "127.0.0.1:5050:80"
+      - "5050:80"
     networks: [microservices-network]
     depends_on:
       postgres-identity:
@@ -211,7 +211,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
-      - "127.0.0.1:9090:9090"
+      - "9090:9090"
     networks: [microservices-network]
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -246,7 +246,7 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     networks: [microservices-network]
     depends_on:
       prometheus:
@@ -266,7 +266,7 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
-      - "127.0.0.1:16686:16686"
+      - "16686:16686"
     networks: [microservices-network]
     deploy:
       resources:
