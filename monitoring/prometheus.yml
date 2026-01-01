@@ -62,12 +62,7 @@ scrape_configs:
     static_configs:
       - targets: ['payment-service:8087']
 
-  # Non-Spring: media-service exposes /metrics on 8085
-  - job_name: 'media-service'
-    metrics_path: '/metrics'
-    scrape_interval: 10s
-    static_configs:
-      - targets: ['media-service:8085']
+  # Non-Spring: media-service - health check via blackbox exporter
 
   # Exporters (HTTP)
   - job_name: 'redis-exporter'
@@ -133,6 +128,7 @@ scrape_configs:
           - http://profile-service:8085/actuator/health
           - http://shopping-service:8086/actuator/health
           - http://payment-service:8087/actuator/health
+          - http://media-service:8085/health
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
