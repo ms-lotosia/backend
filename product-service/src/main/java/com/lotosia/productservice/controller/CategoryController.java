@@ -5,6 +5,7 @@ import com.lotosia.productservice.dto.category.CreateCategory;
 import com.lotosia.productservice.dto.category.UpdateCategory;
 import com.lotosia.productservice.service.CategoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
