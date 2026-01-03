@@ -22,11 +22,22 @@ public class AuthFilterConfig {
     @Bean
     public GlobalFilter authFilter() {
         return (exchange, chain) -> {
+            String token = null;
+
             HttpCookie accessTokenCookie = exchange.getRequest().getCookies()
                     .getFirst("accessToken");
-
             if (accessTokenCookie != null && !accessTokenCookie.getValue().isEmpty()) {
-                String token = accessTokenCookie.getValue();
+                token = accessTokenCookie.getValue();
+            }
+
+            if (token == null) {
+                String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    token = authHeader.substring(7);
+                }
+            }
+
+            if (token != null && !token.isEmpty()) {
 
                 try {
                     Claims claims = Jwts.parserBuilder()
@@ -48,6 +59,7 @@ public class AuthFilterConfig {
                                     .header("X-User-Roles", roles != null ? String.join(",", roles) : "")
                                     .build())
                             .build();
+
 
                     return chain.filter(modifiedExchange);
 
