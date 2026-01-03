@@ -28,6 +28,7 @@ public class AdminController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Operation(summary = "Get all users")
     @GetMapping("/users")
@@ -125,5 +126,36 @@ public class AdminController {
     public ResponseEntity<List<Permission>> getAllPermissions() {
         List<Permission> permissions = permissionRepository.findAll();
         return ResponseEntity.ok(permissions);
+    }
+
+    @Operation(summary = "Create the default admin user")
+    @PostMapping("/create-admin")
+    public ResponseEntity<User> createAdmin() {
+        boolean adminExists = userRepository.findAll().stream()
+                .anyMatch(user -> user.getRoles().stream()
+                        .anyMatch(role -> "ADMIN".equals(role.getName())));
+
+        if (adminExists) {
+            throw new RuntimeException("Admin user already exists");
+        }
+
+        Role adminRole = roleRepository.findByName("ADMIN")
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setName("ADMIN");
+                    return roleRepository.save(role);
+                });
+
+        User adminUser = new User();
+        adminUser.setEmail("admin@lotosia.com");
+        adminUser.setPassword(passwordEncoder.encode("admin123!"));
+        adminUser.setFirstName("Admin");
+        adminUser.setLastName("User");
+
+        adminUser.getRoles().add(adminRole);
+        adminRole.setUser(adminUser);
+
+        User savedUser = userRepository.save(adminUser);
+        return ResponseEntity.ok(savedUser);
     }
 }
