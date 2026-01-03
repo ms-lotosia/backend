@@ -124,9 +124,7 @@ jobs:
               exit 1
             fi
 
-            # Prefer a non-plain runnable jar first
             jar_candidate="$(ls -1 "$jar_dir"/*.jar 2>/dev/null | grep -v -- '-plain\.jar$' | head -n 1 || true)"
-            # Fallback: any jar
             if [ -z "$jar_candidate" ]; then
               jar_candidate="$(ls -1 "$jar_dir"/*.jar 2>/dev/null | head -n 1 || true)"
             fi

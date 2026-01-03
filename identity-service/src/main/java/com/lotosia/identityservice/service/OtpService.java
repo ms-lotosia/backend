@@ -6,8 +6,8 @@ import com.lotosia.identityservice.exception.ExpiredOtpException;
 import com.lotosia.identityservice.exception.InvalidOtpException;
 import com.lotosia.identityservice.exception.TooManyRequestsException;
 import com.lotosia.identityservice.repository.OtpRepository;
-import com.lotosia.identityservice.util.OtpRateLimiter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,7 @@ public class OtpService {
     private final OtpRepository otpRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    private final OtpRateLimiter limiter;
+    private final RedisTemplate<String, String> redisTemplate;
 
     private static String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
@@ -39,8 +39,8 @@ public class OtpService {
         final String lastName = dto.getLastName();
         final String rawPassword = dto.getPassword();
 
-        if (!limiter.tryAcquire(email)) {
-            throw new TooManyRequestsException("You can only request 3 OTPs every 5 minutes");
+        if (!canRequestOtp(email)) {
+            throw new TooManyRequestsException(getRateLimitMessage(email));
         }
 
         final String otp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
@@ -56,6 +56,51 @@ public class OtpService {
 
         otpRepository.save(otpEntity);
         emailService.sendOtpEmailHtml(email, otp);
+    }
+
+    private boolean canRequestOtp(String email) {
+        String attemptsKey = email + ":otp_attempts";
+        String lastAttemptKey = email + ":last_otp_attempt";
+
+        long currentTime = System.currentTimeMillis();
+        long fiveMinutesAgo = currentTime - (5 * 60 * 1000);
+        long thirtySecondsAgo = currentTime - (30 * 1000);
+
+        redisTemplate.opsForZSet().removeRangeByScore(attemptsKey, 0, fiveMinutesAgo);
+
+        String lastAttemptStr = redisTemplate.opsForValue().get(lastAttemptKey);
+        if (lastAttemptStr != null) {
+            long lastAttemptTime = Long.parseLong(lastAttemptStr);
+            if (lastAttemptTime > thirtySecondsAgo) {
+                return false;
+            }
+        }
+
+        Long attemptCount = redisTemplate.opsForZSet().size(attemptsKey);
+        if (attemptCount != null && attemptCount >= 3) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private String getRateLimitMessage(String email) {
+        String attemptsKey = email + ":otp_attempts";
+        String lastAttemptKey = email + ":last_otp_attempt";
+
+        long currentTime = System.currentTimeMillis();
+        long thirtySecondsAgo = currentTime - (30 * 1000);
+
+        String lastAttemptStr = redisTemplate.opsForValue().get(lastAttemptKey);
+        if (lastAttemptStr != null) {
+            long lastAttemptTime = Long.parseLong(lastAttemptStr);
+            if (lastAttemptTime > thirtySecondsAgo) {
+                long waitTimeSeconds = ((lastAttemptTime + (30 * 1000)) - currentTime) / 1000;
+                return "Please wait " + waitTimeSeconds + " seconds before requesting another OTP.";
+            }
+        }
+
+        return "Too many OTP requests. Please try again in 5 minutes.";
     }
 
     @Transactional(readOnly = true)

@@ -103,7 +103,6 @@ public class EmailService {
             mailSender.send(mimeMessage);
 
         } catch (Exception e) {
-            // Fallback to simple text email
             String subject = "Lotosia - Qeydiyyat üçün OTP Kodu";
             String text = "OTP kodunuz: " + otp + "\n" +
                     "Bu kod 5 dəqiqə ərzində keçərlidir.\n\n" +

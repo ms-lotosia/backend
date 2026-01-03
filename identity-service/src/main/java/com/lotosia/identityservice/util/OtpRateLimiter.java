@@ -1,40 +1,45 @@
 package com.lotosia.identityservice.util;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class OtpRateLimiter {
 
-    private final int limit;
-    private final Duration window;
-    private final ConcurrentHashMap<String, Deque<Instant>> requests = new ConcurrentHashMap<>();
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public OtpRateLimiter() {
-        this.limit = 3;
-        this.window = Duration.ofSeconds(5);
+    public OtpRateLimiter(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
-    private static String normalize(String v) {
-        return v == null ? "" : v.trim();
-    }
+    public boolean tryAcquire(String email) {
+        String attemptsKey = email + ":otp_attempts";
+        String lastAttemptKey = email + ":last_otp_attempt";
 
-    public boolean tryAcquire(String rawKey) {
-        String key = normalize(rawKey);
-        Instant now = Instant.now();
+        long currentTime = System.currentTimeMillis();
+        long fiveMinutesAgo = currentTime - (5 * 60 * 1000);
+        long thirtySecondsAgo = currentTime - (30 * 1000);
 
-        Deque<Instant> q = requests.computeIfAbsent(key, k -> new ArrayDeque<>());
-        synchronized (q) {
-            while (!q.isEmpty() && Duration.between(q.peekFirst(), now).compareTo(window) > 0) {
-                q.removeFirst();
+        redisTemplate.opsForZSet().removeRangeByScore(attemptsKey, 0, fiveMinutesAgo);
+
+        String lastAttemptStr = redisTemplate.opsForValue().get(lastAttemptKey);
+        if (lastAttemptStr != null) {
+            long lastAttemptTime = Long.parseLong(lastAttemptStr);
+            if (lastAttemptTime > thirtySecondsAgo) {
+                return false;
             }
-            if (q.size() >= limit) return false;
-            q.addLast(now);
-            return true;
         }
+
+        Long attemptCount = redisTemplate.opsForZSet().size(attemptsKey);
+        if (attemptCount != null && attemptCount >= 3) {
+            return false;
+        }
+
+        redisTemplate.opsForZSet().add(attemptsKey, String.valueOf(currentTime), currentTime);
+        redisTemplate.opsForValue().set(lastAttemptKey, String.valueOf(currentTime), 5, TimeUnit.MINUTES);
+
+        return true;
     }
 }
