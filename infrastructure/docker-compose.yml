@@ -515,11 +515,32 @@ services:
           memory: 256M
           cpus: '0.25'
 
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api-gateway
+    networks: [microservices-network]
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
   api-gateway:
     image: ghcr.io/ms-lotosia/ms-lotosia/api-gateway:latest
     container_name: api-gateway
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     depends_on:
       service-discovery:
         condition: service_started
