@@ -120,7 +120,10 @@ public class AdminService {
         adminUser.getRoles().add(adminRole);
         adminRole.setUser(adminUser);
 
-        userRepository.save(adminUser);
+        User savedUser = userRepository.save(adminUser);
+
+        adminRole.setUser(savedUser);
+        roleRepository.save(adminRole);
         return "CREATED";
     }
 }

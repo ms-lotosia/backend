@@ -3,6 +3,7 @@ package com.lotosia.identityservice.controller;
 import com.lotosia.identityservice.entity.Permission;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
+import com.lotosia.identityservice.exception.ApiError;
 import com.lotosia.identityservice.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -90,11 +91,24 @@ public class AdminController {
     @Operation(summary = "Create the default admin user")
     @PostMapping("/create-admin")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<String> createAdmin() {
+    public ResponseEntity<ApiError> createAdmin() {
         String result = adminService.createAdmin();
         if ("EXISTS".equals(result)) {
-            return ResponseEntity.status(409).body("Admin user already exists");
+            ApiError error = ApiError.builder()
+                    .code("ADMIN_ALREADY_EXISTS")
+                    .message("Admin user already exists")
+                    .status(409)
+                    .path("/api/v1/admin/create-admin")
+                    .build();
+            return ResponseEntity.status(409).body(error);
         }
-        return ResponseEntity.ok("Admin user created successfully");
+
+        ApiError success = ApiError.builder()
+                .code("ADMIN_CREATED")
+                .message("Admin user created successfully")
+                .status(200)
+                .path("/api/v1/admin/create-admin")
+                .build();
+        return ResponseEntity.ok(success);
     }
 }

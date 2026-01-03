@@ -303,6 +303,7 @@ public class AuthService {
                     .map(Role::getName)
                     .collect(Collectors.toSet());
 
+            System.out.println("User: " + user.getEmail() + ", Roles count: " + user.getRoles().size() + ", Role names: " + roleNames);
             authResponse.setRoles(roleNames);
         }
 
