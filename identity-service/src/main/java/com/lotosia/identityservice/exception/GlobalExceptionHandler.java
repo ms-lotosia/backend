@@ -67,6 +67,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleAlreadyExists(AlreadyExistsException ex, HttpServletRequest req) {
+        return buildResponse(
+                ex.getCode(),
+                ex.getMessage(),
+                HttpStatus.CONFLICT,
+                req.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, HttpServletRequest req) {
         String code = ex.getCode() != null ? ex.getCode() : "NOT_FOUND";

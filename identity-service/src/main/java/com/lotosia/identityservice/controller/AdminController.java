@@ -91,7 +91,10 @@ public class AdminController {
     @PostMapping("/create-admin")
     @PreAuthorize("permitAll()")
     public ResponseEntity<String> createAdmin() {
-        String message = adminService.createAdmin();
-        return ResponseEntity.ok(message);
+        String result = adminService.createAdmin();
+        if ("EXISTS".equals(result)) {
+            return ResponseEntity.status(409).body("Admin user already exists");
+        }
+        return ResponseEntity.ok("Admin user created successfully");
     }
 }

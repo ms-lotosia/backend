@@ -3,6 +3,7 @@ package com.lotosia.identityservice.service;
 import com.lotosia.identityservice.entity.Permission;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
+import com.lotosia.identityservice.exception.AlreadyExistsException;
 import com.lotosia.identityservice.repository.PermissionRepository;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
@@ -56,7 +57,7 @@ public class AdminService {
 
     public Role createRole(String roleName) {
         if (roleRepository.findByName(roleName).isPresent()) {
-            throw new RuntimeException("Role already exists: " + roleName);
+            throw new AlreadyExistsException("ROLE_ALREADY_EXISTS", "Role already exists: " + roleName);
         }
 
         Role role = new Role();
@@ -84,7 +85,7 @@ public class AdminService {
 
     public Permission createPermission(String permissionName) {
         if (permissionRepository.findByName(permissionName).isPresent()) {
-            throw new RuntimeException("Permission already exists: " + permissionName);
+            throw new AlreadyExistsException("PERMISSION_ALREADY_EXISTS", "Permission already exists: " + permissionName);
         }
 
         Permission permission = new Permission();
@@ -100,7 +101,7 @@ public class AdminService {
         User existingAdmin = userRepository.findByEmail("admin@lotosia.com").orElse(null);
 
         if (existingAdmin != null) {
-            return "Admin user already exists";
+            return "EXISTS";
         }
 
         Role adminRole = roleRepository.findByName("ADMIN")
@@ -120,6 +121,6 @@ public class AdminService {
         adminRole.setUser(adminUser);
 
         userRepository.save(adminUser);
-        return "Admin user created successfully";
+        return "CREATED";
     }
 }
