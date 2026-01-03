@@ -96,6 +96,37 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User with this email does not exist"));
 
+        // Rate limiting: 3 attempts per 5 minutes, 30 second cooldown
+        String attemptsKey = email + ":reset_attempts";
+        String lastAttemptKey = email + ":last_reset_attempt";
+
+        long currentTime = System.currentTimeMillis();
+        long fiveMinutesAgo = currentTime - (5 * 60 * 1000);
+        long thirtySecondsAgo = currentTime - (30 * 1000);
+
+        // Clean old attempts (older than 5 minutes)
+        redisTemplate.opsForZSet().removeRangeByScore(attemptsKey, 0, fiveMinutesAgo);
+
+        // Check last attempt time (30 second cooldown)
+        String lastAttemptStr = redisTemplate.opsForValue().get(lastAttemptKey);
+        if (lastAttemptStr != null) {
+            long lastAttemptTime = Long.parseLong(lastAttemptStr);
+            if (lastAttemptTime > thirtySecondsAgo) {
+                long waitTimeSeconds = ((lastAttemptTime + (30 * 1000)) - currentTime) / 1000;
+                throw new IllegalArgumentException("Please wait " + waitTimeSeconds + " seconds before requesting another reset link.");
+            }
+        }
+
+        // Check attempt count (max 3 per 5 minutes)
+        Long attemptCount = redisTemplate.opsForZSet().size(attemptsKey);
+        if (attemptCount != null && attemptCount >= 3) {
+            throw new IllegalArgumentException("Too many reset attempts. Please try again in 5 minutes.");
+        }
+
+        // Record this attempt
+        redisTemplate.opsForZSet().add(attemptsKey, String.valueOf(currentTime), currentTime);
+        redisTemplate.opsForValue().set(lastAttemptKey, String.valueOf(currentTime), 5, TimeUnit.MINUTES);
+
         String redisKey = email + ":resit";
         String existingToken = redisTemplate.opsForValue().get(redisKey);
 
