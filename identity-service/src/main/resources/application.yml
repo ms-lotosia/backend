@@ -68,3 +68,10 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+app:
+  admin:
+    email: admin@lotosia.com
+    password: admin123!
+    firstname: Admin
+    lastname: User
