@@ -6,7 +6,9 @@ on:
   pull_request:
     branches: [ master, staging, development ]
 
-# concurrency: disabled for sequential execution
+concurrency:
+  group: ms-lotosia-backend-${{ github.ref }}
+  cancel-in-progress: false
 
 defaults:
   run:
