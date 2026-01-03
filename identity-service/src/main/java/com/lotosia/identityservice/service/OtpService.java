@@ -81,6 +81,9 @@ public class OtpService {
             return false;
         }
 
+        redisTemplate.opsForZSet().add(attemptsKey, String.valueOf(currentTime), currentTime);
+        redisTemplate.opsForValue().set(lastAttemptKey, String.valueOf(currentTime), 5, TimeUnit.MINUTES);
+
         return true;
     }
 
