@@ -291,6 +291,29 @@ public class AuthService {
         return new RegisterResult(authResponse, accessToken, refreshToken);
     }
 
+    public AuthResponse getCurrentUserInfo(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND", "User not found"));
+        return buildAuthResponseDto(user, null);
+    }
+
+    public AuthResponse getCurrentUserFromToken(String token) {
+        if (token == null) {
+            throw new InvalidCredentialsException("Access token is required");
+        }
+
+        if (!jwtUtil.validateToken(token)) {
+            throw new InvalidCredentialsException("Invalid or expired access token");
+        }
+
+        String email = jwtUtil.getEmailFromToken(token);
+        if (email == null) {
+            throw new InvalidCredentialsException("Unable to extract user information from token");
+        }
+
+        return getCurrentUserInfo(email);
+    }
+
     private AuthResponse buildAuthResponseDto(User user, String accessToken) {
         AuthResponse authResponse = new AuthResponse();
 

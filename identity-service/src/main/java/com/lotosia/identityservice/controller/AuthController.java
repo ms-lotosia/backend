@@ -10,8 +10,11 @@ import com.lotosia.identityservice.dto.RegisterRequest;
 import com.lotosia.identityservice.dto.RegisterResult;
 import com.lotosia.identityservice.dto.ResetPasswordRequest;
 import com.lotosia.identityservice.entity.Otp;
+import com.lotosia.identityservice.exception.InvalidCredentialsException;
+import com.lotosia.identityservice.exception.NotFoundException;
 import com.lotosia.identityservice.service.AuthService;
 import com.lotosia.identityservice.service.OtpService;
+import com.lotosia.identityservice.util.AuthenticationUtil;
 import com.lotosia.identityservice.util.CookieUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,6 +43,7 @@ public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
     private final CookieUtil cookieUtil;
+    private final AuthenticationUtil authenticationUtil;
 
     @PostMapping("/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(@Valid @RequestBody RegisterRequest dto) {
@@ -136,6 +141,20 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AuthResponse> getCurrentUser(HttpServletRequest request) {
+        try {
+            String token = cookieUtil.getAccessTokenFromCookies(request);
+            AuthResponse userInfo = authService.getCurrentUserFromToken(token);
+            return ResponseEntity.ok(userInfo);
+        } catch (InvalidCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 }
