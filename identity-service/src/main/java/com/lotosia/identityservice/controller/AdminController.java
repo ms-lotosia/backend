@@ -82,6 +82,7 @@ public class AdminController {
 
     @Operation(summary = "Create the default admin user")
     @PostMapping("/create-admin")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<User> createAdmin() {
         User adminUser = adminService.createAdmin();
         return ResponseEntity.ok(adminUser);
