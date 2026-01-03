@@ -23,13 +23,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Get user info from headers set by API Gateway
         String userEmail = request.getHeader("X-User-Email");
         String userIdStr = request.getHeader("X-User-Id");
         String userRolesStr = request.getHeader("X-User-Roles");
 
         if (userEmail != null && !userEmail.isEmpty()) {
-            // Parse user roles from header
             List<String> roles = Collections.emptyList();
             if (userRolesStr != null && !userRolesStr.isEmpty()) {
                 roles = Arrays.asList(userRolesStr.split(","));
@@ -42,13 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(userEmail, null, authorities);
 
-            // Set user ID as details if available
             if (userIdStr != null && !userIdStr.isEmpty()) {
                 try {
                     Long userId = Long.parseLong(userIdStr);
                     authToken.setDetails(userId);
                 } catch (NumberFormatException e) {
-                    // Ignore invalid user ID
                 }
             }
 

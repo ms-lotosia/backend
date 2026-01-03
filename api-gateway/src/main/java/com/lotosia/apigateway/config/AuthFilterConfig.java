@@ -22,7 +22,6 @@ public class AuthFilterConfig {
     @Bean
     public GlobalFilter authFilter() {
         return (exchange, chain) -> {
-            // Extract access token from cookies
             HttpCookie accessTokenCookie = exchange.getRequest().getCookies()
                     .getFirst("accessToken");
 
@@ -30,7 +29,6 @@ public class AuthFilterConfig {
                 String token = accessTokenCookie.getValue();
 
                 try {
-                    // Validate and extract user info from JWT
                     Claims claims = Jwts.parserBuilder()
                             .setSigningKey(SIGNING_KEY)
                             .build()
@@ -42,7 +40,6 @@ public class AuthFilterConfig {
                     @SuppressWarnings("unchecked")
                     List<String> roles = claims.get("roles", List.class);
 
-                    // Add user info to headers for downstream services
                     ServerWebExchange modifiedExchange = exchange.mutate()
                             .request(exchange.getRequest().mutate()
                                     .header("Authorization", "Bearer " + token)
@@ -55,7 +52,6 @@ public class AuthFilterConfig {
                     return chain.filter(modifiedExchange);
 
                 } catch (Exception e) {
-                    // Invalid token, continue without auth headers
                     return chain.filter(exchange);
                 }
             }
