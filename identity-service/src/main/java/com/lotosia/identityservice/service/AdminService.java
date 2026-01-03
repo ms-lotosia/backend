@@ -97,14 +97,19 @@ public class AdminService {
     }
 
     public User createAdmin() {
-        boolean adminExists = userRepository.findAll().stream()
-                .anyMatch(user -> user.getRoles().stream()
-                        .anyMatch(role -> "ADMIN".equals(role.getName())));
+        // Check if admin already exists
+        User existingAdmin = userRepository.findAll().stream()
+                .filter(user -> user.getRoles().stream()
+                        .anyMatch(role -> "ADMIN".equals(role.getName())))
+                .findFirst()
+                .orElse(null);
 
-        if (adminExists) {
-            throw new RuntimeException("Admin user already exists");
+        if (existingAdmin != null) {
+            // Return existing admin instead of throwing error
+            return existingAdmin;
         }
 
+        // Create new admin user
         Role adminRole = roleRepository.findByName("ADMIN")
                 .orElseGet(() -> {
                     Role role = new Role();
