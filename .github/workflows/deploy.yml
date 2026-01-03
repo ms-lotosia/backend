@@ -298,8 +298,7 @@ jobs:
             "cd ${{ secrets.DEPLOY_PATH }} && \
              openssl req -x509 -newkey rsa:4096 -keyout ssl/selfsigned.key -out ssl/selfsigned.crt -days 365 -nodes -subj '/C=US/ST=State/L=City/O=Organization/CN=${{ secrets.DEPLOY_HOST }}' && \
              chmod 600 ssl/selfsigned.key && \
-             chmod 644 ssl/selfsigned.crt && \
-             ls -la ssl/"
+             chmod 644 ssl/selfsigned.crt"
 
       - name: Upload monitoring configuration
         run: |
