@@ -24,16 +24,35 @@ public class AuthFilterConfig {
         return (exchange, chain) -> {
             String token = null;
 
+            // Debug: Check all cookies
+            String path = exchange.getRequest().getPath().value();
+            if (path.contains("/me")) {
+                System.out.println("API Gateway: Processing /me request");
+                if (exchange.getRequest().getCookies() != null) {
+                    exchange.getRequest().getCookies().forEach(cookie ->
+                        System.out.println("API Gateway: Cookie found: " + cookie.getName() + " = " + cookie.getValue())
+                    );
+                } else {
+                    System.out.println("API Gateway: No cookies found");
+                }
+            }
+
             HttpCookie accessTokenCookie = exchange.getRequest().getCookies()
                     .getFirst("accessToken");
             if (accessTokenCookie != null && !accessTokenCookie.getValue().isEmpty()) {
                 token = accessTokenCookie.getValue();
+                if (path.contains("/me")) {
+                    System.out.println("API Gateway: Found accessToken cookie");
+                }
             }
 
             if (token == null) {
                 String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     token = authHeader.substring(7);
+                    if (path.contains("/me")) {
+                        System.out.println("API Gateway: Found token in Authorization header");
+                    }
                 }
             }
 

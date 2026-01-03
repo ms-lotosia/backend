@@ -33,10 +33,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        if (path.contains("/me")) {
+            System.out.println("Identity Service: Processing /me request");
+            System.out.println("Identity Service: X-User-Email header: " + request.getHeader("X-User-Email"));
+            System.out.println("Identity Service: X-User-Id header: " + request.getHeader("X-User-Id"));
+            System.out.println("Identity Service: X-User-Roles header: " + request.getHeader("X-User-Roles"));
+
+            if (request.getCookies() != null) {
+                for (var cookie : request.getCookies()) {
+                    System.out.println("Identity Service: Cookie: " + cookie.getName() + " = " + cookie.getValue());
+                }
+            } else {
+                System.out.println("Identity Service: No cookies found");
+            }
+        }
+
         String userEmail = request.getHeader("X-User-Email");
         String userIdStr = request.getHeader("X-User-Id");
         String userRoles = request.getHeader("X-User-Roles");
-
 
         if (userEmail != null && !userEmail.isEmpty()) {
             try {
@@ -64,23 +79,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (token != null) {
 
-                String redisKey = "blacklist:" + token;
-                if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.getWriter().write("Token is blacklisted");
-                    return;
-                }
+            String redisKey = "blacklist:" + token;
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getWriter().write("Token is blacklisted");
+                return;
+            }
 
-                String email = jwtUtil.getEmailFromToken(token);
-                Long userId = jwtUtil.getUserIdFromToken(token);
+            String email = jwtUtil.getEmailFromToken(token);
+            Long userId = jwtUtil.getUserIdFromToken(token);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                authToken.setDetails(userId);
+            authToken.setDetails(userId);
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
