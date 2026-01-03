@@ -1,6 +1,5 @@
 package com.lotosia.identityservice.controller;
 
-import com.lotosia.identityservice.dto.ResponseModel;
 import com.lotosia.identityservice.entity.Permission;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
@@ -12,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,26 +31,22 @@ public class AdminController {
 
     @Operation(summary = "Get all users")
     @GetMapping("/users")
-    public ResponseModel<Page<User>> getAllUsers(Pageable pageable) {
+    public ResponseEntity<Page<User>> getAllUsers(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
-        return ResponseModel.<Page<User>>builder()
-                .data(users)
-                .build();
+        return ResponseEntity.ok(users);
     }
 
     @Operation(summary = "Get user by ID")
     @GetMapping("/users/{id}")
-    public ResponseModel<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseModel.<User>builder()
-                .data(user)
-                .build();
+        return ResponseEntity.ok(user);
     }
 
     @Operation(summary = "Update user roles")
     @PutMapping("/users/{userId}/roles")
-    public ResponseModel<User> updateUserRoles(@PathVariable Long userId, @RequestBody List<String> roleNames) {
+    public ResponseEntity<User> updateUserRoles(@PathVariable Long userId, @RequestBody List<String> roleNames) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -63,14 +59,12 @@ public class AdminController {
         user.getRoles().addAll(roles);
         userRepository.save(user);
 
-        return ResponseModel.<User>builder()
-                .data(user)
-                .build();
+        return ResponseEntity.ok(user);
     }
 
     @Operation(summary = "Create new role")
     @PostMapping("/roles")
-    public ResponseModel<Role> createRole(@RequestParam String roleName) {
+    public ResponseEntity<Role> createRole(@RequestParam String roleName) {
         if (roleRepository.findByName(roleName).isPresent()) {
             throw new RuntimeException("Role already exists: " + roleName);
         }
@@ -79,23 +73,19 @@ public class AdminController {
         role.setName(roleName);
         Role savedRole = roleRepository.save(role);
 
-        return ResponseModel.<Role>builder()
-                .data(savedRole)
-                .build();
+        return ResponseEntity.ok(savedRole);
     }
 
     @Operation(summary = "Get all roles")
     @GetMapping("/roles")
-    public ResponseModel<List<Role>> getAllRoles() {
+    public ResponseEntity<List<Role>> getAllRoles() {
         List<Role> roles = roleRepository.findAll();
-        return ResponseModel.<List<Role>>builder()
-                .data(roles)
-                .build();
+        return ResponseEntity.ok(roles);
     }
 
     @Operation(summary = "Update role permissions")
     @PutMapping("/roles/{roleId}/permissions")
-    public ResponseModel<Role> updateRolePermissions(@PathVariable Long roleId, @RequestBody List<String> permissionNames) {
+    public ResponseEntity<Role> updateRolePermissions(@PathVariable Long roleId, @RequestBody List<String> permissionNames) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
@@ -108,14 +98,12 @@ public class AdminController {
         role.getPermissions().addAll(permissions);
         roleRepository.save(role);
 
-        return ResponseModel.<Role>builder()
-                .data(role)
-                .build();
+        return ResponseEntity.ok(role);
     }
 
     @Operation(summary = "Create new permission")
     @PostMapping("/permissions")
-    public ResponseModel<Permission> createPermission(@RequestParam String permissionName) {
+    public ResponseEntity<Permission> createPermission(@RequestParam String permissionName) {
         if (permissionRepository.findByName(permissionName).isPresent()) {
             throw new RuntimeException("Permission already exists: " + permissionName);
         }
@@ -124,17 +112,13 @@ public class AdminController {
         permission.setName(permissionName);
         Permission savedPermission = permissionRepository.save(permission);
 
-        return ResponseModel.<Permission>builder()
-                .data(savedPermission)
-                .build();
+        return ResponseEntity.ok(savedPermission);
     }
 
     @Operation(summary = "Get all permissions")
     @GetMapping("/permissions")
-    public ResponseModel<List<Permission>> getAllPermissions() {
+    public ResponseEntity<List<Permission>> getAllPermissions() {
         List<Permission> permissions = permissionRepository.findAll();
-        return ResponseModel.<List<Permission>>builder()
-                .data(permissions)
-                .build();
+        return ResponseEntity.ok(permissions);
     }
 }
