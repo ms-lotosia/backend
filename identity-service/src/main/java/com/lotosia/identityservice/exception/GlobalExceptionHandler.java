@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -177,6 +178,16 @@ public class GlobalExceptionHandler {
                 "INVALID_ARGUMENT",
                 ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided",
                 HttpStatus.BAD_REQUEST,
+                req.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
+        return buildResponse(
+                "ACCESS_DENIED",
+                "You don't have permission to access this resource",
+                HttpStatus.FORBIDDEN,
                 req.getRequestURI()
         );
     }
