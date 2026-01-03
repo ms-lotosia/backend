@@ -222,7 +222,6 @@ public class AuthService {
 
     private AuthResponse buildAuthResponseDto(User user, String accessToken) {
         AuthResponse authResponse = new AuthResponse();
-        authResponse.setAccessToken(accessToken);
 
         if (user != null) {
             authResponse.setEmail(user.getEmail());

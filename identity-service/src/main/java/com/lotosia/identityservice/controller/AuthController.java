@@ -75,6 +75,7 @@ public class AuthController {
                 otpEntity.getHashedPassword()
         );
 
+        cookieUtil.addAccessTokenCookie(response, result.getAuthResponse().getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
         otpService.clearOtpData(email);
@@ -86,16 +87,22 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         LoginResult result = authService.loginWithTokens(loginRequest.getEmail(), loginRequest.getPassword());
 
+        cookieUtil.addAccessTokenCookie(response, result.getAuthResponse().getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
         return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.OK);
     }
 
     @PostMapping(path = "/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token, HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        String token = cookieUtil.getAccessTokenFromCookies(request);
+        cookieUtil.clearAccessTokenCookie(response);
         cookieUtil.clearRefreshTokenCookie(response);
 
-        return authService.logout(token);
+        if (token != null) {
+            return authService.logout("Bearer " + token);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/send-reset-password-link")
@@ -121,6 +128,7 @@ public class AuthController {
         try {
             RefreshResult result = authService.refreshWithTokens(refreshToken);
 
+            cookieUtil.addAccessTokenCookie(response, result.getRefreshTokenResponse().getAccessToken());
             cookieUtil.addRefreshTokenCookie(response, result.getNewRefreshToken());
 
             return ResponseEntity.ok(result.getRefreshTokenResponse());

@@ -23,7 +23,7 @@ public class JwtUtil {
     private static final String SECRET_KEY = "my-hardcoded-secret-key-for-testing-purposes";
     private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    private static final long JWT_EXPIRATION = 24 * 60 * 60 * 1000L;
+    private static final long JWT_EXPIRATION = 24 * 60 * 60 * 1000L; // 24 hours
     private static final long REFRESH_EXPIRATION = 24 * 60 * 60 * 1000L;
 
     private final RedisTemplate<String, String> redisTemplate;
