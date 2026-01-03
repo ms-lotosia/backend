@@ -29,6 +29,7 @@ public class Role extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @ManyToMany(fetch = FetchType.LAZY)
