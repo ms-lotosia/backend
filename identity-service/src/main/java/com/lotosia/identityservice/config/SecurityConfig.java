@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/send-reset-password-link",
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/refresh-token",
+                                "/api/v1/auth/me",
                                 "/api/v1/admin/create-admin",
                                 "/actuator/**",
                                 "/swagger-ui/**",

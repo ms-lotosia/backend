@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,13 +25,13 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PostMapping("/create")
-    public ResponseEntity<CategoryResponse> create(CreateCategory request) {
+    @PostMapping(value = "/create", consumes = "multipart/form-data")
+    public ResponseEntity<CategoryResponse> create(@ModelAttribute @Valid CreateCategory request) {
         return ResponseEntity.ok(categoryService.create(request));
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<CategoryResponse> update(UpdateCategory request) {
+    @PutMapping(value = "/update", consumes = "multipart/form-data")
+    public ResponseEntity<CategoryResponse> update(@ModelAttribute @Valid UpdateCategory request) {
         return ResponseEntity.ok(categoryService.update(request));
     }
 

@@ -108,7 +108,7 @@ public class EmailService {
                     "Bu kod 5 dəqiqə ərzində keçərlidir.\n\n" +
                     "Bu kodu heç kəslə paylaşmayın.";
             try {
-                self.sendSimpleEmail(recipientEmail, subject, text);
+        self.sendSimpleEmail(recipientEmail, subject, text);
             } catch (Exception ignored) {
             }
         }

@@ -7,6 +7,7 @@ import com.lotosia.productservice.entity.Category;
 import com.lotosia.productservice.exception.AlreadyExistsException;
 import com.lotosia.productservice.exception.ResourceNotFoundException;
 import com.lotosia.productservice.repository.CategoryRepository;
+import com.lotosia.productservice.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final FileStorageService fileStorageService;
 
     public CategoryResponse create(CreateCategory request) {
         if (categoryRepository.existsByName(request.getName())) {
@@ -25,6 +27,11 @@ public class CategoryService {
         Category category = new Category();
         category.setName(request.getName());
         category.setDescription(request.getDescription());
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            String imageUrl = fileStorageService.saveFile(request.getImage(), "/categories");
+            category.setImage(imageUrl);
+        }
 
         Category savedCategory = categoryRepository.save(category);
         return mapToDto(savedCategory);
@@ -40,6 +47,11 @@ public class CategoryService {
 
         if (request.getDescription() != null) {
             category.setDescription(request.getDescription());
+        }
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            String imageUrl = fileStorageService.saveFile(request.getImage(), "/categories");
+            category.setImage(imageUrl);
         }
 
         Category savedCategory = categoryRepository.save(category);
@@ -73,7 +85,8 @@ public class CategoryService {
         return new CategoryResponse(
                 c.getId(),
                 c.getName(),
-                c.getDescription()
+                c.getDescription(),
+                c.getImage()
         );
     }
 }

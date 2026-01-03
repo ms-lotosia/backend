@@ -41,6 +41,24 @@ public class FileStorageService {
         return imageUrls;
     }
 
+    public String saveFile(MultipartFile file, String directory) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        MediaUploadResponse response = mediaService.uploadProductImage(file, directory);
+
+        if (response != null && response.isSuccess() && response.getData() != null) {
+            String imageUrl = response.getData().getThumbnailUrl();
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                imageUrl = response.getData().getPath();
+            }
+            return imageUrl;
+        } else {
+            throw new RuntimeException("Upload failed for file: " + file.getOriginalFilename());
+        }
+    }
+
     public void deleteFiles(List<String> filePaths) {
         if (filePaths == null || filePaths.isEmpty()) {
             return;

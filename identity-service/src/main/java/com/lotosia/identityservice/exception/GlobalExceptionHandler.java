@@ -173,7 +173,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(
             IllegalArgumentException ex, HttpServletRequest req) {
-
+        
         return buildResponse(
                 "INVALID_ARGUMENT",
                 ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided",
