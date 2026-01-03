@@ -3,11 +3,15 @@ package com.lotosia.identityservice.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CookieUtil {
+
+    @Value("${cookie.secure:false}")
+    private boolean cookieSecure;
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
@@ -18,19 +22,19 @@ public class CookieUtil {
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, accessToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path(ACCESS_TOKEN_PATH)
-                .sameSite("None")
+                .sameSite(cookieSecure ? "None" : "Lax")
                 .build();
     }
 
     public ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path(REFRESH_TOKEN_PATH)
                 .maxAge(REFRESH_TOKEN_MAX_AGE_SECONDS)
-                .sameSite("None")
+                .sameSite(cookieSecure ? "None" : "Lax")
                 .build();
     }
 
@@ -71,10 +75,10 @@ public class CookieUtil {
     public void clearAccessTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path(ACCESS_TOKEN_PATH)
                 .maxAge(0)
-                .sameSite("None")
+                .sameSite(cookieSecure ? "None" : "Lax")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
@@ -82,10 +86,10 @@ public class CookieUtil {
     public void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path(REFRESH_TOKEN_PATH)
                 .maxAge(0)
-                .sameSite("None")
+                .sameSite(cookieSecure ? "None" : "Lax")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
