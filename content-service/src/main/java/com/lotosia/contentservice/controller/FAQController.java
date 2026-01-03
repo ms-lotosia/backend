@@ -10,6 +10,7 @@ import com.lotosia.contentservice.service.FAQService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -51,6 +52,7 @@ public class FAQController {
     @Operation(summary = "Create a new FAQ")
     @PostMapping("/create")
     @ResponseStatus(CREATED)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public FAQ create(@ModelAttribute FAQRequest dto) {
         FAQ faq = faqService.createFAQ(dto);
 
@@ -60,6 +62,7 @@ public class FAQController {
     @Operation(summary = "Update FAQ by ID")
     @PutMapping("/update/{id}")
     @ResponseStatus(OK)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void update(@PathVariable Long id, @ModelAttribute FAQRequest dto) {
         faqService.updateFAQ(id, dto);
     }
@@ -67,6 +70,7 @@ public class FAQController {
     @Operation(summary = "Delete FAQ by ID")
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void delete(@PathVariable Long id) {
         faqService.deleteFAQ(id);
     }
