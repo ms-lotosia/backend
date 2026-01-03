@@ -12,8 +12,6 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "payment-processed", groupId = "shopping-service-group")
     public void consumePaymentProcessedEvent(PaymentProcessedEvent paymentProcessedEvent) {
-                paymentProcessedEvent.getOrderId(), paymentProcessedEvent.getPaymentId(), paymentProcessedEvent.getStatus());
-
         try {
             orderService.handlePaymentProcessed(paymentProcessedEvent.getOrderId(), paymentProcessedEvent.getStatus());
         }catch(Exception e){
