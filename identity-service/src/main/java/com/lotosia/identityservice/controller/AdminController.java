@@ -55,8 +55,13 @@ public class AdminController {
                         .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
                 .collect(Collectors.toList());
 
+        user.getRoles().forEach(role -> role.setUser(null));
         user.getRoles().clear();
-        user.getRoles().addAll(roles);
+        for (Role role : roles) {
+            user.getRoles().add(role);
+            role.setUser(user);
+        }
+
         userRepository.save(user);
 
         return ResponseEntity.ok(user);

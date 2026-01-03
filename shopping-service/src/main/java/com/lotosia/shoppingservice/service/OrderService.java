@@ -124,11 +124,7 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if ("COMPLETED".equals(paymentStatus)) {
-            // Payment successful - order can proceed
-            // Order status remains PREPARING or you can update it as needed
         } else if ("FAILED".equals(paymentStatus)) {
-            // Payment failed - you might want to cancel or mark order
-            // order.setStatus(OrderStatus.CANCELLED);
         }
         
         orderRepository.save(order);

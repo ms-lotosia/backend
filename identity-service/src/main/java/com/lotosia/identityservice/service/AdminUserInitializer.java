@@ -5,16 +5,15 @@ import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class AdminUserInitializer {
 
     private final UserRepository userRepository;
@@ -36,15 +35,13 @@ public class AdminUserInitializer {
     @PostConstruct
     public void initializeAdminUser() {
         try {
-            // Check if any admin users exist
-            boolean adminExists = userRepository.findAll().stream()
+            List<User> allUsers = userRepository.findAll();
+
+            boolean adminExists = allUsers.stream()
                     .anyMatch(user -> user.getRoles().stream()
                             .anyMatch(role -> "ADMIN".equals(role.getName())));
 
             if (!adminExists) {
-                log.info("No admin user found. Creating default admin user...");
-
-                // Create ADMIN role if it doesn't exist
                 Role adminRole = roleRepository.findByName("ADMIN")
                         .orElseGet(() -> {
                             Role role = new Role();
@@ -52,25 +49,19 @@ public class AdminUserInitializer {
                             return roleRepository.save(role);
                         });
 
-                // Create default admin user
                 User adminUser = new User();
                 adminUser.setEmail(adminEmail);
                 adminUser.setPassword(passwordEncoder.encode(adminPassword));
                 adminUser.setFirstName(adminFirstName);
                 adminUser.setLastName(adminLastName);
+
                 adminUser.getRoles().add(adminRole);
+                adminRole.setUser(adminUser);
 
-                User savedUser = userRepository.save(adminUser);
-
-                log.info("Default admin user created successfully:");
-                log.info("Email: {}", adminEmail);
-                log.info("Password: {}", adminPassword);
-                log.info("Please change the default password after first login!");
-            } else {
-                log.info("Admin user already exists. Skipping default admin creation.");
+                userRepository.save(adminUser);
             }
         } catch (Exception e) {
-            log.error("Error creating default admin user", e);
+            throw e;
         }
     }
 }

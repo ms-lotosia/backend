@@ -1,6 +1,5 @@
 package com.lotosia.profileservice.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,7 +11,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 @Service
-@Slf4j
 public class FileStorageService {
 
     @Value("${file.upload-dir:uploads/profiles}")
@@ -37,10 +35,8 @@ public class FileStorageService {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             String fileUrl = baseUrl + "/" + fileName;
-            log.info("Profile picture saved: {}", fileUrl);
             return fileUrl;
         } catch (IOException e) {
-            log.error("Error saving profile picture", e);
             throw new RuntimeException("Failed to save profile picture: " + e.getMessage(), e);
         }
     }

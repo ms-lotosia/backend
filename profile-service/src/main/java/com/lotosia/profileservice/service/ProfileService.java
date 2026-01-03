@@ -56,7 +56,6 @@ public class ProfileService {
         profile.setPhoneNumber(request.getPhoneNumber());
         profile.setBirthDate(request.getBirthDate());
         
-        // Save profile picture if provided
         if (request.getProfileImageUrl() != null && !request.getProfileImageUrl().isEmpty()) {
             String profileImageUrl = fileStorageService.saveFile(request.getProfileImageUrl());
             profile.setProfileImageUrl(profileImageUrl);

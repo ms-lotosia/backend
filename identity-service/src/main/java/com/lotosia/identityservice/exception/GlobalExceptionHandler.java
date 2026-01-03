@@ -3,8 +3,6 @@ package com.lotosia.identityservice.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,8 +16,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(EmailAlreadyInUseException.class)
     public ResponseEntity<ApiError> handleEmailAlreadyInUse(EmailAlreadyInUseException ex, HttpServletRequest req) {
@@ -166,9 +162,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(
             IllegalArgumentException ex, HttpServletRequest req) {
-        
-        logger.warn("Illegal argument exception: {}", ex.getMessage());
-        
+
         return buildResponse(
                 "INVALID_ARGUMENT",
                 ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided",
@@ -179,8 +173,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex, HttpServletRequest req) {
-        logger.error("Unexpected error occurred", ex);
-        
         return buildResponse(
                 "INTERNAL_SERVER_ERROR",
                 "An unexpected error occurred. Please try again later.",
