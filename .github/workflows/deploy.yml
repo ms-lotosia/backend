@@ -284,6 +284,22 @@ jobs:
       - name: Upload docker-compose.yml
         run: scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no infrastructure/docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml
 
+      - name: Upload nginx configuration
+        run: scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no infrastructure/nginx.conf ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/nginx.conf
+
+      - name: Create SSL directory on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "mkdir -p ${{ secrets.DEPLOY_PATH }}/ssl"
+
+      - name: Generate SSL certificates on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && \
+             openssl req -x509 -newkey rsa:4096 -keyout ssl/selfsigned.key -out ssl/selfsigned.crt -days 365 -nodes -subj '/C=US/ST=State/L=City/O=Organization/CN=${{ secrets.DEPLOY_HOST }}' && \
+             chmod 600 ssl/selfsigned.key && \
+             chmod 644 ssl/selfsigned.crt"
+
       - name: Upload monitoring configuration
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}/monitoring"
