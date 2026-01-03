@@ -17,20 +17,20 @@ public class CookieUtil {
 
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, accessToken)
-                .httpOnly(true)
-                .secure(true) // Requires HTTPS in production
+                .httpOnly(false) // Allow client-side access for development
+                .secure(false) // Allow HTTP for development
                 .path(ACCESS_TOKEN_PATH)
-                .sameSite("Strict")
+                .sameSite("Lax") // More permissive for development
                 .build();
     }
 
     public ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .httpOnly(true)
-                .secure(true) // Requires HTTPS in production
+                .httpOnly(false) // Allow client-side access for development
+                .secure(false) // Allow HTTP for development
                 .path(REFRESH_TOKEN_PATH)
                 .maxAge(REFRESH_TOKEN_MAX_AGE_SECONDS)
-                .sameSite("Strict")
+                .sameSite("Lax") // More permissive for development
                 .build();
     }
 
@@ -70,22 +70,22 @@ public class CookieUtil {
 
     public void clearAccessTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(true)
+                .httpOnly(false)
+                .secure(false)
                 .path(ACCESS_TOKEN_PATH)
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(true)
+                .httpOnly(false)
+                .secure(false)
                 .path(REFRESH_TOKEN_PATH)
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
