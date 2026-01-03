@@ -11,5 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LoginResult {
     private AuthResponse authResponse;
+    private String accessToken;
     private String refreshToken;
 }

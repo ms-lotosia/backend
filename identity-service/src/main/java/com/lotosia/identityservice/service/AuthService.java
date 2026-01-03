@@ -62,10 +62,18 @@ public class AuthService {
     }
 
     public LoginResult loginWithTokens(String email, String password) {
-        AuthResponse authResponse = login(email, password);
-        User user = getUserByEmail(email);
-        String refreshToken = jwtUtil.createRefreshToken(email, user.getId());
-        return new LoginResult(authResponse, refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new InvalidCredentialsException("Invalid credentials");
+        }
+
+        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRoles());
+        String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
+
+        AuthResponse authResponse = buildAuthResponseDto(user, accessToken);
+        return new LoginResult(authResponse, accessToken, refreshToken);
     }
 
     public ResponseEntity<?> logout(String authHeader) {
@@ -214,10 +222,49 @@ public class AuthService {
     }
 
     public RegisterResult registerWithTokens(String firstName, String lastName, String email, String hashedPassword) {
-        AuthResponse authResponse = registerUserWithHashedPassword(firstName, lastName, email, hashedPassword);
-        User user = getUserByEmail(email);
-        String refreshToken = jwtUtil.createRefreshToken(email, user.getId());
-        return new RegisterResult(authResponse, refreshToken);
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyInUseException("Email is already in use");
+        }
+
+        User newUser = new User();
+        newUser.setFirstName(firstName);
+        newUser.setLastName(lastName);
+        newUser.setEmail(email);
+        newUser.setPassword(hashedPassword);
+
+        Role roleUser = roleRepository.findByName("USER").orElseGet(() -> {
+            Role newRole = new Role();
+            newRole.setName("USER");
+            return newRole;
+        });
+        roleUser.setUser(newUser);
+        newUser.getRoles().add(roleUser);
+
+        User savedUser = userRepository.save(newUser);
+
+        try {
+            ProfileRequest profileRequest = ProfileRequest.builder()
+                    .userId(savedUser.getId())
+                    .build();
+
+            profileClient.createProfile(profileRequest);
+        } catch (Exception e) {
+        }
+
+        try {
+            CreateBasketRequest basketRequest = CreateBasketRequest.builder()
+                    .userId(savedUser.getId())
+                    .build();
+
+            basketClient.createBasket(basketRequest);
+        } catch (Exception e) {
+        }
+
+        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRoles());
+        String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail(), savedUser.getId());
+
+        AuthResponse authResponse = buildAuthResponseDto(savedUser, accessToken);
+        return new RegisterResult(authResponse, accessToken, refreshToken);
     }
 
     private AuthResponse buildAuthResponseDto(User user, String accessToken) {
