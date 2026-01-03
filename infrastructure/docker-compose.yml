@@ -568,6 +568,8 @@ services:
     depends_on:
       postgres-content:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       service-discovery:
@@ -576,6 +578,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-content:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     networks: [microservices-network]
     deploy:
