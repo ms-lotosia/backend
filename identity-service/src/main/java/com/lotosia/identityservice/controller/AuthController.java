@@ -131,7 +131,7 @@ public class AuthController {
             cookieUtil.addAccessTokenCookie(response, result.getRefreshTokenResponse().getAccessToken());
             cookieUtil.addRefreshTokenCookie(response, result.getNewRefreshToken());
 
-            return ResponseEntity.ok(result.getRefreshTokenResponse());
+            return ResponseEntity.ok().build();
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
         } catch (IllegalArgumentException e) {
