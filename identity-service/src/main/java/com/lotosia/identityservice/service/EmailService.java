@@ -49,12 +49,70 @@ public class EmailService {
         }
     }
 
-    public void sendOtpEmail(String recipientEmail, String otp) {
-        String subject = "Sayt Qeydiyyatı üçün OTP Kodu";
-        String text = "Sizin qeydiyyat üçün OTP kodunuz: " + otp + "\n" +
-                "Bu kod 5 dəqiqə ərzində keçərlidir.";
+    @Async
+    public void sendOtpEmailHtml(String recipientEmail, String otp) {
 
-        self.sendSimpleEmail(recipientEmail, subject, text);
+        try {
+            jakarta.mail.internet.MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(
+                    mimeMessage,
+                    MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                    StandardCharsets.UTF_8.name()
+            );
+            helper.setTo(recipientEmail);
+            helper.setFrom(fromEmailAddress);
+            helper.setSubject("Lotosia - Qeydiyyat üçün OTP Kodu");
+
+            String plainText = "Lotosia qeydiyyatı üçün OTP kodunuz\n\n"
+                    + "OTP kodunuz: " + otp + "\n"
+                    + "Bu kod 5 dəqiqə ərzində keçərlidir.\n\n"
+                    + "Bu kodu heç kəslə paylaşmayın.";
+
+            String html = "<div style=\"font-family:Inter,Arial,sans-serif;background:#f3f4f6;padding:24px;\">"
+                    + "  <span style=\"display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;\">Lotosia qeydiyyatı üçün OTP kodunuz. Kod 5 dəqiqə keçərlidir.</span>"
+                    + "  <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:600px;margin:0 auto;\">"
+                    + "    <tr><td>"
+                    + "      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#eaeef3;border-radius:8px;\">"
+                    + "        <tr><td style=\"padding:32px\">"
+                    + "          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#ffffff;border-radius:6px;text-align:center;\">"
+                    + "            <tr><td style=\"padding:28px 24px 8px 24px\">"
+                    + "              <div style=\"font-weight:700;font-size:18px;color:#0f172a;\">Lotosia</div>"
+                    + "            </td></tr>"
+                    + "            <tr><td style=\"padding:4px 24px 12px 24px\">"
+                    + "              <h1 style=\"margin:0;color:#0f172a;font-size:20px;line-height:1.4;\">Qeydiyyat Təsdiqi</h1>"
+                    + "              <p style=\"margin:12px 0 0 0;color:#475569;\">Hesabınızı yaratmaq üçün aşağıdakı OTP kodunu daxil edin.</p>"
+                    + "            </td></tr>"
+                    + "            <tr><td style=\"padding:20px 24px 8px 24px\">"
+                    + "              <div style=\"background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:8px;padding:24px;margin:0 auto;max-width:200px;\">"
+                    + "                <div style=\"font-size:32px;font-weight:700;color:#0f172a;letter-spacing:4px;\">" + otp + "</div>"
+                    + "              </div>"
+                    + "            </td></tr>"
+                    + "            <tr><td style=\"padding:8px 24px 24px 24px\">"
+                    + "              <p style=\"margin:0;color:#475569;font-size:14px;\">Bu kod 5 dəqiqə ərzində keçərlidir.</p>"
+                    + "              <p style=\"margin:8px 0 0 0;color:#dc2626;font-size:12px;font-weight:600;\">⚠️ Bu kodu heç kəslə paylaşmayın</p>"
+                    + "            </td></tr>"
+                    + "          </table>"
+                    + "        </td></tr>"
+                    + "      </table>"
+                    + "      <p style=\"text-align:center;color:#94a3b8;font-size:12px;margin:12px 0 0 0\">© " + java.time.Year.now() + " Lotosia</p>"
+                    + "    </td></tr>"
+                    + "  </table>"
+                    + "</div>";
+
+            helper.setText(plainText, html);
+            mailSender.send(mimeMessage);
+
+        } catch (Exception e) {
+            // Fallback to simple text email
+            String subject = "Lotosia - Qeydiyyat üçün OTP Kodu";
+            String text = "OTP kodunuz: " + otp + "\n" +
+                    "Bu kod 5 dəqiqə ərzində keçərlidir.\n\n" +
+                    "Bu kodu heç kəslə paylaşmayın.";
+            try {
+                self.sendSimpleEmail(recipientEmail, subject, text);
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @Async
@@ -69,25 +127,25 @@ public class EmailService {
             );
             helper.setTo(recipientEmail);
             helper.setFrom(fromEmailAddress);
-            helper.setSubject("Reset Your AgilePulse Password");
+            helper.setSubject("Reset Your Lotosia Password");
 
             String accountEmail = recipientEmail;
 
-            String plainText = "Reset your AgilePulse password\n\n"
+            String plainText = "Reset your Lotosia password\n\n"
                     + "We received a request to reset the password for: " + accountEmail + "\n"
                     + "This link expires in 1 hour.\n\n"
                     + "Reset password: " + resetLink + "\n\n"
                     + "If you didn't request this, you can ignore this email or contact support at " + fromEmailAddress + ".";
 
             String html = "<div style=\"font-family:Inter,Arial,sans-serif;background:#f3f4f6;padding:24px;\">"
-                    + "  <span style=\"display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;\">Reset your AgilePulse password. Link expires in 1 hour.</span>"
+                    + "  <span style=\"display:none!important;visibility:hidden;opacity:0;height:0;width:0;overflow:hidden;\">Reset your Lotosia password. Link expires in 1 hour.</span>"
                     + "  <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width:600px;margin:0 auto;\">"
                     + "    <tr><td>"
                     + "      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#eaeef3;border-radius:8px;\">"
                     + "        <tr><td style=\"padding:32px\">"
                     + "          <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#ffffff;border-radius:6px;text-align:center;\">"
                     + "            <tr><td style=\"padding:28px 24px 8px 24px\">"
-                    + "              <div style=\"font-weight:700;font-size:18px;color:#0f172a;\">AgilePulse</div>"
+                    + "              <div style=\"font-weight:700;font-size:18px;color:#0f172a;\">Lotosia</div>"
                     + "            </td></tr>"
                     + "            <tr><td style=\"padding:4px 24px 12px 24px\">"
                     + "              <h1 style=\"margin:0;color:#0f172a;font-size:20px;line-height:1.4;\">Password Reset</h1>"
@@ -108,7 +166,7 @@ public class EmailService {
                     + "          </table>"
                     + "        </td></tr>"
                     + "      </table>"
-                    + "      <p style=\"text-align:center;color:#94a3b8;font-size:12px;margin:12px 0 0 0\">© " + java.time.Year.now() + " AgilePulse</p>"
+                    + "      <p style=\"text-align:center;color:#94a3b8;font-size:12px;margin:12px 0 0 0\">© " + java.time.Year.now() + " Lotosia</p>"
                     + "    </td></tr>"
                     + "  </table>"
                     + "</div>";
@@ -117,7 +175,7 @@ public class EmailService {
             mailSender.send(mimeMessage);
 
         } catch (Exception e) {
-            String subject = "Reset Your AgilePulse Password";
+            String subject = "Reset Your Lotosia Password";
             String text = "Click the link to reset your password: " + resetLink + "\n\n"
                     + "If you didn't request this, you can ignore this email.";
             try {

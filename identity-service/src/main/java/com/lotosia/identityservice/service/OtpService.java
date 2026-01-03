@@ -55,7 +55,7 @@ public class OtpService {
         otpEntity.setHashedPassword(passwordEncoder.encode(rawPassword));
 
         otpRepository.save(otpEntity);
-        emailService.sendOtpEmail(email, otp);
+        emailService.sendOtpEmailHtml(email, otp);
     }
 
     @Transactional(readOnly = true)
