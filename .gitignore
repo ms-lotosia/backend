@@ -52,3 +52,11 @@ out/
 # Logs and reports
 *.log
 logs/
+
+# SSL certificates and keys (NEVER commit these!)
+infrastructure/ssl/
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
