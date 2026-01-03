@@ -97,15 +97,11 @@ public class AdminService {
     }
 
     public User createAdmin() {
-        // Check if admin already exists
-        User existingAdmin = userRepository.findAll().stream()
-                .filter(user -> user.getRoles().stream()
-                        .anyMatch(role -> "ADMIN".equals(role.getName())))
-                .findFirst()
-                .orElse(null);
+        // Check if admin user already exists by email
+        User existingAdmin = userRepository.findByEmail("admin@lotosia.com").orElse(null);
 
         if (existingAdmin != null) {
-            // Return existing admin instead of throwing error
+            // Return existing admin user
             return existingAdmin;
         }
 
