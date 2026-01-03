@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String userIdStr = request.getHeader("X-User-Id");
         String userRoles = request.getHeader("X-User-Roles");
 
+
         if (userEmail != null && !userEmail.isEmpty()) {
             try {
                 Long userId = userIdStr != null ? Long.parseLong(userIdStr) : null;
