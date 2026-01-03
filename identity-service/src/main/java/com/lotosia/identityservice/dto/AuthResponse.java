@@ -12,7 +12,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class AuthResponse {
 
-    private String type = "Bearer";
     private String email;
     private String firstName;
     private String lastName;
