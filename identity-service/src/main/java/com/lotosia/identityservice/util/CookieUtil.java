@@ -18,7 +18,7 @@ public class CookieUtil {
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, accessToken)
                 .httpOnly(false) // Allow client-side access for development
-                .secure(false) // Allow HTTP for development
+                .secure(true) // Requires HTTPS - change to false if using HTTP
                 .path(ACCESS_TOKEN_PATH)
                 .sameSite("Lax") // More permissive for development
                 .build();
