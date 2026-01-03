@@ -75,7 +75,7 @@ public class AuthController {
                 otpEntity.getHashedPassword()
         );
 
-        cookieUtil.addAccessTokenCookie(response, result.getAuthResponse().getAccessToken());
+        cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
         otpService.clearOtpData(email);
@@ -87,7 +87,7 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         LoginResult result = authService.loginWithTokens(loginRequest.getEmail(), loginRequest.getPassword());
 
-        cookieUtil.addAccessTokenCookie(response, result.getAuthResponse().getAccessToken());
+        cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
         return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.OK);
