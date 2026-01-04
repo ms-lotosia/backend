@@ -1,3 +1,4 @@
+// Force rebuild: Updated MongoDB OTP storage, enhanced logging, and CORS configuration - v1.1.0
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.1' apply false
@@ -6,7 +7,7 @@ plugins {
 
 allprojects {
 	group = 'com.lotosia'
-	version = '1.0.0'
+	version = '1.1.0'
 
 	repositories {
 		mavenCentral()
