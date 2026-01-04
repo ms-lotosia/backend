@@ -124,7 +124,7 @@ public class AuthController {
     @PostMapping("/send-reset-password-link")
     public ResponseEntity<Map<String, String>> sendResetPasswordLink(@RequestParam String email) {
         try {
-            authService.sendResetPasswordLink(email);
+        authService.sendResetPasswordLink(email);
         } catch (Exception e) {
         }
         return ResponseEntity.ok(Map.of(
