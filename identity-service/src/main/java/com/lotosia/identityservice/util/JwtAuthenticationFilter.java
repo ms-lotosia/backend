@@ -64,24 +64,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = cookieUtil.getAccessTokenFromCookies(request);
 
             if (token != null) {
+                try {
+                    String redisKey = "blacklist:" + token;
+                    if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
+                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                        response.getWriter().write("Token is blacklisted");
+                        return;
+                    }
 
-            String redisKey = "blacklist:" + token;
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.getWriter().write("Token is blacklisted");
-                return;
-            }
+                    String email = jwtUtil.getEmailFromToken(token);
+                    Long userId = jwtUtil.getUserIdFromToken(token);
 
-            String email = jwtUtil.getEmailFromToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(token);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(userId);
 
-            authToken.setDetails(userId);
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } catch (Exception e) {
+                    // Invalid token or user not found - let Spring Security handle it
+                    // Don't throw exception, just don't set authentication
+                }
             }
         }
 
