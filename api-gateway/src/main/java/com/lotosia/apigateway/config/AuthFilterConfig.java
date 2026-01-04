@@ -161,6 +161,10 @@ public class AuthFilterConfig {
 
                     String csrfToken = UUID.randomUUID().toString();
 
+                    exchange.getResponse().getHeaders().add("Set-Cookie",
+                            "csrfToken=" + csrfToken +
+                            "; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400");
+
                     ServerWebExchange modifiedExchange = exchange.mutate()
                             .request(exchange.getRequest().mutate()
                                     .header("Authorization", "Bearer " + token)
@@ -168,11 +172,6 @@ public class AuthFilterConfig {
                                     .header("X-User-Id", userId != null ? userId.toString() : "")
                                     .header("X-User-Roles", roles != null ? String.join(",", roles) : "")
                                     .header("X-CSRF-Token", csrfToken)
-                                    .build())
-                            .response(exchange.getResponse().mutate()
-                                    .header("Set-Cookie",
-                                            "csrfToken=" + csrfToken +
-                                            "; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400")
                                     .build())
                             .build();
 
@@ -207,28 +206,28 @@ public class AuthFilterConfig {
                 csrfToken = UUID.randomUUID().toString();
             }
 
-            ServerWebExchange modifiedExchange = exchange.mutate()
-                    .response(exchange.getResponse().mutate()
-                            .header("X-Content-Type-Options", "nosniff")
-                            .header("X-Frame-Options", "DENY")
-                            .header("X-XSS-Protection", "1; mode=block")
-                            .header("Referrer-Policy", "strict-origin-when-cross-origin")
-                            .header("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+            exchange.getResponse().getHeaders().add("X-Content-Type-Options", "nosniff");
+            exchange.getResponse().getHeaders().add("X-Frame-Options", "DENY");
+            exchange.getResponse().getHeaders().add("X-XSS-Protection", "1; mode=block");
+            exchange.getResponse().getHeaders().add("Referrer-Policy", "strict-origin-when-cross-origin");
+            exchange.getResponse().getHeaders().add("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
 
-                            .header("Content-Security-Policy",
-                                    "default-src 'self' http: https:; " +
-                                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https:; " +
-                                    "style-src 'self' 'unsafe-inline' http: https:; " +
-                                    "img-src 'self' data: http: https:; " +
-                                    "font-src 'self' http: https:; " +
-                                    "connect-src 'self' http: https: ws: wss:; " +
-                                    "frame-ancestors 'none';")
+            exchange.getResponse().getHeaders().add("Content-Security-Policy",
+                    "default-src 'self' http: https:; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https:; " +
+                    "style-src 'self' 'unsafe-inline' http: https:; " +
+                    "img-src 'self' data: http: https:; " +
+                    "font-src 'self' http: https:; " +
+                    "connect-src 'self' http: https: ws: wss:; " +
+                    "frame-ancestors 'none';");
 
-                            .header("X-CSRF-Token", csrfToken != null ? csrfToken : "")
+            if (csrfToken != null) {
+                exchange.getResponse().getHeaders().add("X-CSRF-Token", csrfToken);
+            }
 
-                            .header("Server", "")
-                            .build())
-                    .build();
+            exchange.getResponse().getHeaders().add("Server", "");
+
+            ServerWebExchange modifiedExchange = exchange;
             if (isStateChangingMethod(method) && path.startsWith("/api/v1/")) {
                 String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
                 String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
