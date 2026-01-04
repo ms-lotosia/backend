@@ -16,12 +16,10 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Secure origin patterns (only allow specific trusted domains)
         config.setAllowedOriginPatterns(List.of(
                 "https://lotosia.vercel.app"  // Production
         ));
 
-        // For development, conditionally allow localhost
         String environment = System.getenv("SPRING_PROFILES_ACTIVE");
         if ("dev".equals(environment) || "development".equals(environment)) {
             config.setAllowedOriginPatterns(List.of(
@@ -31,7 +29,6 @@ public class CorsConfig {
             ));
         }
 
-        // Restrictive CORS settings
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of(
                 "Authorization",
@@ -43,13 +40,10 @@ public class CorsConfig {
                 "Accept-Language"
         ));
 
-        // Required for cookie-based auth
         config.setAllowCredentials(true);
 
-        // Cache preflight for 1 hour
         config.setMaxAge(3600L);
 
-        // Expose CSRF token header to frontend
         config.setExposedHeaders(List.of("X-CSRF-Token"));
 
         CorsConfigurationSource source = new CorsConfigurationSource() {

@@ -61,7 +61,7 @@ public class AuthFilterConfig {
         }
 
         if (token != null && !token.isEmpty()) {
-            return jwtProcessor.validateToken(token)
+            return jwtProcessor.validateTokenForGateway(token)
                     .flatMap(validation -> {
                         if (!validation.valid) {
                             Mono<Void> recordMono = (requiresAuth && !path.equals("/api/v1/auth/verify-otp")) ?
@@ -78,12 +78,6 @@ public class AuthFilterConfig {
                                     if (blocked) {
                                         exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
                                         return exchange.getResponse().setComplete();
-                                    }
-
-                                    if (jwtProcessor.isAdminRoute(path) && (validation.roles == null || !validation.roles.contains("ADMIN"))) {
-                                        return blockManager.recordFailedAttempt(clientIP, validation.email).then(Mono.fromRunnable(() -> {
-                                            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                                        }));
                                     }
 
                                     String csrfToken = jwtProcessor.generateJti();

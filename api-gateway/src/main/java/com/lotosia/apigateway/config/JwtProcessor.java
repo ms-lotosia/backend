@@ -27,6 +27,34 @@ public class JwtProcessor {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    public Mono<TokenValidationResult> validateTokenForGateway(String token) {
+        if (token == null || token.isEmpty()) {
+            return Mono.just(new TokenValidationResult(false, null, null, null, null));
+        }
+
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SIGNING_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            if (claims.getExpiration() != null && claims.getExpiration().before(new java.util.Date())) {
+                return Mono.just(new TokenValidationResult(false, null, null, null, null));
+            }
+
+            String email = claims.getSubject();
+            Long userId = claims.get("userId", Long.class);
+            @SuppressWarnings("unchecked")
+            List<String> roles = claims.get("roles", List.class);
+
+            return Mono.just(new TokenValidationResult(true, email, userId, roles, null));
+
+        } catch (Exception e) {
+            return Mono.just(new TokenValidationResult(false, null, null, null, null));
+        }
+    }
+
     public Mono<TokenValidationResult> validateToken(String token) {
         if (token == null || token.isEmpty()) {
             return Mono.just(new TokenValidationResult(false, null, null, null, null));

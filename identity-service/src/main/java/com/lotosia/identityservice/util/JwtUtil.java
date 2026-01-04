@@ -99,6 +99,34 @@ public class JwtUtil {
         }
     }
 
+    public boolean validateTokenForService(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SIGNING_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            if (claims.getExpiration() != null && claims.getExpiration().before(new Date())) {
+                return false;
+            }
+
+            String jti = claims.get("jti", String.class);
+            if (jti != null) {
+                Boolean isBlacklisted = redisTemplate.hasKey("blacklist:jti:" + jti);
+                if (Boolean.TRUE.equals(isBlacklisted)) {
+                    return false;
+                }
+            }
+
+            String username = redisTemplate.opsForValue().get("TOKEN:" + token);
+            return username != null;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public void invalidateToken(String token) {
         String username = redisTemplate.opsForValue().get("TOKEN:" + token);
         if (username != null) {

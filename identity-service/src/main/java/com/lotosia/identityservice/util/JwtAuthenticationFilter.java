@@ -17,37 +17,39 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String userEmail = request.getHeader("X-User-Email");
-        String userIdStr = request.getHeader("X-User-Id");
-        String userRoles = request.getHeader("X-User-Roles");
+        String token = jwtUtil.getTokenFromRequest(request);
 
-        if (userEmail != null && !userEmail.isEmpty()) {
+        if (token != null && jwtUtil.validateTokenForService(token)) {
             try {
-                Long userId = userIdStr != null ? Long.parseLong(userIdStr) : null;
-                List<SimpleGrantedAuthority> authorities = Arrays.asList();
+                String userEmail = jwtUtil.getEmailFromToken(token);
+                Long userId = jwtUtil.getUserIdFromToken(token);
+                List<String> roles = jwtUtil.getRolesFromToken(token);
 
-                if (userRoles != null && !userRoles.isEmpty()) {
-                    authorities = Arrays.stream(userRoles.split(","))
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-                }
+                List<SimpleGrantedAuthority> authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userEmail, null, authorities);
                 authToken.setDetails(userId);
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
             } catch (Exception e) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\":\"Invalid authentication data\"}");
+                response.getWriter().write("{\"error\":\"Invalid JWT token\"}");
                 return;
             }
         }
