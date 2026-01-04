@@ -93,9 +93,9 @@ public class RateLimiter {
         } else if (path.startsWith("/api/v1/auth/request-otp") && isWrite) {
             return 3;
         } else if (path.equals("/api/v1/auth/send-reset-password-link") && isWrite) {
-            return 2; // Very restrictive - only 2 password reset requests per minute per IP
+            return 2;
         } else if (path.equals("/api/v1/auth/reset-password") && isWrite) {
-            return 5; // Allow multiple reset attempts per IP (user might try different tokens)
+            return 5;
         } else if (path.startsWith("/api/v1/admin/create-admin") && isWrite) {
             return 2;
         } else if (path.startsWith("/api/v1/admin/") && isWrite) {
