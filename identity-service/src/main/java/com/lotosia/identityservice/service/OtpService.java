@@ -70,7 +70,6 @@ public class OtpService {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
-    @Transactional
     public void generateAndSentOtp(RegisterRequest dto) {
         final String email = normalizeEmail(dto.getEmail());
         final String firstName = dto.getFirstName();
@@ -189,7 +188,7 @@ public class OtpService {
                 return Long.parseLong(new String((byte[]) value));
             } catch (NumberFormatException e) {
                 return 0L;
-            }
+    }
         }
 
         if (value instanceof String) {
@@ -209,13 +208,12 @@ public class OtpService {
 
     private String getRateLimitMessage(long waitTimeSeconds) {
         if (waitTimeSeconds <= 60) {
-            return "Please wait " + waitTimeSeconds + " seconds before requesting another OTP.";
+                return "Please wait " + waitTimeSeconds + " seconds before requesting another OTP.";
         } else {
-            return "Too many OTP requests. Please try again in 5 minutes.";
+        return "Too many OTP requests. Please try again in 5 minutes.";
         }
     }
 
-    @Transactional(readOnly = true)
     public void verifyOtpOrThrow(String rawEmail, String otp) {
         final String email = normalizeEmail(rawEmail);
 
@@ -231,12 +229,10 @@ public class OtpService {
         }
     }
 
-    @Transactional(readOnly = true)
     public Optional<Otp> getOtpByEmail(String rawEmail) {
         return otpRepository.findByEmail(normalizeEmail(rawEmail));
     }
 
-    @Transactional
     public void clearOtpData(String rawEmail) {
         otpRepository.findByEmail(normalizeEmail(rawEmail)).ifPresent(otpRepository::delete);
     }
