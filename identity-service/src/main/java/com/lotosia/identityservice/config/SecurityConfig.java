@@ -8,7 +8,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -23,19 +22,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(
-                                "/api/v1/auth/request-otp",
-                                "/api/v1/auth/verify-otp",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/send-reset-password-link",
-                                "/api/v1/auth/reset-password",
-                                "/api/v1/admin/create-admin",
-                                "/actuator/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        )
-                )
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/request-otp",
@@ -44,16 +32,12 @@ public class SecurityConfig {
                                 "/api/v1/auth/send-reset-password-link",
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/refresh-token",
-                                "/api/v1/auth/me",
                                 "/api/v1/admin/create-admin",
                                 "/actuator/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
