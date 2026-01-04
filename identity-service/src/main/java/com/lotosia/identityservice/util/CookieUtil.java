@@ -7,11 +7,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class CookieUtil {
 
     @Value("${cookie.secure:false}")
     private boolean cookieSecure;
+
+    @Value("${cookie.access-token.max-age:86400}")
+    private int accessTokenMaxAge;
+
+    @Value("${cookie.refresh-token.max-age:604800}")
+    private int refreshTokenMaxAge;
+
+    @Value("${cookie.csrf.max-age:86400}")
+    private int csrfMaxAge;
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
@@ -38,19 +50,37 @@ public class CookieUtil {
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
+    public int computeCookieMaxAge(long expirationSecondsFromNow) {
+        return Math.max(60, Math.min((int) expirationSecondsFromNow, accessTokenMaxAge));
+    }
+
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, true, ACCESS_TOKEN_PATH,
-                          ACCESS_TOKEN_MAX_AGE_SECONDS, cookieSecure ? "None" : "Lax");
+                          accessTokenMaxAge, cookieSecure ? "None" : "Lax");
+    }
+
+    public ResponseCookie createAccessTokenCookie(String accessToken, int maxAge) {
+        return createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, true, ACCESS_TOKEN_PATH,
+                          maxAge, cookieSecure ? "None" : "Lax");
     }
 
     public ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, true, REFRESH_TOKEN_PATH,
-                          REFRESH_TOKEN_MAX_AGE_SECONDS, cookieSecure ? "None" : "Lax");
+                          refreshTokenMaxAge, cookieSecure ? "None" : "Lax");
     }
 
+    public ResponseCookie createRefreshTokenCookie(String refreshToken, int maxAge) {
+        return createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, true, REFRESH_TOKEN_PATH,
+                          maxAge, cookieSecure ? "None" : "Lax");
+    }
 
     public void addAccessTokenCookie(HttpServletResponse response, String accessToken) {
         ResponseCookie cookie = createAccessTokenCookie(accessToken);
+        addCookie(response, cookie);
+    }
+
+    public void addAccessTokenCookie(HttpServletResponse response, String accessToken, int maxAge) {
+        ResponseCookie cookie = createAccessTokenCookie(accessToken, maxAge);
         addCookie(response, cookie);
     }
 
@@ -59,13 +89,18 @@ public class CookieUtil {
         addCookie(response, cookie);
     }
 
+    public void addRefreshTokenCookie(HttpServletResponse response, String refreshToken, int maxAge) {
+        ResponseCookie cookie = createRefreshTokenCookie(refreshToken, maxAge);
+        addCookie(response, cookie);
+    }
+
     public void addCsrfTokenCookie(HttpServletResponse response, String csrfToken) {
         ResponseCookie httpOnlyCookie = createCookie(CSRF_TOKEN_HTTP_ONLY_COOKIE_NAME, csrfToken, true,
-                                                  CSRF_TOKEN_PATH, CSRF_TOKEN_MAX_AGE_SECONDS, "Lax");
+                                                  CSRF_TOKEN_PATH, csrfMaxAge, "Lax");
         addCookie(response, httpOnlyCookie);
 
         ResponseCookie jsCookie = createCookie(CSRF_TOKEN_JS_COOKIE_NAME, csrfToken, false,
-                                            CSRF_TOKEN_PATH, CSRF_TOKEN_MAX_AGE_SECONDS, "Lax");
+                                            CSRF_TOKEN_PATH, csrfMaxAge, "Lax");
         addCookie(response, jsCookie);
     }
 
@@ -79,6 +114,17 @@ public class CookieUtil {
             }
         }
         return null;
+    }
+
+    private Map<String, String> getCookieMap(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return Map.of();
+
+        Map<String, String> cookieMap = new HashMap<>();
+        for (Cookie cookie : cookies) {
+            cookieMap.put(cookie.getName(), cookie.getValue());
+        }
+        return cookieMap;
     }
 
     public String getAccessTokenFromCookies(HttpServletRequest request) {
