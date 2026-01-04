@@ -11,10 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,24 +40,10 @@ public class OtpService {
         public long getWaitTimeSeconds() { return waitTimeSeconds; }
     }
 
-    public static class OtpCreatedEvent {
-        private final String email;
-        private final String otp;
-
-        public OtpCreatedEvent(String email, String otp) {
-            this.email = email;
-            this.otp = otp;
-        }
-
-        public String getEmail() { return email; }
-        public String getOtp() { return otp; }
-    }
-
     private final OtpRepository otpRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
-    private final ApplicationEventPublisher eventPublisher;
 
     private static String normalizeEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -94,7 +76,11 @@ public class OtpService {
         otpEntity.setCreatedAt(LocalDateTime.now());
 
         otpRepository.save(otpEntity);
-        eventPublisher.publishEvent(new OtpCreatedEvent(email, otp));
+        try {
+            emailService.sendOtpEmailHtml(email, otp);
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email to " + email + ": " + e.getMessage());
+        }
     }
 
     private static final String OTP_RATE_LIMIT_SCRIPT =
@@ -237,12 +223,4 @@ public class OtpService {
         otpRepository.findByEmail(normalizeEmail(rawEmail)).ifPresent(otpRepository::delete);
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleOtpCreated(OtpCreatedEvent event) {
-        try {
-            emailService.sendOtpEmailHtml(event.getEmail(), event.getOtp());
-        } catch (Exception e) {
-            System.err.println("Failed to send OTP email to " + event.getEmail() + ": " + e.getMessage());
-        }
-    }
 }
