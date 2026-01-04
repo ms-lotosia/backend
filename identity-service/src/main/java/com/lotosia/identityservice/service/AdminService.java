@@ -187,21 +187,22 @@ public class AdminService {
                 });
 
         if (existingAdmin != null) {
-            boolean hasAdminRole = existingAdmin.getRole() != null && "ADMIN".equals(existingAdmin.getRole().getName());
+            boolean hadAdminRole = existingAdmin.getRole() != null && "ADMIN".equals(existingAdmin.getRole().getName());
 
-            if (!hasAdminRole) {
-                existingAdmin.setRole(adminRole);
-                userRepository.save(existingAdmin);
+            existingAdmin.setRole(adminRole);
+            userRepository.save(existingAdmin);
+
+            if (hadAdminRole) {
+                AdminBootstrapResponse response = new AdminBootstrapResponse();
+                response.setStatus(AdminBootstrapResponse.AdminBootstrapStatus.EXISTS);
+                response.setMessage("Admin user already exists with admin privileges");
+                throw new AdminAlreadyExistsException(response);
+            } else {
                 AdminBootstrapResponse response = new AdminBootstrapResponse();
                 response.setStatus(AdminBootstrapResponse.AdminBootstrapStatus.UPGRADED);
                 response.setMessage("Existing user upgraded to admin privileges");
                 throw new AdminUpgradeException(response);
             }
-
-            AdminBootstrapResponse response = new AdminBootstrapResponse();
-            response.setStatus(AdminBootstrapResponse.AdminBootstrapStatus.EXISTS);
-            response.setMessage("Admin user already exists with admin privileges");
-            throw new AdminAlreadyExistsException(response);
         }
 
         User adminUser = new User();
