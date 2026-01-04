@@ -82,10 +82,8 @@ public class AuthFilterConfig {
                                         return exchange.getResponse().setComplete();
                                     }
 
-                                    String csrfToken = jwtProcessor.generateJti();
-                                    exchange.getResponse().getHeaders().add("Set-Cookie",
-                                            "csrfToken=" + csrfToken +
-                                            "; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400");
+                                    // CSRF token is now handled by identity-service during login
+                                    // No need to generate here as cookies are set by login endpoint
 
                                     ServerWebExchange modifiedExchange = exchange.mutate()
                                             .request(exchange.getRequest().mutate()
@@ -139,11 +137,6 @@ public class AuthFilterConfig {
             String path = exchange.getRequest().getPath().value();
             String method = exchange.getRequest().getMethod().name();
 
-            String csrfToken = null;
-            if (path.startsWith("/api/v1/") && !path.contains("/login") && !path.contains("/request-otp")) {
-                csrfToken = java.util.UUID.randomUUID().toString();
-            }
-
             exchange.getResponse().getHeaders().add("X-Content-Type-Options", "nosniff");
             exchange.getResponse().getHeaders().add("X-Frame-Options", "DENY");
             exchange.getResponse().getHeaders().add("X-XSS-Protection", "1; mode=block");
@@ -155,13 +148,9 @@ public class AuthFilterConfig {
                     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https:; " +
                     "style-src 'self' 'unsafe-inline' http: https:; " +
                     "img-src 'self' data: http: https:; " +
-                    "font-src 'self' http: https:; " +
+                    "font-src 'self' http: https: ws: wss:; " +
                     "connect-src 'self' http: https: ws: wss:; " +
                     "frame-ancestors 'none';");
-
-            if (csrfToken != null) {
-                exchange.getResponse().getHeaders().add("X-CSRF-Token", csrfToken);
-            }
 
             exchange.getResponse().getHeaders().add("Server", "");
 
@@ -172,9 +161,10 @@ public class AuthFilterConfig {
                                         path.equals("/api/v1/auth/send-reset-password-link") ||
                                         path.equals("/api/v1/auth/reset-password");
 
-            if ((isStateChangingMethod(method) || (method.equals("GET") && path.equals("/api/v1/auth/me"))) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {
+            // CSRF validation: Only check for authenticated users (those with CSRF cookies)
+            String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
+            if (cookieCsrfToken != null && (isStateChangingMethod(method) || (method.equals("GET") && path.equals("/api/v1/auth/me"))) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {
                 String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
-                String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
 
                 if (requestCsrfToken == null || !requestCsrfToken.equals(cookieCsrfToken)) {
                     exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
@@ -191,7 +181,7 @@ public class AuthFilterConfig {
     }
 
     private String getCsrfTokenFromCookies(ServerHttpRequest request) {
-        HttpCookie csrfCookie = request.getCookies().getFirst("csrfToken");
+        HttpCookie csrfCookie = request.getCookies().getFirst("csrfTokenHttpOnly");
         return csrfCookie != null ? csrfCookie.getValue() : null;
     }
 }
