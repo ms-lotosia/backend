@@ -15,6 +15,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 @Component
@@ -30,11 +31,13 @@ public class JwtUtil {
     private final RedisTemplate<String, String> redisTemplate;
     public String createTokenWithRole(String username, Long userId, Set<Role> roles) {
         List<String> roleNames = roles.stream().map(Role::getName).toList();
+        String jti = UUID.randomUUID().toString().replace("-", "");
 
         String token = Jwts.builder()
                 .setSubject(username)
                 .claim("userId", userId)
                 .claim("roles", roleNames)
+                .claim("jti", jti)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(SIGNING_KEY, SignatureAlgorithm.HS256)
@@ -106,6 +109,18 @@ public class JwtUtil {
                 redisTemplate.delete("refresh:" + refreshToken);
             }
         }
+
+        try {
+            String jti = getJtiFromToken(token);
+            if (jti != null) {
+                long remainingTime = getExpirationTime(token);
+                if (remainingTime > 0) {
+                    redisTemplate.opsForValue().set("blacklist:jti:" + jti, "1",
+                        remainingTime, TimeUnit.MILLISECONDS);
+                }
+            }
+        } catch (Exception e) {
+        }
     }
 
     public String getTokenFromRequest(HttpServletRequest request) {
@@ -148,6 +163,16 @@ public class JwtUtil {
             return (List<String>) rolesObj;
         }
         return new ArrayList<>();
+    }
+
+    public String getJtiFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(SIGNING_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("jti", String.class);
     }
 
     public long getJwtExpiration() {
