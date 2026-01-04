@@ -1,0 +1,70 @@
+server:
+  port: 8083
+  address: 0.0.0.0
+
+spring:
+  application:
+    name: support-service
+  datasource:
+    url: jdbc:postgresql://postgres-identity:5432/lotosia
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  data:
+    redis:
+      host: redis
+      port: 6379
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: lotosia2025@gmail.com
+    password: fdbx msci etvv sqrc
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+    from: lotosia2025@gmail.com
+
+jwt:
+  secret-key: my-hardcoded-secret-key-for-testing-purposes
+  expiration: 86400000
+  refresh-token:
+    expiration: 86400000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://service-discovery:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    com.lotosia: DEBUG
+    org.springframework.security: DEBUG

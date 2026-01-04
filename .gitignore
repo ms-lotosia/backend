@@ -60,3 +60,8 @@ infrastructure/ssl/
 *.pem
 *.p12
 *.pfx
+
+# Test artifacts and sensitive data (NEVER commit these!)
+cookies*.txt
+headers*.txt
+*.cookie
