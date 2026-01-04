@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
@@ -132,6 +133,21 @@ public class JwtUtil {
                 .getBody();
 
         return claims.get("userId", Long.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(SIGNING_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        Object rolesObj = claims.get("roles");
+        if (rolesObj instanceof List) {
+            return (List<String>) rolesObj;
+        }
+        return new ArrayList<>();
     }
 
     public long getJwtExpiration() {

@@ -16,7 +16,9 @@ import com.lotosia.identityservice.service.AuthService;
 import com.lotosia.identityservice.service.OtpService;
 import com.lotosia.identityservice.util.AuthenticationUtil;
 import com.lotosia.identityservice.util.CookieUtil;
+import com.lotosia.identityservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +26,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,8 +37,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 @RestController
 @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
@@ -44,6 +51,7 @@ public class AuthController {
     private final OtpService otpService;
     private final CookieUtil cookieUtil;
     private final AuthenticationUtil authenticationUtil;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(@Valid @RequestBody RegisterRequest dto) {
@@ -148,6 +156,9 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthResponse> getCurrentUser(HttpServletRequest request) {
         try {
+            // For direct API testing, check JWT token from cookies
+            setupAuthenticationFromCookies(request);
+
             String token = cookieUtil.getAccessTokenFromCookies(request);
             String userEmail = request.getHeader("X-User-Email");
 
@@ -158,5 +169,44 @@ public class AuthController {
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    /**
+     * For direct API testing: Set up Spring Security authentication from JWT token in cookies
+     * This allows @PreAuthorize to work when testing the identity service directly
+     */
+    private void setupAuthenticationFromCookies(HttpServletRequest request) {
+        // Only do this if not already authenticated (e.g., not through API gateway)
+        if (SecurityContextHolder.getContext().getAuthentication() == null ||
+            !SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+
+            String token = getTokenFromCookies(request);
+            if (token != null && jwtUtil.validateToken(token)) {
+                String email = jwtUtil.getEmailFromToken(token);
+                List<String> roles = jwtUtil.getRolesFromToken(token);
+
+                List<SimpleGrantedAuthority> authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(email, null, authorities);
+                authToken.setDetails(jwtUtil.getUserIdFromToken(token));
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+    }
+
+    private String getTokenFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
