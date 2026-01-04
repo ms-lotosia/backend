@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -124,9 +125,16 @@ public class AuthController {
     }
 
     @PostMapping("/send-reset-password-link")
-    public ResponseEntity<Void> sendResetPasswordLink(@RequestParam String email) {
-        authService.sendResetPasswordLink(email);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Map<String, String>> sendResetPasswordLink(@RequestParam String email) {
+        try {
+            authService.sendResetPasswordLink(email);
+        } catch (Exception e) {
+            // Always return the same response to prevent user enumeration
+            // Log the error for monitoring but don't expose it to client
+        }
+        return ResponseEntity.ok(Map.of(
+                "message", "If an account with this email exists, a password reset link has been sent."
+        ));
     }
 
     @PostMapping("/reset-password")
