@@ -167,9 +167,14 @@ public class AuthFilterConfig {
             exchange.getResponse().getHeaders().add("Server", "");
 
             ServerWebExchange modifiedExchange = exchange;
-            if (isStateChangingMethod(method) && path.startsWith("/api/v1/") &&
-                !path.contains("/login") && !path.contains("/request-otp") && !path.contains("/verify-otp") &&
-                !path.contains("/send-reset-password-link") && !path.contains("/reset-password")) {
+            // Define exempted paths for CSRF validation (public endpoints that don't require auth)
+            boolean isCsrfExemptedPath = path.equals("/api/v1/auth/login") ||
+                                        path.equals("/api/v1/auth/request-otp") ||
+                                        path.equals("/api/v1/auth/verify-otp") ||
+                                        path.equals("/api/v1/auth/send-reset-password-link") ||
+                                        path.equals("/api/v1/auth/reset-password");
+
+            if (isStateChangingMethod(method) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {
                 String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
                 String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
 
