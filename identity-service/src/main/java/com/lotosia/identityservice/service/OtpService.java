@@ -143,6 +143,7 @@ public class OtpService {
 
         Object result = redisTemplate.execute(
             connection -> connection.eval(OTP_RATE_LIMIT_SCRIPT.getBytes(),
+                org.springframework.data.redis.connection.ReturnType.MULTI,
                 2,
                 keys.stream().map(String::getBytes).toArray(byte[][]::new),
                 args.stream().map(String::getBytes).toArray(byte[][]::new)

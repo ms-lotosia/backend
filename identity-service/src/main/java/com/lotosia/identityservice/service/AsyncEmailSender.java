@@ -105,7 +105,7 @@ public class AsyncEmailSender {
                     + "We received a request to reset the password for: " + accountEmail + "\n"
                     + "This link expires in 1 hour.\n\n"
                     + "Reset password: " + resetLink + "\n\n"
-                    + "If you didn't request this, you can ignore this email or contact support at " + fromEmailAddress + ".";
+                    + "If you didn't request this, you can ignore this email or contact support at " + emailProperties.getFromAddress() + ".";
 
             String htmlTemplate = loadTemplate("templates/password-reset-email.html");
             String html = htmlTemplate
