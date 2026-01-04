@@ -1,53 +1,143 @@
 package com.lotosia.apigateway.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.security.Key;
-import java.time.Duration;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-
 @Configuration
 public class AuthFilterConfig {
 
-    private final ReactiveRedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private RateLimiter rateLimiter;
 
-    private static final RedisScript<Long> RATE_LIMIT_SCRIPT = RedisScript.of(
-        "local key = KEYS[1] " +
-        "local limit = tonumber(ARGV[1]) " +
-        "local window = tonumber(ARGV[2]) " +
-        "local current = redis.call('INCR', key) " +
-        "if current == 1 then " +
-        "    redis.call('PEXPIRE', key, window) " +
-        "end " +
-        "if current <= limit then " +
-        "    return current " +
-        "else " +
-        "    return -1 " +
-        "end",
-        Long.class
-    );
+    @Autowired
+    private BlockManager blockManager;
 
-    public AuthFilterConfig(ReactiveRedisTemplate<String, String> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    @Autowired
+    private JwtProcessor jwtProcessor;
+
+    @Bean
+    public GlobalFilter authFilter() {
+        return (exchange, chain) -> {
+            String path = exchange.getRequest().getPath().value();
+            String method = exchange.getRequest().getMethod().name();
+            String clientIP = getClientIP(exchange.getRequest());
+
+            return rateLimiter.checkRateLimit(clientIP, path, method)
+                    .flatMap(result -> {
+                        if (result == -1) {
+                            exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                            exchange.getResponse().getHeaders().add("X-RateLimit-Remaining", "0");
+                            exchange.getResponse().getHeaders().add("X-RateLimit-Reset", String.valueOf(System.currentTimeMillis() + 60000));
+                            exchange.getResponse().getHeaders().add("Retry-After", "60");
+                            return exchange.getResponse().setComplete();
+                        }
+
+                        return proceedWithAuth(exchange, chain, path, method, clientIP);
+                    });
+        };
     }
 
-    private static final String SECRET_KEY = "my-hardcoded-secret-key-for-testing-purposes";
+    private Mono<Void> proceedWithAuth(ServerWebExchange exchange, GatewayFilterChain chain, String path, String method, String clientIP) {
+        String token = extractToken(exchange);
+
+        boolean requiresAuth = jwtProcessor.isAdminRoute(path) ||
+                              path.equals("/api/v1/auth/me") ||
+                              path.equals("/api/v1/auth/logout");
+
+        if (requiresAuth && (token == null || token.isEmpty())) {
+            Mono<Void> recordMono = path.equals("/api/v1/auth/verify-otp") ?
+                Mono.empty() : blockManager.recordFailedAttempt(clientIP, null).then();
+            return recordMono.then(Mono.fromRunnable(() -> {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            }));
+        }
+
+        if (token != null && !token.isEmpty()) {
+            return jwtProcessor.validateToken(token)
+                    .flatMap(validation -> {
+                        if (!validation.valid) {
+                            Mono<Void> recordMono = (requiresAuth && !path.equals("/api/v1/auth/verify-otp")) ?
+                                blockManager.recordFailedAttempt(clientIP, null).then() : Mono.empty();
+                            return recordMono.then(Mono.fromRunnable(() -> {
+                                if (requiresAuth) {
+                                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                                }
+                            })).then(requiresAuth ? exchange.getResponse().setComplete() : chain.filter(exchange));
+                        }
+
+                        return blockManager.isBlocked(clientIP, validation.email)
+                                .flatMap(blocked -> {
+                                    if (blocked) {
+                                        exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                                        return exchange.getResponse().setComplete();
+                                    }
+
+                                    if (jwtProcessor.isAdminRoute(path) && (validation.roles == null || !validation.roles.contains("ADMIN"))) {
+                                        return blockManager.recordFailedAttempt(clientIP, validation.email).then(Mono.fromRunnable(() -> {
+                                            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                                        }));
+                                    }
+
+                                    String csrfToken = jwtProcessor.generateJti();
+                                    exchange.getResponse().getHeaders().add("Set-Cookie",
+                                            "csrfToken=" + csrfToken +
+                                            "; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400");
+
+                                    ServerWebExchange modifiedExchange = exchange.mutate()
+                                            .request(exchange.getRequest().mutate()
+                                                    .header("Authorization", "Bearer " + token)
+                                                    .header("X-User-Email", validation.email)
+                                                    .header("X-User-Id", validation.userId != null ? validation.userId.toString() : "")
+                                                    .header("X-User-Roles", validation.roles != null ? String.join(",", validation.roles) : "")
+                                                    .header("X-CSRF-Token", csrfToken)
+                                                    .build())
+                                            .build();
+
+                                    return chain.filter(modifiedExchange);
+                                });
+                    });
+        }
+
+        return chain.filter(exchange);
+    }
+
+    private String extractToken(ServerWebExchange exchange) {
+        HttpCookie accessTokenCookie = exchange.getRequest().getCookies().getFirst("accessToken");
+        if (accessTokenCookie != null && !accessTokenCookie.getValue().isEmpty()) {
+            return accessTokenCookie.getValue();
+        }
+
+        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        return null;
+    }
+
+    private String getClientIP(ServerHttpRequest request) {
+        String xForwardedFor = request.getHeaders().getFirst("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIP = request.getHeaders().getFirst("X-Real-IP");
+        if (xRealIP != null && !xRealIP.isEmpty()) {
+            return xRealIP;
+        }
+
+        return request.getRemoteAddress() != null ?
+               request.getRemoteAddress().getAddress().getHostAddress() : "unknown";
+    }
+}
     private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     private String generateJti() {
@@ -269,20 +359,15 @@ public class AuthFilterConfig {
             String method = exchange.getRequest().getMethod().name();
             String clientIP = getClientIP(exchange.getRequest());
 
-            return checkRateLimit(clientIP, path, method)
+            return rateLimiter.checkRateLimit(clientIP, path, method)
                     .flatMap(result -> {
-                        int limit = getRateLimit(path, method);
                         if (result == -1) {
                             exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-                            exchange.getResponse().getHeaders().add("X-RateLimit-Limit", String.valueOf(limit));
                             exchange.getResponse().getHeaders().add("X-RateLimit-Remaining", "0");
                             exchange.getResponse().getHeaders().add("X-RateLimit-Reset", String.valueOf(System.currentTimeMillis() + 60000));
                             exchange.getResponse().getHeaders().add("Retry-After", "60");
                             return exchange.getResponse().setComplete();
                         }
-
-                        exchange.getResponse().getHeaders().add("X-RateLimit-Limit", String.valueOf(limit));
-                        exchange.getResponse().getHeaders().add("X-RateLimit-Remaining", String.valueOf(limit - result));
 
                         return proceedWithAuth(exchange, chain, path, method, clientIP);
                     });
