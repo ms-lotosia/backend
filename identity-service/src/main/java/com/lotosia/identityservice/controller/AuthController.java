@@ -115,7 +115,6 @@ public class AuthController {
         try {
             authService.sendResetPasswordLink(email);
         } catch (Exception e) {
-            // Intentionally ignore exceptions for security (don't reveal if email exists)
         }
         return ControllerUtils.successResponse("If an account with this email exists, a password reset link has been sent.");
     }

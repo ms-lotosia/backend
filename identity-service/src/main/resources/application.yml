@@ -45,6 +45,25 @@ spring:
           timeout: 10000
           writetimeout: 10000
     from: lotosia2025@gmail.com
+  kafka:
+    bootstrap-servers: kafka:29092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      enable-idempotence: true
+    consumer:
+      group-id: email-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
+      max-poll-records: 10
+    listener:
+      ack-mode: manual_immediate
+    properties:
+      spring.json.trusted.packages: com.lotosia.identityservice.dto
 
 jwt:
   secret-key: my-hardcoded-secret-key-for-testing-purposes

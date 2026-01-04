@@ -10,7 +10,6 @@ import java.util.Map;
 public class ControllerUtils {
 
     private ControllerUtils() {
-        // Utility class
     }
 
     public static ResponseEntity<Map<String, String>> successResponse(String message) {

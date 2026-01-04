@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 public class ExceptionHandlerUtils {
 
     private ExceptionHandlerUtils() {
-        // Utility class
     }
 
     public static ResponseEntity<ApiError> buildErrorResponse(String code, String message, HttpStatus status, String path) {
@@ -22,7 +21,6 @@ public class ExceptionHandlerUtils {
         return ResponseEntity.status(status).body(error);
     }
 
-    // Common error response builders
     public static ResponseEntity<ApiError> conflictError(String code, String message, String path) {
         return buildErrorResponse(code, message, HttpStatus.CONFLICT, path);
     }

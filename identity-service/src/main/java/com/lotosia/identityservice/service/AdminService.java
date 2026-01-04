@@ -17,6 +17,8 @@ import com.lotosia.identityservice.exception.UserNotFoundException;
 import com.lotosia.identityservice.repository.PermissionRepository;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
+import com.lotosia.identityservice.util.EntityFinder;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,19 @@ public class AdminService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private EntityFinder<Role> roleFinder;
+    private EntityFinder<Permission> permissionFinder;
+
+    @PostConstruct
+    private void initializeFinders() {
+        this.roleFinder = EntityFinder.roleFinder(
+                roleRepository, roleRepository::findByName
+        );
+        this.permissionFinder = EntityFinder.permissionFinder(
+                permissionRepository, permissionRepository::findByName
+        );
+    }
 
     private UserDto convertToUserDto(User user) {
         return UserDto.builder()
@@ -93,26 +108,13 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        Role role = findRoleByIdentifier(roleIdentifier);
+        Role role = roleFinder.findByIdentifier(roleIdentifier);
         user.setRole(role);
 
         User savedUser = userRepository.save(user);
         return convertToUserDto(savedUser);
     }
 
-    private Role findRoleByIdentifier(String identifier) {
-        // Try to parse as ID first
-        try {
-            Long roleId = Long.parseLong(identifier);
-            return roleRepository.findById(roleId)
-                    .orElseThrow(() -> new RoleNotFoundException("Role not found with ID: " + roleId));
-        } catch (NumberFormatException e) {
-            // If not a number, treat as name (normalized)
-            String normalizedName = identifier.trim().toUpperCase();
-            return roleRepository.findByName(normalizedName)
-                    .orElseThrow(() -> new RoleNotFoundException("Role not found with name: " + identifier));
-        }
-    }
 
     public RoleDto createRole(String roleName) {
         if (roleRepository.findByName(roleName).isPresent()) {
@@ -136,7 +138,7 @@ public class AdminService {
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with ID: " + roleId));
 
         List<Permission> permissions = permissionIdentifiers.stream()
-                .map(this::findPermissionByIdentifier)
+                .map(permissionFinder::findByIdentifier)
                 .collect(Collectors.toList());
 
         role.getPermissions().clear();
@@ -145,19 +147,6 @@ public class AdminService {
         return convertToRoleDto(savedRole);
     }
 
-    private Permission findPermissionByIdentifier(String identifier) {
-        // Try to parse as ID first
-        try {
-            Long permissionId = Long.parseLong(identifier);
-            return permissionRepository.findById(permissionId)
-                    .orElseThrow(() -> new PermissionNotFoundException("Permission not found with ID: " + permissionId));
-        } catch (NumberFormatException e) {
-            // If not a number, treat as name (normalized)
-            String normalizedName = identifier.trim().toUpperCase();
-            return permissionRepository.findByName(normalizedName)
-                    .orElseThrow(() -> new PermissionNotFoundException("Permission not found with name: " + identifier));
-        }
-    }
 
     public PermissionDto createPermission(String permissionName) {
         if (permissionRepository.findByName(permissionName).isPresent()) {
