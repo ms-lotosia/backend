@@ -15,10 +15,13 @@ public class CookieUtil {
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String CSRF_TOKEN_COOKIE_NAME = "csrfToken";
     private static final String ACCESS_TOKEN_PATH = "/";
     private static final String REFRESH_TOKEN_PATH = "/";
-    private static final int ACCESS_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60; // 24 hours
-    private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
+    private static final String CSRF_TOKEN_PATH = "/";
+    private static final int ACCESS_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60;
+    private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+    private static final int CSRF_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60; 
 
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, accessToken)
@@ -40,6 +43,16 @@ public class CookieUtil {
                 .build();
     }
 
+    public ResponseCookie createCsrfTokenCookie(String csrfToken) {
+        return ResponseCookie.from(CSRF_TOKEN_COOKIE_NAME, csrfToken)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path(CSRF_TOKEN_PATH)
+                .maxAge(CSRF_TOKEN_MAX_AGE_SECONDS)
+                .sameSite("Lax")
+                .build();
+    }
+
     public void addAccessTokenCookie(HttpServletResponse response, String accessToken) {
         ResponseCookie cookie = createAccessTokenCookie(accessToken);
         response.addHeader("Set-Cookie", cookie.toString());
@@ -47,6 +60,11 @@ public class CookieUtil {
 
     public void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = createRefreshTokenCookie(refreshToken);
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    public void addCsrfTokenCookie(HttpServletResponse response, String csrfToken) {
+        ResponseCookie cookie = createCsrfTokenCookie(csrfToken);
         response.addHeader("Set-Cookie", cookie.toString());
     }
 

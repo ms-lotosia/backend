@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,8 +33,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -104,6 +103,10 @@ public class AuthController {
 
         cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
+
+        // Generate CSRF token for double-submit cookie pattern
+        String csrfToken = UUID.randomUUID().toString().replace("-", "");
+        cookieUtil.addCsrfTokenCookie(response, csrfToken);
 
         return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.OK);
     }
