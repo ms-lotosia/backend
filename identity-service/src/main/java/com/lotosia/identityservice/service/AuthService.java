@@ -76,20 +76,15 @@ public class AuthService {
         return new LoginResult(authResponse, accessToken, refreshToken);
     }
 
-    public ResponseEntity<?> logout(String authHeader) {
-        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+    public void logout(String token) {
+        String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
-        String redisKey = "blacklist:" + token;
+        String redisKey = "blacklist:" + cleanToken;
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("You are already logged out.");
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
+            long expiration = jwtUtil.getExpirationTime(cleanToken);
+            redisTemplate.opsForValue().set(redisKey, "1", expiration, TimeUnit.MILLISECONDS);
         }
-
-        long expiration = jwtUtil.getExpirationTime(token);
-        redisTemplate.opsForValue().set(redisKey, "1", expiration, TimeUnit.MILLISECONDS);
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     public void sendResetPasswordLink(String email) {
@@ -312,6 +307,16 @@ public class AuthService {
         }
 
         return getCurrentUserInfo(email);
+    }
+
+    public AuthResponse getCurrentUser(String token, String userEmail) {
+        if (token != null && !token.isEmpty()) {
+            return getCurrentUserFromToken(token);
+        } else if (userEmail != null && !userEmail.isEmpty()) {
+            return getCurrentUserInfo(userEmail);
+        } else {
+            throw new InvalidCredentialsException("Authentication credentials not provided");
+        }
     }
 
     private AuthResponse buildAuthResponseDto(User user, String accessToken) {

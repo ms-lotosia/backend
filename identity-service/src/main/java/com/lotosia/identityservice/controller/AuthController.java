@@ -99,15 +99,15 @@ public class AuthController {
     }
 
     @PostMapping(path = "/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         String token = cookieUtil.getAccessTokenFromCookies(request);
         cookieUtil.clearAccessTokenCookie(response);
         cookieUtil.clearRefreshTokenCookie(response);
 
         if (token != null) {
-            return authService.logout("Bearer " + token);
+            authService.logout(token);
         }
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/send-reset-password-link")
@@ -149,20 +149,9 @@ public class AuthController {
     public ResponseEntity<AuthResponse> getCurrentUser(HttpServletRequest request) {
         try {
             String token = cookieUtil.getAccessTokenFromCookies(request);
+            String userEmail = request.getHeader("X-User-Email");
 
-            if (token == null) {
-                // Check headers from API Gateway
-                String userEmail = request.getHeader("X-User-Email");
-
-                if (userEmail != null && !userEmail.isEmpty()) {
-                    AuthResponse userInfo = authService.getCurrentUserInfo(userEmail);
-                    return ResponseEntity.ok(userInfo);
-                } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                }
-            }
-
-            AuthResponse userInfo = authService.getCurrentUserFromToken(token);
+            AuthResponse userInfo = authService.getCurrentUser(token, userEmail);
             return ResponseEntity.ok(userInfo);
         } catch (InvalidCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
