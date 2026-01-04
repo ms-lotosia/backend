@@ -207,6 +207,67 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AdminAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleAdminAlreadyExists(AdminAlreadyExistsException ex, HttpServletRequest req) {
+        return buildResponse(
+                "ADMIN_ALREADY_EXISTS",
+                ex.getMessage(),
+                HttpStatus.CONFLICT,
+                req.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(AdminUpgradeException.class)
+    public ResponseEntity<ApiError> handleAdminUpgrade(AdminUpgradeException ex, HttpServletRequest req) {
+        ApiError success = ApiError.builder()
+                .code("ADMIN_UPGRADED")
+                .message(ex.getMessage())
+                .status(HttpStatus.OK.value())
+                .path(req.getRequestURI())
+                .build();
+        return ResponseEntity.ok(success);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiError> handleUserNotFound(UserNotFoundException ex, HttpServletRequest req) {
+        return buildResponse(
+                "USER_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND,
+                req.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiError> handleRoleNotFound(RoleNotFoundException ex, HttpServletRequest req) {
+        return buildResponse(
+                "ROLE_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND,
+                req.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(PermissionNotFoundException.class)
+    public ResponseEntity<ApiError> handlePermissionNotFound(PermissionNotFoundException ex, HttpServletRequest req) {
+        return buildResponse(
+                "PERMISSION_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND,
+                req.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleAlreadyExists(AlreadyExistsException ex, HttpServletRequest req) {
+        return buildResponse(
+                "ALREADY_EXISTS",
+                ex.getMessage(),
+                HttpStatus.CONFLICT,
+                req.getRequestURI()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex, HttpServletRequest req) {
         return buildResponse(

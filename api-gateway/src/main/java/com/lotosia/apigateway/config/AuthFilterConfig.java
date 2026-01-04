@@ -82,9 +82,6 @@ public class AuthFilterConfig {
                                         return exchange.getResponse().setComplete();
                                     }
 
-                                    // CSRF token is now handled by identity-service during login
-                                    // No need to generate here as cookies are set by login endpoint
-
                                     ServerWebExchange modifiedExchange = exchange.mutate()
                                             .request(exchange.getRequest().mutate()
                                                     .header("Authorization", "Bearer " + token)
@@ -160,11 +157,6 @@ public class AuthFilterConfig {
                                         path.equals("/api/v1/auth/verify-otp") ||
                                         path.equals("/api/v1/auth/send-reset-password-link") ||
                                         path.equals("/api/v1/auth/reset-password");
-
-            // CRITICAL SECURITY: CSRF Protection
-            // NEVER auto-inject X-CSRF-Token header from cookies!
-            // This would completely bypass CSRF protection.
-            // Client MUST explicitly send X-CSRF-Token header.
 
             String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
             if (cookieCsrfToken != null && (isStateChangingMethod(method) || (method.equals("GET") && path.equals("/api/v1/auth/me"))) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {

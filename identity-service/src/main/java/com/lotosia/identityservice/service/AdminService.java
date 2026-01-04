@@ -1,9 +1,19 @@
 package com.lotosia.identityservice.service;
 
+import com.lotosia.identityservice.dto.admin.AdminBootstrapResponse;
+import com.lotosia.identityservice.dto.admin.PageResponse;
+import com.lotosia.identityservice.dto.admin.PermissionDto;
+import com.lotosia.identityservice.dto.admin.RoleDto;
+import com.lotosia.identityservice.dto.admin.UserDto;
 import com.lotosia.identityservice.entity.Permission;
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.entity.User;
+import com.lotosia.identityservice.exception.AdminAlreadyExistsException;
+import com.lotosia.identityservice.exception.AdminUpgradeException;
 import com.lotosia.identityservice.exception.AlreadyExistsException;
+import com.lotosia.identityservice.exception.PermissionNotFoundException;
+import com.lotosia.identityservice.exception.RoleNotFoundException;
+import com.lotosia.identityservice.exception.UserNotFoundException;
 import com.lotosia.identityservice.repository.PermissionRepository;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
@@ -27,73 +37,159 @@ public class AdminService {
     private final PermissionRepository permissionRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    private UserDto convertToUserDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles().stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toSet()))
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .enabled(user.isEnabled())
+                .build();
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    private RoleDto convertToRoleDto(Role role) {
+        return RoleDto.builder()
+                .id(role.getId())
+                .name(role.getName())
+                .permissions(role.getPermissions().stream()
+                        .map(Permission::getName)
+                        .collect(Collectors.toSet()))
+                .createdAt(role.getCreatedAt())
+                .updatedAt(role.getUpdatedAt())
+                .build();
     }
 
-    public User updateUserRoles(Long userId, List<String> roleNames) {
+    private PermissionDto convertToPermissionDto(Permission permission) {
+        return PermissionDto.builder()
+                .id(permission.getId())
+                .name(permission.getName())
+                .createdAt(permission.getCreatedAt())
+                .updatedAt(permission.getUpdatedAt())
+                .build();
+    }
+
+    private <T> PageResponse<T> convertToPageResponse(org.springframework.data.domain.Page<T> page) {
+        return PageResponse.<T>builder()
+                .content(page.getContent())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .empty(page.isEmpty())
+                .build();
+    }
+
+    public PageResponse<UserDto> getAllUsers(Pageable pageable) {
+        org.springframework.data.domain.Page<User> userPage = userRepository.findAll(pageable);
+        org.springframework.data.domain.Page<UserDto> userDtoPage = userPage.map(this::convertToUserDto);
+        return convertToPageResponse(userDtoPage);
+    }
+
+    public UserDto getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+        return convertToUserDto(user);
+    }
+
+    public UserDto updateUserRoles(Long userId, List<String> roleIdentifiers) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        List<Role> roles = roleNames.stream()
-                .map(roleName -> roleRepository.findByName(roleName)
-                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
+        List<Role> roles = roleIdentifiers.stream()
+                .map(this::findRoleByIdentifier)
                 .collect(Collectors.toList());
 
         user.getRoles().clear();
         user.getRoles().addAll(roles);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return convertToUserDto(savedUser);
     }
 
-    public Role createRole(String roleName) {
+    private Role findRoleByIdentifier(String identifier) {
+        // Try to parse as ID first
+        try {
+            Long roleId = Long.parseLong(identifier);
+            return roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RoleNotFoundException("Role not found with ID: " + roleId));
+        } catch (NumberFormatException e) {
+            // If not a number, treat as name (normalized)
+            String normalizedName = identifier.trim().toUpperCase();
+            return roleRepository.findByName(normalizedName)
+                    .orElseThrow(() -> new RoleNotFoundException("Role not found with name: " + identifier));
+        }
+    }
+
+    public RoleDto createRole(String roleName) {
         if (roleRepository.findByName(roleName).isPresent()) {
-            throw new AlreadyExistsException("ROLE_ALREADY_EXISTS", "Role already exists: " + roleName);
+            throw new AlreadyExistsException("Role already exists: " + roleName);
         }
 
         Role role = new Role();
         role.setName(roleName);
-        return roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
+        return convertToRoleDto(savedRole);
     }
 
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+    public List<RoleDto> getAllRoles() {
+        return roleRepository.findAll().stream()
+                .map(this::convertToRoleDto)
+                .collect(Collectors.toList());
     }
 
-    public Role updateRolePermissions(Long roleId, List<String> permissionNames) {
+    public RoleDto updateRolePermissions(Long roleId, List<String> permissionIdentifiers) {
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new RoleNotFoundException("Role not found with ID: " + roleId));
 
-        List<Permission> permissions = permissionNames.stream()
-                .map(permName -> permissionRepository.findByName(permName)
-                        .orElseThrow(() -> new RuntimeException("Permission not found: " + permName)))
+        List<Permission> permissions = permissionIdentifiers.stream()
+                .map(this::findPermissionByIdentifier)
                 .collect(Collectors.toList());
 
         role.getPermissions().clear();
         role.getPermissions().addAll(permissions);
-        return roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
+        return convertToRoleDto(savedRole);
     }
 
-    public Permission createPermission(String permissionName) {
+    private Permission findPermissionByIdentifier(String identifier) {
+        // Try to parse as ID first
+        try {
+            Long permissionId = Long.parseLong(identifier);
+            return permissionRepository.findById(permissionId)
+                    .orElseThrow(() -> new PermissionNotFoundException("Permission not found with ID: " + permissionId));
+        } catch (NumberFormatException e) {
+            // If not a number, treat as name (normalized)
+            String normalizedName = identifier.trim().toUpperCase();
+            return permissionRepository.findByName(normalizedName)
+                    .orElseThrow(() -> new PermissionNotFoundException("Permission not found with name: " + identifier));
+        }
+    }
+
+    public PermissionDto createPermission(String permissionName) {
         if (permissionRepository.findByName(permissionName).isPresent()) {
             throw new AlreadyExistsException("PERMISSION_ALREADY_EXISTS", "Permission already exists: " + permissionName);
         }
 
         Permission permission = new Permission();
         permission.setName(permissionName);
-        return permissionRepository.save(permission);
+        Permission savedPermission = permissionRepository.save(permission);
+        return convertToPermissionDto(savedPermission);
     }
 
-    public List<Permission> getAllPermissions() {
-        return permissionRepository.findAll();
+    public List<PermissionDto> getAllPermissions() {
+        return permissionRepository.findAll().stream()
+                .map(this::convertToPermissionDto)
+                .collect(Collectors.toList());
     }
 
-    public String createDefaultAdmin() {
+    public AdminBootstrapResponse createDefaultAdmin() {
         User existingAdmin = userRepository.findByEmail("admin@lotosia.com").orElse(null);
 
         Role adminRole = roleRepository.findByName("ADMIN")
@@ -110,10 +206,10 @@ public class AdminService {
             if (!hasAdminRole) {
                 existingAdmin.getRoles().add(adminRole);
                 userRepository.save(existingAdmin);
-                return "UPGRADED";
+                throw new AdminUpgradeException("Existing user upgraded to admin privileges");
             }
 
-            return "EXISTS";
+            throw new AdminAlreadyExistsException("Admin user already exists with admin privileges");
         }
 
         User adminUser = new User();
@@ -125,6 +221,9 @@ public class AdminService {
         adminUser.getRoles().add(adminRole);
 
         userRepository.save(adminUser);
-        return "CREATED";
+        return AdminBootstrapResponse.builder()
+                .status(AdminBootstrapResponse.AdminBootstrapStatus.CREATED)
+                .message("Admin user created successfully")
+                .build();
     }
 }

@@ -207,6 +207,10 @@ public class JwtUtil {
         return JWT_EXPIRATION;
     }
 
+    public long getJwtExpirationSeconds() {
+        return JWT_EXPIRATION / 1000;
+    }
+
     public long getRefreshExpiration() {
         return REFRESH_EXPIRATION;
     }
