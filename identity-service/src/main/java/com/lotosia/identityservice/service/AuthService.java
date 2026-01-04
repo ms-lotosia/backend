@@ -30,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -329,9 +328,9 @@ public class AuthService {
             authResponse.setLastName(user.getLastName());
 
             if (user.getRole() != null) {
-                authResponse.setRoles(Set.of(user.getRole().getName()));
+                authResponse.setRole(user.getRole().getName());
             } else {
-                authResponse.setRoles(Set.of());
+                authResponse.setRole(null);
             }
         }
 
