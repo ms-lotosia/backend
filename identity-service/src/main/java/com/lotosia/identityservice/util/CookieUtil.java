@@ -34,6 +34,10 @@ public class CookieUtil {
                 .build();
     }
 
+    private void addCookie(HttpServletResponse response, ResponseCookie cookie) {
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, true, ACCESS_TOKEN_PATH,
                           ACCESS_TOKEN_MAX_AGE_SECONDS, cookieSecure ? "None" : "Lax");
@@ -47,22 +51,22 @@ public class CookieUtil {
 
     public void addAccessTokenCookie(HttpServletResponse response, String accessToken) {
         ResponseCookie cookie = createAccessTokenCookie(accessToken);
-        response.addHeader("Set-Cookie", cookie.toString());
+        addCookie(response, cookie);
     }
 
     public void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = createRefreshTokenCookie(refreshToken);
-        response.addHeader("Set-Cookie", cookie.toString());
+        addCookie(response, cookie);
     }
 
     public void addCsrfTokenCookie(HttpServletResponse response, String csrfToken) {
         ResponseCookie httpOnlyCookie = createCookie(CSRF_TOKEN_HTTP_ONLY_COOKIE_NAME, csrfToken, true,
                                                   CSRF_TOKEN_PATH, CSRF_TOKEN_MAX_AGE_SECONDS, "Lax");
-        response.addHeader("Set-Cookie", httpOnlyCookie.toString());
+        addCookie(response, httpOnlyCookie);
 
         ResponseCookie jsCookie = createCookie(CSRF_TOKEN_JS_COOKIE_NAME, csrfToken, false,
                                             CSRF_TOKEN_PATH, CSRF_TOKEN_MAX_AGE_SECONDS, "Lax");
-        response.addHeader("Set-Cookie", jsCookie.toString());
+        addCookie(response, jsCookie);
     }
 
     private String getCookieValue(HttpServletRequest request, String cookieName) {
@@ -88,23 +92,23 @@ public class CookieUtil {
     public void clearAccessTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = createCookie(ACCESS_TOKEN_COOKIE_NAME, "", true, ACCESS_TOKEN_PATH,
                                            0, cookieSecure ? "None" : "Lax");
-        response.addHeader("Set-Cookie", cookie.toString());
+        addCookie(response, cookie);
     }
 
     public void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = createCookie(REFRESH_TOKEN_COOKIE_NAME, "", true, REFRESH_TOKEN_PATH,
                                            0, cookieSecure ? "None" : "Lax");
-        response.addHeader("Set-Cookie", cookie.toString());
+        addCookie(response, cookie);
     }
 
     public void clearCsrfTokenCookie(HttpServletResponse response) {
         ResponseCookie httpOnlyCookie = createCookie(CSRF_TOKEN_HTTP_ONLY_COOKIE_NAME, "", true,
                                                   CSRF_TOKEN_PATH, 0, "Lax");
-        response.addHeader("Set-Cookie", httpOnlyCookie.toString());
+        addCookie(response, httpOnlyCookie);
 
         ResponseCookie jsCookie = createCookie(CSRF_TOKEN_JS_COOKIE_NAME, "", false,
                                             CSRF_TOKEN_PATH, 0, "Lax");
-        response.addHeader("Set-Cookie", jsCookie.toString());
+        addCookie(response, jsCookie);
     }
 
 }
