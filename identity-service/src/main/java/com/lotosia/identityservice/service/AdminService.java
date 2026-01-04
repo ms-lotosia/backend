@@ -46,9 +46,6 @@ public class AdminService {
                 .roles(user.getRoles().stream()
                         .map(Role::getName)
                         .collect(Collectors.toSet()))
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .enabled(user.isEnabled())
                 .build();
     }
 
@@ -59,8 +56,6 @@ public class AdminService {
                 .permissions(role.getPermissions().stream()
                         .map(Permission::getName)
                         .collect(Collectors.toSet()))
-                .createdAt(role.getCreatedAt())
-                .updatedAt(role.getUpdatedAt())
                 .build();
     }
 
@@ -68,22 +63,20 @@ public class AdminService {
         return PermissionDto.builder()
                 .id(permission.getId())
                 .name(permission.getName())
-                .createdAt(permission.getCreatedAt())
-                .updatedAt(permission.getUpdatedAt())
                 .build();
     }
 
     private <T> PageResponse<T> convertToPageResponse(org.springframework.data.domain.Page<T> page) {
-        return PageResponse.<T>builder()
-                .content(page.getContent())
-                .pageNumber(page.getNumber())
-                .pageSize(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .empty(page.isEmpty())
-                .build();
+        PageResponse<T> response = new PageResponse<>();
+        response.setContent(page.getContent());
+        response.setPageNumber(page.getNumber());
+        response.setPageSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+        response.setFirst(page.isFirst());
+        response.setLast(page.isLast());
+        response.setEmpty(page.isEmpty());
+        return response;
     }
 
     public PageResponse<UserDto> getAllUsers(Pageable pageable) {
@@ -129,7 +122,7 @@ public class AdminService {
 
     public RoleDto createRole(String roleName) {
         if (roleRepository.findByName(roleName).isPresent()) {
-            throw new AlreadyExistsException("Role already exists: " + roleName);
+            throw new AlreadyExistsException("ROLE_ALREADY_EXISTS", "Role already exists: " + roleName);
         }
 
         Role role = new Role();
@@ -206,10 +199,16 @@ public class AdminService {
             if (!hasAdminRole) {
                 existingAdmin.getRoles().add(adminRole);
                 userRepository.save(existingAdmin);
-                throw new AdminUpgradeException("Existing user upgraded to admin privileges");
+                AdminBootstrapResponse response = new AdminBootstrapResponse();
+                response.setStatus(AdminBootstrapResponse.AdminBootstrapStatus.UPGRADED);
+                response.setMessage("Existing user upgraded to admin privileges");
+                throw new AdminUpgradeException(response);
             }
 
-            throw new AdminAlreadyExistsException("Admin user already exists with admin privileges");
+            AdminBootstrapResponse response = new AdminBootstrapResponse();
+            response.setStatus(AdminBootstrapResponse.AdminBootstrapStatus.EXISTS);
+            response.setMessage("Admin user already exists with admin privileges");
+            throw new AdminAlreadyExistsException(response);
         }
 
         User adminUser = new User();

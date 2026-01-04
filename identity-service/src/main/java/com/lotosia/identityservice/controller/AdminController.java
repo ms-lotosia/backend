@@ -13,7 +13,6 @@ import com.lotosia.identityservice.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +35,6 @@ public class AdminController {
     @GetMapping("/users")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<PageResponse<UserDto>> getAllUsers(
-            @ParameterObject
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
         PageResponse<UserDto> users = adminService.getAllUsers(pageable);
         return ResponseEntity.ok(users);

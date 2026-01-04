@@ -18,7 +18,4 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private Set<String> roles;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private boolean enabled;
 }

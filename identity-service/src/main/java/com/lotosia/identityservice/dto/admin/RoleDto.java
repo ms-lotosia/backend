@@ -16,6 +16,4 @@ public class RoleDto {
     private Long id;
     private String name;
     private Set<String> permissions;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
