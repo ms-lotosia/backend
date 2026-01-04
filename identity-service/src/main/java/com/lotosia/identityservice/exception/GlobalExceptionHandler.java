@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -188,6 +189,20 @@ public class GlobalExceptionHandler {
                 "ACCESS_DENIED",
                 "You don't have permission to access this resource",
                 HttpStatus.FORBIDDEN,
+                req.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiError> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
+        String message = String.format("Request method '%s' is not supported for this endpoint. Supported methods: %s",
+                ex.getMethod(),
+                String.join(", ", ex.getSupportedMethods() != null ? ex.getSupportedMethods() : new String[]{"POST"}));
+
+        return buildResponse(
+                "METHOD_NOT_ALLOWED",
+                message,
+                HttpStatus.METHOD_NOT_ALLOWED,
                 req.getRequestURI()
         );
     }
