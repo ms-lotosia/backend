@@ -1,5 +1,6 @@
 package com.lotosia.identityservice.service;
 
+import com.lotosia.identityservice.config.EmailProperties;
 import com.lotosia.identityservice.dto.RegisterRequest;
 import com.lotosia.identityservice.entity.Otp;
 import com.lotosia.identityservice.exception.ExpiredOtpException;
@@ -8,11 +9,10 @@ import com.lotosia.identityservice.exception.TooManyRequestsException;
 import com.lotosia.identityservice.repository.OtpRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.script.ReturnType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventPublisher;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -28,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OtpService {
 
-    private static final int OTP_VALID_MINUTES = 5;
+    private static final int OTP_VALID_MINUTES = EmailProperties.OTP_EXPIRY_MINUTES;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private static class RateLimitResult {
@@ -61,7 +61,7 @@ public class OtpService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
-    private final TransactionalEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static String normalizeEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
@@ -142,7 +142,8 @@ public class OtpService {
         List<String> args = Arrays.asList(String.valueOf(currentTime));
 
         Object result = redisTemplate.execute(
-            connection -> connection.eval(OTP_RATE_LIMIT_SCRIPT.getBytes(), ReturnType.MULTI, 2,
+            connection -> connection.eval(OTP_RATE_LIMIT_SCRIPT.getBytes(),
+                2,
                 keys.stream().map(String::getBytes).toArray(byte[][]::new),
                 args.stream().map(String::getBytes).toArray(byte[][]::new)
             ),
