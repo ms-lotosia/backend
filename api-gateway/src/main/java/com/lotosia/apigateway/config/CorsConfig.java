@@ -16,12 +16,9 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of(
-                "https://lotosia.vercel.app",
-                "https://*.vercel.app",
-                "http://localhost:*",
-                "http://127.0.0.1:*",
-                "http://38.242.144.128:*",
-                "https://38.242.144.128:*"
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "https://lotosia.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Origin", "Accept"));
