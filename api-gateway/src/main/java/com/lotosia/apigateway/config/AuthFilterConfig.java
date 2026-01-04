@@ -54,10 +54,12 @@ public class AuthFilterConfig {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    private static final int AUTH_RATE_LIMIT = 5;
-    private static final int OTP_RATE_LIMIT = 3;
-    private static final int ADMIN_RATE_LIMIT = 10;
-    private static final int GENERAL_RATE_LIMIT = 100;
+    private static final int AUTH_POST_LIMIT = 5;
+    private static final int OTP_POST_LIMIT = 3;
+    private static final int CHECKOUT_POST_LIMIT = 10;
+    private static final int GENERAL_WRITE_LIMIT = 60;
+    private static final int GENERAL_READ_LIMIT = 300;
+    private static final int ADMIN_LIMIT = 30;
 
     private static final int USER_BLOCK_THRESHOLD = 5;     // Block user after 5 failed attempts
     private static final int IP_BLOCK_THRESHOLD = 50;     // Block IP after 50 failed attempts (much higher)
@@ -71,17 +73,37 @@ public class AuthFilterConfig {
                !path.equals("/api/v1/admin/create-admin");
     }
 
-    private int getRateLimit(String path) {
-        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/verify-otp")) {
-            return AUTH_RATE_LIMIT;
-        } else if (path.startsWith("/api/v1/auth/request-otp")) {
-            return OTP_RATE_LIMIT;
-        } else if (path.startsWith("/api/v1/admin/create-admin")) {
+    private int getRateLimit(String path, String method) {
+        boolean isRead = "GET".equals(method);
+        boolean isWrite = Arrays.asList("POST", "PUT", "DELETE", "PATCH").contains(method);
+
+        if (path.startsWith("/api/v1/auth/login") && isWrite) {
+            return AUTH_POST_LIMIT;
+        } else if (path.startsWith("/api/v1/auth/verify-otp") && isWrite) {
+            return AUTH_POST_LIMIT;
+        } else if (path.startsWith("/api/v1/auth/request-otp") && isWrite) {
+            return OTP_POST_LIMIT;
+        } else if (path.startsWith("/api/v1/admin/create-admin") && isWrite) {
             return 2;
-        } else if (path.startsWith("/api/v1/admin/")) {
-            return ADMIN_RATE_LIMIT;
+        } else if (path.startsWith("/api/v1/admin/") && isWrite) {
+            return ADMIN_LIMIT;
+        } else if (isCheckoutEndpoint(path) && isWrite) {
+            return CHECKOUT_POST_LIMIT;
+        } else if (isWrite) {
+            return GENERAL_WRITE_LIMIT;
+        } else if (isRead) {
+            return GENERAL_READ_LIMIT;
         }
-        return GENERAL_RATE_LIMIT;
+
+        return GENERAL_READ_LIMIT;
+    }
+
+    private boolean isCheckoutEndpoint(String path) {
+        return path.contains("/checkout") ||
+               path.contains("/payments") ||
+               path.contains("/orders") ||
+               path.contains("/baskets") ||
+               path.contains("/carts");
     }
 
     public String getRateLimitInfo(String path) {
@@ -125,16 +147,36 @@ public class AuthFilterConfig {
                 .replaceAll("/[a-f0-9]{24}", "/*"); // MongoDB ObjectIds
     }
 
-    private Mono<Long> checkRateLimit(String clientIP, String path) {
-        String normalizedPath = normalizePathForRateLimit(path);
-        String key = "ratelimit:" + clientIP + ":" + normalizedPath;
-        int limit = getRateLimit(path);
+    private Mono<Long> checkRateLimit(String clientIP, String path, String method) {
+        boolean isRead = "GET".equals(method);
+        String key;
+        int limit = getRateLimit(path, method);
         long window = RATE_WINDOW.toMillis();
+
+        if (isRead) {
+            String category = getReadCategory(path);
+            key = "ratelimit:get:" + clientIP + ":" + category;
+        } else {
+            String normalizedPath = normalizePathForRateLimit(path);
+            key = "ratelimit:write:" + clientIP + ":" + normalizedPath;
+        }
 
         return redisTemplate.execute(RATE_LIMIT_SCRIPT, Collections.singletonList(key),
                 Arrays.asList(String.valueOf(limit), String.valueOf(window)))
                 .single()
                 .defaultIfEmpty(0L);
+    }
+
+    private String getReadCategory(String path) {
+        if (path.contains("/products") || path.contains("/catalog") || path.contains("/items")) {
+            return "CATALOG_GET";
+        } else if (path.contains("/search") || path.contains("/filter")) {
+            return "SEARCH_GET";
+        } else if (path.startsWith("/api/v1/auth/") || path.startsWith("/api/v1/admin/")) {
+            return "AUTH_GET";
+        } else {
+            return "GENERAL_GET";
+        }
     }
     private Mono<Boolean> isBlocked(String clientIP, String userEmail) {
         if (userEmail != null && !userEmail.isEmpty()) {
@@ -224,11 +266,12 @@ public class AuthFilterConfig {
     public GlobalFilter authFilter() {
         return (exchange, chain) -> {
             String path = exchange.getRequest().getPath().value();
+            String method = exchange.getRequest().getMethod().name();
             String clientIP = getClientIP(exchange.getRequest());
 
-            return checkRateLimit(clientIP, path)
+            return checkRateLimit(clientIP, path, method)
                     .flatMap(result -> {
-                        int limit = getRateLimit(path);
+                        int limit = getRateLimit(path, method);
                         if (result == -1) {
                             exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
                             exchange.getResponse().getHeaders().add("X-RateLimit-Limit", String.valueOf(limit));
@@ -241,12 +284,12 @@ public class AuthFilterConfig {
                         exchange.getResponse().getHeaders().add("X-RateLimit-Limit", String.valueOf(limit));
                         exchange.getResponse().getHeaders().add("X-RateLimit-Remaining", String.valueOf(limit - result));
 
-                        return proceedWithAuth(exchange, chain, path, clientIP);
+                        return proceedWithAuth(exchange, chain, path, method, clientIP);
                     });
         };
     }
 
-    private Mono<Void> proceedWithAuth(ServerWebExchange exchange, GatewayFilterChain chain, String path, String clientIP) {
+    private Mono<Void> proceedWithAuth(ServerWebExchange exchange, GatewayFilterChain chain, String path, String method, String clientIP) {
         String token = null;
         HttpCookie accessTokenCookie = exchange.getRequest().getCookies()
                 .getFirst("accessToken");
@@ -303,10 +346,10 @@ public class AuthFilterConfig {
                                                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                                                 return exchange.getResponse().setComplete();
                                             }
-                            return processValidToken(exchange, chain, path, clientIP, email, userId, roles);
+                                            return processValidToken(exchange, chain, path, method, clientIP, email, userId, roles);
                         });
                     } else {
-                        return processValidToken(exchange, chain, path, clientIP, email, userId, roles);
+                        return processValidToken(exchange, chain, path, method, clientIP, email, userId, roles);
                     }
 
                         } catch (Exception e) {
@@ -325,7 +368,7 @@ public class AuthFilterConfig {
     }
 
     private Mono<Void> processValidToken(ServerWebExchange exchange, GatewayFilterChain chain,
-                                        String path, String clientIP, String email,
+                                        String path, String method, String clientIP, String email,
                                         Long userId, List<String> roles) {
         return isBlocked(clientIP, email)
                 .flatMap(blocked -> {
