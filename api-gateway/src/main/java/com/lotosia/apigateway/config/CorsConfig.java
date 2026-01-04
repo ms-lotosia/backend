@@ -16,18 +16,20 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of(
-                "https://lotosia.vercel.app"  // Production
-        ));
+        List<String> allowedOrigins = new java.util.ArrayList<>();
+        allowedOrigins.add("https://lotosia.vercel.app");  // Production
+
+        // Always allow localhost for development convenience
+        allowedOrigins.add("http://localhost:3000");
+        allowedOrigins.add("http://127.0.0.1:3000");
 
         String environment = System.getenv("SPRING_PROFILES_ACTIVE");
         if ("dev".equals(environment) || "development".equals(environment)) {
-            config.setAllowedOriginPatterns(List.of(
-                    "http://localhost:3000",
-                    "http://127.0.0.1:3000",
-                    "https://lotosia.vercel.app"
-            ));
+            // Add any additional dev-specific origins here if needed
+            allowedOrigins.add("http://localhost:3001");  // Additional dev port
         }
+
+        config.setAllowedOriginPatterns(allowedOrigins);
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of(
