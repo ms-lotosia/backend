@@ -141,12 +141,25 @@ public class OtpService {
         List<String> keys = Arrays.asList(attemptsKey, lastAttemptKey);
         List<String> args = Arrays.asList(String.valueOf(currentTime));
 
+        // Combine keys and args into single array for Redis eval
+        byte[][] keysAndArgs = new byte[keys.size() + args.size()][];
+        int index = 0;
+
+        // Add keys first
+        for (String key : keys) {
+            keysAndArgs[index++] = key.getBytes();
+        }
+
+        // Add args
+        for (String arg : args) {
+            keysAndArgs[index++] = arg.getBytes();
+        }
+
         Object result = redisTemplate.execute(
             connection -> connection.eval(OTP_RATE_LIMIT_SCRIPT.getBytes(),
                 org.springframework.data.redis.connection.ReturnType.MULTI,
-                2,
-                keys.stream().map(String::getBytes).toArray(byte[][]::new),
-                args.stream().map(String::getBytes).toArray(byte[][]::new)
+                keys.size(),
+                keysAndArgs
             ),
             true
         );
