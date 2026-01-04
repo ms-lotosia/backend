@@ -63,7 +63,7 @@ public class CookieUtil {
     }
 
     private String getSameSiteValue() {
-        return "None";
+        return cookieSecure ? "None" : "Lax";
     }
 
     public ResponseCookie createAccessTokenCookie(String accessToken) {

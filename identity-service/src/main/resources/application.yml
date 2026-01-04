@@ -54,7 +54,6 @@ jwt:
 
 cookie:
   secure: false
-  domain: localhost
 
 eureka:
   client:
