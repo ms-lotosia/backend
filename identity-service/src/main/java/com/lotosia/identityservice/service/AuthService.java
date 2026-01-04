@@ -251,11 +251,8 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setPassword(hashedPassword);
 
-        Role roleUser = roleRepository.findByName("USER").orElseGet(() -> {
-            Role newRole = new Role();
-            newRole.setName("USER");
-            return newRole;
-        });
+        Role roleUser = new Role();
+        roleUser.setName("USER");
         roleUser.setUser(newUser);
         newUser.getRoles().add(roleUser);
 
