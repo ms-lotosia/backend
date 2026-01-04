@@ -93,12 +93,8 @@ public class AdminService {
         return permissionRepository.findAll();
     }
 
-    public String createAdmin() {
+    public String createDefaultAdmin() {
         User existingAdmin = userRepository.findByEmail("admin@lotosia.com").orElse(null);
-
-        if (existingAdmin != null) {
-            return "EXISTS";
-        }
 
         Role adminRole = roleRepository.findByName("ADMIN")
                 .orElseGet(() -> {
@@ -106,6 +102,19 @@ public class AdminService {
                     role.setName("ADMIN");
                     return roleRepository.save(role);
                 });
+
+        if (existingAdmin != null) {
+            boolean hasAdminRole = existingAdmin.getRoles().stream()
+                    .anyMatch(role -> "ADMIN".equals(role.getName()));
+
+            if (!hasAdminRole) {
+                existingAdmin.getRoles().add(adminRole);
+                userRepository.save(existingAdmin);
+                return "UPGRADED";
+            }
+
+            return "EXISTS";
+        }
 
         User adminUser = new User();
         adminUser.setEmail("admin@lotosia.com");

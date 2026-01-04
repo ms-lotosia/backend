@@ -88,19 +88,29 @@ public class AdminController {
         return ResponseEntity.ok(permissions);
     }
 
-    @Operation(summary = "Create the default admin user")
+    @Operation(summary = "Create or upgrade the default admin user")
     @PostMapping("/create-admin")
     @PreAuthorize("permitAll()")
     public ResponseEntity<ApiError> createAdmin() {
-        String result = adminService.createAdmin();
+        String result = adminService.createDefaultAdmin();
         if ("EXISTS".equals(result)) {
             ApiError error = ApiError.builder()
                     .code("ADMIN_ALREADY_EXISTS")
-                    .message("Admin user already exists")
+                    .message("Admin user already exists with admin privileges")
                     .status(409)
                     .path("/api/v1/admin/create-admin")
                     .build();
             return ResponseEntity.status(409).body(error);
+        }
+
+        if ("UPGRADED".equals(result)) {
+            ApiError success = ApiError.builder()
+                    .code("ADMIN_UPGRADED")
+                    .message("Existing user upgraded to admin privileges")
+                    .status(200)
+                    .path("/api/v1/admin/create-admin")
+                    .build();
+            return ResponseEntity.ok(success);
         }
 
         ApiError success = ApiError.builder()
