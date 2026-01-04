@@ -290,6 +290,30 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: identity_db
+    volumes:
+      - mongodb_data:/data/db
+    networks: [microservices-network]
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
   redis-exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
@@ -558,6 +582,8 @@ services:
     depends_on:
       postgres-identity:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
       kafka:
@@ -771,6 +797,7 @@ volumes:
   postgres_shopping_data:
   postgres_payment_data:
   redis_data:
+  mongodb_data:
   pgadmin_data:
   prometheus_data:
   grafana_data:
