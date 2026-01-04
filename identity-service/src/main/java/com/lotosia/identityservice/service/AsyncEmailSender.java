@@ -23,6 +23,10 @@ public class AsyncEmailSender {
     private final JavaMailSender mailSender;
     private final EmailProperties emailProperties;
 
+    // Cache email templates to avoid repeated I/O
+    private volatile String otpEmailTemplate;
+    private volatile String passwordResetEmailTemplate;
+
     public AsyncEmailSender(JavaMailSender mailSender, EmailProperties emailProperties) {
         this.mailSender = mailSender;
         this.emailProperties = emailProperties;
@@ -124,6 +128,30 @@ public class AsyncEmailSender {
     }
 
     private String loadTemplate(String templatePath) throws Exception {
+        // Use cached templates to avoid repeated I/O operations
+        if ("templates/otp-email.html".equals(templatePath)) {
+            if (otpEmailTemplate == null) {
+                synchronized (this) {
+                    if (otpEmailTemplate == null) {
+                        ClassPathResource resource = new ClassPathResource(templatePath);
+                        otpEmailTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+                    }
+                }
+            }
+            return otpEmailTemplate;
+        } else if ("templates/password-reset-email.html".equals(templatePath)) {
+            if (passwordResetEmailTemplate == null) {
+                synchronized (this) {
+                    if (passwordResetEmailTemplate == null) {
+                        ClassPathResource resource = new ClassPathResource(templatePath);
+                        passwordResetEmailTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+                    }
+                }
+            }
+            return passwordResetEmailTemplate;
+        }
+
+        // Fallback for any other templates
         ClassPathResource resource = new ClassPathResource(templatePath);
         return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
     }

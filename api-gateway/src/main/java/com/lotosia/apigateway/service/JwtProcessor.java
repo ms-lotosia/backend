@@ -1,4 +1,4 @@
-package com.lotosia.apigateway.config;
+package com.lotosia.apigateway.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -28,6 +28,14 @@ public class JwtProcessor {
     }
 
     public Mono<TokenValidationResult> validateTokenForGateway(String token) {
+        return validateTokenInternal(token, false);
+    }
+
+    public Mono<TokenValidationResult> validateToken(String token) {
+        return validateTokenInternal(token, true);
+    }
+
+    private Mono<TokenValidationResult> validateTokenInternal(String token, boolean checkBlacklist) {
         if (token == null || token.isEmpty()) {
             return Mono.just(new TokenValidationResult(false, null, null, null, null));
         }
@@ -45,35 +53,11 @@ public class JwtProcessor {
 
             String email = claims.getSubject();
             Long userId = claims.get("userId", Long.class);
-            @SuppressWarnings("unchecked")
-            List<String> roles = claims.get("roles", List.class);
-
-            return Mono.just(new TokenValidationResult(true, email, userId, roles, null));
-
-        } catch (Exception e) {
-            return Mono.just(new TokenValidationResult(false, null, null, null, null));
-        }
-    }
-
-    public Mono<TokenValidationResult> validateToken(String token) {
-        if (token == null || token.isEmpty()) {
-            return Mono.just(new TokenValidationResult(false, null, null, null, null));
-        }
-
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(SIGNING_KEY)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-
-            String email = claims.getSubject();
-            Long userId = claims.get("userId", Long.class);
             String jti = claims.get("jti", String.class);
             @SuppressWarnings("unchecked")
             List<String> roles = claims.get("roles", List.class);
 
-            if (jti != null) {
+            if (checkBlacklist && jti != null) {
                 String blacklistKey = "blacklist:jti:" + jti;
                 return redisTemplate.hasKey(blacklistKey)
                         .map(isBlacklisted -> {

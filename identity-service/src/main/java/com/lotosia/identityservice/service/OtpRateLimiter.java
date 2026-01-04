@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.service;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

@@ -1,5 +1,6 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.config;
 
+import com.lotosia.identityservice.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

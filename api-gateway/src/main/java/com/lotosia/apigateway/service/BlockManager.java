@@ -1,4 +1,4 @@
-package com.lotosia.apigateway.config;
+package com.lotosia.apigateway.service;
 
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -39,52 +39,29 @@ public class BlockManager {
 
     public Mono<Long> recordFailedAttempt(String clientIP, String userEmail) {
         if (userEmail != null && !userEmail.isEmpty()) {
-            return recordUserFailedAttempt(userEmail);
+            return recordFailedAttempt(userEmail, USER_BLOCK_THRESHOLD, USER_BLOCK_DURATION, "user");
         }
 
-        return recordIpFailedAttempt(clientIP);
+        return recordFailedAttempt(clientIP, IP_BLOCK_THRESHOLD, IP_BLOCK_DURATION, "ip");
     }
 
-    private Mono<Long> recordUserFailedAttempt(String userEmail) {
-        String userAttemptsKey = "failed_attempts:user:" + userEmail;
-        String userBlockKey = "blocked:user:" + userEmail;
+    private Mono<Long> recordFailedAttempt(String identifier, int threshold, Duration blockDuration, String type) {
+        String attemptsKey = "failed_attempts:" + type + ":" + identifier;
+        String blockKey = "blocked:" + type + ":" + identifier;
 
-        return redisTemplate.opsForValue().increment(userAttemptsKey)
+        return redisTemplate.opsForValue().increment(attemptsKey)
                 .flatMap(attempts -> {
                     if (attempts == 1) {
-                        return redisTemplate.expire(userAttemptsKey, USER_BLOCK_DURATION)
+                        return redisTemplate.expire(attemptsKey, blockDuration)
                                 .thenReturn(attempts);
                     }
                     return Mono.just(attempts);
                 })
                 .flatMap(attempts -> {
-                    if (attempts >= USER_BLOCK_THRESHOLD) {
-                        return redisTemplate.opsForValue().set(userBlockKey, "1")
-                                .then(redisTemplate.expire(userBlockKey, USER_BLOCK_DURATION))
-                                .then(redisTemplate.delete(userAttemptsKey))
-                                .thenReturn(attempts);
-                    }
-                    return Mono.just(attempts);
-                });
-    }
-
-    private Mono<Long> recordIpFailedAttempt(String clientIP) {
-        String ipAttemptsKey = "failed_attempts:ip:" + clientIP;
-        String ipBlockKey = "blocked:ip:" + clientIP;
-
-        return redisTemplate.opsForValue().increment(ipAttemptsKey)
-                .flatMap(attempts -> {
-                    if (attempts == 1) {
-                        return redisTemplate.expire(ipAttemptsKey, IP_BLOCK_DURATION)
-                                .thenReturn(attempts);
-                    }
-                    return Mono.just(attempts);
-                })
-                .flatMap(attempts -> {
-                    if (attempts >= IP_BLOCK_THRESHOLD) {
-                        return redisTemplate.opsForValue().set(ipBlockKey, "1")
-                                .then(redisTemplate.expire(ipBlockKey, IP_BLOCK_DURATION))
-                                .then(redisTemplate.delete(ipAttemptsKey))
+                    if (attempts >= threshold) {
+                        return redisTemplate.opsForValue().set(blockKey, "1")
+                                .then(redisTemplate.expire(blockKey, blockDuration))
+                                .then(redisTemplate.delete(attemptsKey))
                                 .thenReturn(attempts);
                     }
                     return Mono.just(attempts);

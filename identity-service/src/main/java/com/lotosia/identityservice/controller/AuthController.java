@@ -15,6 +15,7 @@ import com.lotosia.identityservice.exception.NotFoundException;
 import com.lotosia.identityservice.service.AuthService;
 import com.lotosia.identityservice.service.OtpService;
 import com.lotosia.identityservice.util.AuthenticationUtil;
+import com.lotosia.identityservice.util.ControllerUtils;
 import com.lotosia.identityservice.util.CookieUtil;
 import com.lotosia.identityservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,10 +39,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 @RestController
 @RequestMapping(path = "/api/v1/auth")
 @RequiredArgsConstructor
@@ -57,15 +56,12 @@ public class AuthController {
     @PostMapping("/request-otp")
     public ResponseEntity<Map<String, String>> requestOtp(@Valid @RequestBody RegisterRequest dto) {
         if (authService.isUserExists(dto.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("code", "EMAIL_ALREADY_REGISTERED", "message", "Email already registered."));
+            return ControllerUtils.conflictResponse("EMAIL_ALREADY_REGISTERED", "Email already registered.");
         }
 
         otpService.generateAndSentOtp(dto);
 
-        return ResponseEntity.ok(Map.of(
-                "message", "OTP sent to " + dto.getEmail() + ". Please verify to complete registration."
-        ));
+        return ControllerUtils.successResponse("OTP sent to " + dto.getEmail() + ". Please verify to complete registration.");
     }
 
     @PostMapping("/verify-otp")
@@ -74,10 +70,8 @@ public class AuthController {
 
         Optional<Otp> optionalOtpEntity = otpService.getOtpByEmail(email);
         if (optionalOtpEntity.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "code", "REG_DATA_MISSING",
-                    "message", "No pending registration data found for this email. Please request OTP again."
-            ));
+            return ControllerUtils.badRequestResponse("REG_DATA_MISSING",
+                    "No pending registration data found for this email. Please request OTP again.");
         }
 
         Otp otpEntity = optionalOtpEntity.get();
@@ -89,8 +83,7 @@ public class AuthController {
                 otpEntity.getHashedPassword()
         );
 
-        cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
-        cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
+        ControllerUtils.addAuthCookies(cookieUtil, response, result.getAccessToken(), result.getRefreshToken());
 
         otpService.clearOtpData(email);
 
@@ -101,19 +94,15 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         LoginResult result = authService.loginWithTokens(loginRequest.getEmail(), loginRequest.getPassword());
 
-        cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
-        cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
-        cookieUtil.addCsrfTokenCookie(response, result.getCsrfToken());
+        ControllerUtils.addAuthCookies(cookieUtil, response, result.getAccessToken(), result.getRefreshToken(), result.getCsrfToken());
 
         return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.OK);
     }
 
     @PostMapping(path = "/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = cookieUtil.getAccessTokenFromCookies(request);
-        cookieUtil.clearAccessTokenCookie(response);
-        cookieUtil.clearRefreshTokenCookie(response);
-        cookieUtil.clearCsrfTokenCookie(response);
+        String token = ControllerUtils.extractToken(cookieUtil, request);
+        ControllerUtils.clearAuthCookies(cookieUtil, response);
 
         if (token != null) {
             authService.logout(token);
@@ -124,12 +113,11 @@ public class AuthController {
     @PostMapping("/send-reset-password-link")
     public ResponseEntity<Map<String, String>> sendResetPasswordLink(@RequestParam String email) {
         try {
-        authService.sendResetPasswordLink(email);
+            authService.sendResetPasswordLink(email);
         } catch (Exception e) {
+            // Intentionally ignore exceptions for security (don't reveal if email exists)
         }
-        return ResponseEntity.ok(Map.of(
-                "message", "If an account with this email exists, a password reset link has been sent."
-        ));
+        return ControllerUtils.successResponse("If an account with this email exists, a password reset link has been sent.");
     }
 
     @PostMapping("/reset-password")
@@ -140,23 +128,24 @@ public class AuthController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = cookieUtil.getRefreshTokenFromCookies(request);
+        String refreshToken = ControllerUtils.extractRefreshToken(cookieUtil, request);
 
         if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Refresh token not found in cookies"));
+            return ControllerUtils.unauthorizedResponse("Refresh token not found in cookies");
         }
 
         try {
             RefreshResult result = authService.refreshWithTokens(refreshToken);
 
-            cookieUtil.addAccessTokenCookie(response, result.getRefreshTokenResponse().getAccessToken());
-            cookieUtil.addRefreshTokenCookie(response, result.getNewRefreshToken());
+            ControllerUtils.addAuthCookies(cookieUtil, response,
+                    result.getRefreshTokenResponse().getAccessToken(),
+                    result.getNewRefreshToken());
 
             return ResponseEntity.ok().build();
         } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
+            return ControllerUtils.unauthorizedResponse(e.getMessage());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            return ControllerUtils.badRequestResponse("INVALID_TOKEN", e.getMessage());
         }
     }
 
@@ -164,7 +153,7 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthResponse> getCurrentUser(HttpServletRequest request) {
         try {
-            String token = cookieUtil.getAccessTokenFromCookies(request);
+            String token = ControllerUtils.extractToken(cookieUtil, request);
             String userEmail = request.getHeader("X-User-Email");
 
             AuthResponse userInfo = authService.getCurrentUser(token, userEmail);

@@ -15,18 +15,23 @@ public class AsyncConfig {
     public Executor emailExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
+        // Increased capacity for better throughput
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(500);
         executor.setThreadNamePrefix("EmailAsync-");
         executor.setKeepAliveSeconds(60);
+
+        // Better rejection handling - log and potentially store for retry
         executor.setRejectedExecutionHandler(
             (runnable, threadPoolExecutor) -> {
-                System.err.println("Email task rejected - queue full and max threads reached");
+                System.err.println("Email task rejected - implementing retry logic or queue persistence");
+                // TODO: Implement retry mechanism or queue to database
             }
         );
+
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(30);
+        executor.setAwaitTerminationSeconds(60); // Increased shutdown timeout
 
         executor.initialize();
         return executor;

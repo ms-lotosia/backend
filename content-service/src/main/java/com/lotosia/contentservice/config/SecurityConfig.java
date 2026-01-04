@@ -1,6 +1,6 @@
 package com.lotosia.contentservice.config;
 
-import com.lotosia.contentservice.util.JwtAuthenticationFilter;
+import com.lotosia.contentservice.config.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

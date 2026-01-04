@@ -1,7 +1,7 @@
 package com.lotosia.identityservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lotosia.identityservice.util.JwtAuthenticationFilter;
+import com.lotosia.identityservice.config.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
