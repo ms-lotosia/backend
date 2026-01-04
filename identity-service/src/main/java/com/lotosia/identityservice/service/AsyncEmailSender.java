@@ -159,8 +159,8 @@ public class AsyncEmailSender {
             throw new IllegalArgumentException("Reset link cannot be null or empty");
         }
 
-        if (!resetLink.startsWith("http://")) {
-            throw new IllegalArgumentException("Reset link must use HTTP protocol");
+        if (!resetLink.startsWith("http://") && !resetLink.startsWith("https://")) {
+            throw new IllegalArgumentException("Reset link must use HTTP or HTTPS protocol");
         }
 
         if (resetLink.contains("..") || resetLink.contains("://localhost")) {
