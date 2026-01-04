@@ -62,7 +62,10 @@ eureka:
 
 logging:
   level:
-    com.lotosia: INFO
+    com.lotosia: DEBUG
+    org.springframework: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.mongodb: DEBUG
 
 management:
   endpoints:
