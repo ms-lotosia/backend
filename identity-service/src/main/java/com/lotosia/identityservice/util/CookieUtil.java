@@ -15,43 +15,31 @@ public class CookieUtil {
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
-    private static final String CSRF_TOKEN_COOKIE_NAME = "csrfToken";
     private static final String ACCESS_TOKEN_PATH = "/";
     private static final String REFRESH_TOKEN_PATH = "/";
-    private static final String CSRF_TOKEN_PATH = "/";
     private static final int ACCESS_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60;
     private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
-    private static final int CSRF_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60; 
+
+    private ResponseCookie createCookie(String name, String value, boolean httpOnly, String path, int maxAge, String sameSite) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .secure(cookieSecure)
+                .path(path)
+                .maxAge(maxAge)
+                .sameSite(sameSite)
+                .build();
+    }
 
     public ResponseCookie createAccessTokenCookie(String accessToken) {
-        return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, accessToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path(ACCESS_TOKEN_PATH)
-                .maxAge(ACCESS_TOKEN_MAX_AGE_SECONDS)
-                .sameSite(cookieSecure ? "None" : "Lax")
-                .build();
+        return createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, true, ACCESS_TOKEN_PATH,
+                          ACCESS_TOKEN_MAX_AGE_SECONDS, cookieSecure ? "None" : "Lax");
     }
 
     public ResponseCookie createRefreshTokenCookie(String refreshToken) {
-        return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path(REFRESH_TOKEN_PATH)
-                .maxAge(REFRESH_TOKEN_MAX_AGE_SECONDS)
-                .sameSite(cookieSecure ? "None" : "Lax")
-                .build();
+        return createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, true, REFRESH_TOKEN_PATH,
+                          REFRESH_TOKEN_MAX_AGE_SECONDS, cookieSecure ? "None" : "Lax");
     }
 
-    public ResponseCookie createCsrfTokenCookie(String csrfToken) {
-        return ResponseCookie.from(CSRF_TOKEN_COOKIE_NAME, csrfToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path(CSRF_TOKEN_PATH)
-                .maxAge(CSRF_TOKEN_MAX_AGE_SECONDS)
-                .sameSite("Lax")
-                .build();
-    }
 
     public void addAccessTokenCookie(HttpServletResponse response, String accessToken) {
         ResponseCookie cookie = createAccessTokenCookie(accessToken);
@@ -69,20 +57,12 @@ public class CookieUtil {
         // Non-HttpOnly cookie for browser JS access (enables CSRF protection)
         // Both cookies have identical values - client reads non-HttpOnly, server validates against HttpOnly
 
-        ResponseCookie httpOnlyCookie = ResponseCookie.from("csrfTokenHttpOnly", csrfToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path("/")
-                .maxAge(24 * 60 * 60)
-                .sameSite("Lax")
-                .build();
+        ResponseCookie httpOnlyCookie = createCookie("csrfTokenHttpOnly", csrfToken, true, "/",
+                                                  24 * 60 * 60, "Lax");
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
-        ResponseCookie jsCookie = ResponseCookie.from("csrfToken", csrfToken)
-                .path("/")
-                .maxAge(24 * 60 * 60)
-                .sameSite("Lax")
-                .build();
+        ResponseCookie jsCookie = createCookie("csrfToken", csrfToken, false, "/",
+                                              24 * 60 * 60, "Lax");
         response.addHeader("Set-Cookie", jsCookie.toString());
     }
 
@@ -111,56 +91,25 @@ public class CookieUtil {
     }
 
     public void clearAccessTokenCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path(ACCESS_TOKEN_PATH)
-                .maxAge(0)
-                .sameSite(cookieSecure ? "None" : "Lax")
-                .build();
+        ResponseCookie cookie = createCookie(ACCESS_TOKEN_COOKIE_NAME, "", true, ACCESS_TOKEN_PATH,
+                                           0, cookieSecure ? "None" : "Lax");
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public void clearRefreshTokenCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path(REFRESH_TOKEN_PATH)
-                .maxAge(0)
-                .sameSite(cookieSecure ? "None" : "Lax")
-                .build();
+        ResponseCookie cookie = createCookie(REFRESH_TOKEN_COOKIE_NAME, "", true, REFRESH_TOKEN_PATH,
+                                           0, cookieSecure ? "None" : "Lax");
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public void clearCsrfTokenCookie(HttpServletResponse response) {
         // Clear HttpOnly CSRF cookie
-        ResponseCookie httpOnlyCookie = ResponseCookie.from("csrfTokenHttpOnly", "")
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
+        ResponseCookie httpOnlyCookie = createCookie("csrfTokenHttpOnly", "", true, "/", 0, "Lax");
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
         // Clear non-HttpOnly CSRF cookie
-        ResponseCookie jsCookie = ResponseCookie.from("csrfToken", "")
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
+        ResponseCookie jsCookie = createCookie("csrfToken", "", false, "/", 0, "Lax");
         response.addHeader("Set-Cookie", jsCookie.toString());
     }
 
-    public String getCsrfTokenFromCookies(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (CSRF_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
 }
