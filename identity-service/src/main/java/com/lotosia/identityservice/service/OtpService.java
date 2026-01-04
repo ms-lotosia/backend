@@ -8,10 +8,16 @@ import com.lotosia.identityservice.exception.TooManyRequestsException;
 import com.lotosia.identityservice.repository.OtpRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.ReturnType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventPublisher;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import java.security.SecureRandom;
@@ -25,13 +31,43 @@ public class OtpService {
     private static final int OTP_VALID_MINUTES = 5;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
+    private static class RateLimitResult {
+        private final boolean allowed;
+        private final long waitTimeSeconds;
+
+        public RateLimitResult(boolean allowed, long waitTimeSeconds) {
+            this.allowed = allowed;
+            this.waitTimeSeconds = waitTimeSeconds;
+        }
+
+        public boolean isAllowed() { return allowed; }
+        public long getWaitTimeSeconds() { return waitTimeSeconds; }
+    }
+
+    public static class OtpCreatedEvent {
+        private final String email;
+        private final String otp;
+
+        public OtpCreatedEvent(String email, String otp) {
+            this.email = email;
+            this.otp = otp;
+        }
+
+        public String getEmail() { return email; }
+        public String getOtp() { return otp; }
+    }
+
     private final OtpRepository otpRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+    private final TransactionalEventPublisher eventPublisher;
 
     private static String normalizeEmail(String email) {
-        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
     @Transactional
@@ -41,8 +77,9 @@ public class OtpService {
         final String lastName = dto.getLastName();
         final String rawPassword = dto.getPassword();
 
-        if (!canRequestOtp(email)) {
-            throw new TooManyRequestsException(getRateLimitMessage(email));
+        RateLimitResult rateLimitResult = checkRateLimit(email);
+        if (!rateLimitResult.isAllowed()) {
+            throw new TooManyRequestsException(getRateLimitMessage(rateLimitResult.getWaitTimeSeconds()));
         }
 
         final String otp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
@@ -57,55 +94,112 @@ public class OtpService {
         otpEntity.setHashedPassword(passwordEncoder.encode(rawPassword));
 
         otpRepository.save(otpEntity);
-        emailService.sendOtpEmailHtml(email, otp);
+        eventPublisher.publishEvent(new OtpCreatedEvent(email, otp));
     }
 
-    private boolean canRequestOtp(String email) {
-        String attemptsKey = email + ":otp_attempts";
-        String lastAttemptKey = email + ":last_otp_attempt";
+    private static final String OTP_RATE_LIMIT_SCRIPT =
+        "local attempts_key = KEYS[1] " +
+        "local last_attempt_key = KEYS[2] " +
+        "local current_time = tonumber(ARGV[1]) " +
+        "local five_min_ago = current_time - (5 * 60 * 1000) " +
+        "local thirty_sec_ago = current_time - (30 * 1000) " +
+        "local max_attempts = 3 " +
+
+        "redis.call('ZREMRANGEBYSCORE', attempts_key, 0, five_min_ago) " +
+        "redis.call('EXPIRE', attempts_key, 300) " +
+
+        "local last_attempt = redis.call('GET', last_attempt_key) " +
+        "if last_attempt and tonumber(last_attempt) > thirty_sec_ago then " +
+        "    local wait_time = math.ceil((tonumber(last_attempt) + 30000 - current_time) / 1000) " +
+        "    return {0, wait_time} " +
+        "end " +
+
+        "local attempt_count = redis.call('ZCARD', attempts_key) " +
+        "if attempt_count >= max_attempts then " +
+        "    local oldest = redis.call('ZRANGE', attempts_key, 0, 0, 'WITHSCORES') " +
+        "    if oldest and #oldest >= 2 then " +
+        "        local oldest_ts = tonumber(oldest[2]) " +
+        "        local wait_time = math.ceil((oldest_ts + 300000 - current_time) / 1000) " +
+        "        if wait_time < 1 then wait_time = 1 end " +
+        "        return {0, wait_time} " +
+        "    else " +
+        "        return {0, 300} " +
+        "    end " +
+        "end " +
+
+        "redis.call('ZADD', attempts_key, current_time, tostring(current_time)) " +
+        "redis.call('SETEX', last_attempt_key, 300, tostring(current_time)) " +
+
+        "return {1, 0}";
+
+    private RateLimitResult checkRateLimit(String email) {
+        String attemptsKey = "otp:rl:" + email + ":attempts";
+        String lastAttemptKey = "otp:rl:" + email + ":last";
 
         long currentTime = System.currentTimeMillis();
-        long fiveMinutesAgo = currentTime - (5 * 60 * 1000);
-        long thirtySecondsAgo = currentTime - (30 * 1000);
 
-        redisTemplate.opsForZSet().removeRangeByScore(attemptsKey, 0, fiveMinutesAgo);
+        List<String> keys = Arrays.asList(attemptsKey, lastAttemptKey);
+        List<String> args = Arrays.asList(String.valueOf(currentTime));
 
-        String lastAttemptStr = redisTemplate.opsForValue().get(lastAttemptKey);
-        if (lastAttemptStr != null) {
-            long lastAttemptTime = Long.parseLong(lastAttemptStr);
-            if (lastAttemptTime > thirtySecondsAgo) {
-                return false;
+        Object result = redisTemplate.execute(
+            connection -> connection.eval(OTP_RATE_LIMIT_SCRIPT.getBytes(), ReturnType.MULTI, 2,
+                keys.stream().map(String::getBytes).toArray(byte[][]::new),
+                args.stream().map(String::getBytes).toArray(byte[][]::new)
+            ),
+            true
+        );
+
+        if (result instanceof List<?> list && list.size() >= 2) {
+            long allowed = convertToLong(list.get(0));
+            long waitTime = convertToLong(list.get(1));
+            return new RateLimitResult(allowed == 1L, waitTime);
+        }
+
+        return new RateLimitResult(false, 300L);
+    }
+
+    private long convertToLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+
+        if (value instanceof Long) {
+            return (Long) value;
+        }
+
+        if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+
+        if (value instanceof byte[]) {
+            try {
+                return Long.parseLong(new String((byte[]) value));
+            } catch (NumberFormatException e) {
+                return 0L;
             }
         }
 
-        Long attemptCount = redisTemplate.opsForZSet().size(attemptsKey);
-        if (attemptCount != null && attemptCount >= 3) {
-            return false;
-        }
-
-        redisTemplate.opsForZSet().add(attemptsKey, String.valueOf(currentTime), currentTime);
-        redisTemplate.opsForValue().set(lastAttemptKey, String.valueOf(currentTime), 5, TimeUnit.MINUTES);
-
-        return true;
-    }
-
-    private String getRateLimitMessage(String email) {
-        String attemptsKey = email + ":otp_attempts";
-        String lastAttemptKey = email + ":last_otp_attempt";
-
-        long currentTime = System.currentTimeMillis();
-        long thirtySecondsAgo = currentTime - (30 * 1000);
-
-        String lastAttemptStr = redisTemplate.opsForValue().get(lastAttemptKey);
-        if (lastAttemptStr != null) {
-            long lastAttemptTime = Long.parseLong(lastAttemptStr);
-            if (lastAttemptTime > thirtySecondsAgo) {
-                long waitTimeSeconds = ((lastAttemptTime + (30 * 1000)) - currentTime) / 1000;
-                return "Please wait " + waitTimeSeconds + " seconds before requesting another OTP.";
+        if (value instanceof String) {
+            try {
+                return Long.parseLong((String) value);
+            } catch (NumberFormatException e) {
+                return 0L;
             }
         }
 
-        return "Too many OTP requests. Please try again in 5 minutes.";
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+
+    private String getRateLimitMessage(long waitTimeSeconds) {
+        if (waitTimeSeconds <= 60) {
+            return "Please wait " + waitTimeSeconds + " seconds before requesting another OTP.";
+        } else {
+            return "Too many OTP requests. Please try again in 5 minutes.";
+        }
     }
 
     @Transactional(readOnly = true)
@@ -132,5 +226,14 @@ public class OtpService {
     @Transactional
     public void clearOtpData(String rawEmail) {
         otpRepository.findByEmail(normalizeEmail(rawEmail)).ifPresent(otpRepository::delete);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOtpCreated(OtpCreatedEvent event) {
+        try {
+            emailService.sendOtpEmailHtml(event.getEmail(), event.getOtp());
+        } catch (Exception e) {
+            System.err.println("Failed to send OTP email to " + event.getEmail() + ": " + e.getMessage());
+        }
     }
 }
