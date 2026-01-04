@@ -64,13 +64,15 @@ public class AuthFilterConfig {
             return jwtProcessor.validateTokenForGateway(token)
                     .flatMap(validation -> {
                         if (!validation.valid) {
-                            Mono<Void> recordMono = (requiresAuth && !path.equals("/api/v1/auth/verify-otp")) ?
-                                blockManager.recordFailedAttempt(clientIP, null).then() : Mono.empty();
-                            return recordMono.then(Mono.fromRunnable(() -> {
-                                if (requiresAuth) {
+                            if (requiresAuth) {
+                                Mono<Void> recordMono = path.equals("/api/v1/auth/verify-otp") ?
+                                    Mono.empty() : blockManager.recordFailedAttempt(clientIP, null).then();
+                                return recordMono.then(Mono.fromRunnable(() -> {
                                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                                }
-                            })).then(requiresAuth ? exchange.getResponse().setComplete() : chain.filter(exchange));
+                                })).then(exchange.getResponse().setComplete());
+                            } else {
+                                return chain.filter(exchange);
+                            }
                         }
 
                         return blockManager.isBlocked(clientIP, validation.email)
