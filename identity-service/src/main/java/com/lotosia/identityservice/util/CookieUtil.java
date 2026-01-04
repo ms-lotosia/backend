@@ -113,4 +113,15 @@ public class CookieUtil {
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
     }
+
+    public void clearCsrfTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from(CSRF_TOKEN_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path(CSRF_TOKEN_PATH)
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
 }

@@ -116,6 +116,7 @@ public class AuthController {
         String token = cookieUtil.getAccessTokenFromCookies(request);
         cookieUtil.clearAccessTokenCookie(response);
         cookieUtil.clearRefreshTokenCookie(response);
+        cookieUtil.clearCsrfTokenCookie(response);
 
         if (token != null) {
             authService.logout(token);
