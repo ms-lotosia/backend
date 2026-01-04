@@ -93,7 +93,6 @@ public class AuthFilterConfig {
                                                     .header("X-User-Email", validation.email)
                                                     .header("X-User-Id", validation.userId != null ? validation.userId.toString() : "")
                                                     .header("X-User-Roles", validation.roles != null ? String.join(",", validation.roles) : "")
-                                                    .header("X-CSRF-Token", csrfToken)
                                                     .build())
                                             .build();
 
@@ -173,7 +172,7 @@ public class AuthFilterConfig {
                                         path.equals("/api/v1/auth/send-reset-password-link") ||
                                         path.equals("/api/v1/auth/reset-password");
 
-            if (isStateChangingMethod(method) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {
+            if ((isStateChangingMethod(method) || (method.equals("GET") && path.equals("/api/v1/auth/me"))) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {
                 String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
                 String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
 
