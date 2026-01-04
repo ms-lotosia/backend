@@ -34,20 +34,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        if (path.contains("/me")) {
-            System.out.println("Identity Service: Processing /me request");
-            System.out.println("Identity Service: X-User-Email header: " + request.getHeader("X-User-Email"));
-            System.out.println("Identity Service: X-User-Id header: " + request.getHeader("X-User-Id"));
-            System.out.println("Identity Service: X-User-Roles header: " + request.getHeader("X-User-Roles"));
-
-            if (request.getCookies() != null) {
-                for (var cookie : request.getCookies()) {
-                    System.out.println("Identity Service: Cookie: " + cookie.getName() + " = " + cookie.getValue());
-                }
-            } else {
-                System.out.println("Identity Service: No cookies found");
-            }
-        }
 
         String userEmail = request.getHeader("X-User-Email");
         String userIdStr = request.getHeader("X-User-Id");
