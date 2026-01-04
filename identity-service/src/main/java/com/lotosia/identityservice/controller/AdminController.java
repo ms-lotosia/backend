@@ -48,14 +48,13 @@ public class AdminController {
         return ResponseEntity.ok(user);
     }
 
-    @Operation(summary = "Update user roles",
-               description = "Update user roles by providing role IDs or normalized names. " +
-                           "IDs are preferred for precision, names are case-insensitive and trimmed. " +
-                           "Duplicates are automatically ignored.")
-    @PutMapping("/users/{userId}/roles")
+    @Operation(summary = "Update user role",
+               description = "Update user role by providing role ID or normalized name. " +
+                           "IDs are preferred for precision, names are case-insensitive and trimmed.")
+    @PutMapping("/users/{userId}/role")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<UserDto> updateUserRoles(@PathVariable Long userId, @RequestBody Set<String> roleIdentifiers) {
-        UserDto user = adminService.updateUserRoles(userId, new ArrayList<>(roleIdentifiers));
+    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId, @RequestBody String roleIdentifier) {
+        UserDto user = adminService.updateUserRole(userId, roleIdentifier);
         return ResponseEntity.ok(user);
     }
 

@@ -43,9 +43,7 @@ public class AdminService {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .roles(user.getRoles().stream()
-                        .map(Role::getName)
-                        .collect(Collectors.toSet()))
+                .role(user.getRole() != null ? user.getRole().getName() : null)
                 .build();
     }
 
@@ -91,16 +89,12 @@ public class AdminService {
         return convertToUserDto(user);
     }
 
-    public UserDto updateUserRoles(Long userId, List<String> roleIdentifiers) {
+    public UserDto updateUserRole(Long userId, String roleIdentifier) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        List<Role> roles = roleIdentifiers.stream()
-                .map(this::findRoleByIdentifier)
-                .collect(Collectors.toList());
-
-        user.getRoles().clear();
-        user.getRoles().addAll(roles);
+        Role role = findRoleByIdentifier(roleIdentifier);
+        user.setRole(role);
 
         User savedUser = userRepository.save(user);
         return convertToUserDto(savedUser);
@@ -193,11 +187,10 @@ public class AdminService {
                 });
 
         if (existingAdmin != null) {
-            boolean hasAdminRole = existingAdmin.getRoles().stream()
-                    .anyMatch(role -> "ADMIN".equals(role.getName()));
+            boolean hasAdminRole = existingAdmin.getRole() != null && "ADMIN".equals(existingAdmin.getRole().getName());
 
             if (!hasAdminRole) {
-                existingAdmin.getRoles().add(adminRole);
+                existingAdmin.setRole(adminRole);
                 userRepository.save(existingAdmin);
                 AdminBootstrapResponse response = new AdminBootstrapResponse();
                 response.setStatus(AdminBootstrapResponse.AdminBootstrapStatus.UPGRADED);
@@ -217,7 +210,7 @@ public class AdminService {
         adminUser.setFirstName("Admin");
         adminUser.setLastName("User");
 
-        adminUser.getRoles().add(adminRole);
+        adminUser.setRole(adminRole);
 
         userRepository.save(adminUser);
         return AdminBootstrapResponse.builder()

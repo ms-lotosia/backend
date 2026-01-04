@@ -55,7 +55,7 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid credentials");
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRoles());
+        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRole());
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
 
         return buildAuthResponseDto(user, accessToken);
@@ -69,7 +69,7 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid credentials");
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRoles());
+        String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRole());
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
         String csrfToken = UUID.randomUUID().toString().replace("-", "");
 
@@ -171,7 +171,7 @@ public class AuthService {
             redisTemplate.delete(redisKey);
             redisTemplate.delete(email + ":refresh");
 
-            return jwtUtil.createTokenWithRole(email, user.getId(), user.getRoles());
+            return jwtUtil.createTokenWithRole(email, user.getId(), user.getRole());
 
         } catch (JwtException | IllegalArgumentException e) {
             throw new SecurityException("Invalid refresh token: " + e.getMessage());
@@ -212,7 +212,7 @@ public class AuthService {
             newRole.setName("USER");
             return roleRepository.save(newRole);
         });
-        newUser.getRoles().add(userRole);
+        newUser.setRole(userRole);
 
         User savedUser = userRepository.save(newUser);
 
@@ -234,7 +234,7 @@ public class AuthService {
         } catch (Exception e) {
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRoles());
+        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail(), savedUser.getId());
 
         return buildAuthResponseDto(savedUser, accessToken);
@@ -258,7 +258,7 @@ public class AuthService {
                     return roleRepository.save(newUserRole);
                 });
 
-        newUser.getRoles().add(userRole);
+        newUser.setRole(userRole);
 
         User savedUser = userRepository.save(newUser);
 
@@ -280,7 +280,7 @@ public class AuthService {
         } catch (Exception e) {
         }
 
-        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRoles());
+        String accessToken = jwtUtil.createTokenWithRole(savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
         String refreshToken = jwtUtil.createRefreshToken(savedUser.getEmail(), savedUser.getId());
 
         AuthResponse authResponse = buildAuthResponseDto(savedUser, accessToken);
@@ -328,11 +328,11 @@ public class AuthService {
             authResponse.setFirstName(user.getFirstName());
             authResponse.setLastName(user.getLastName());
 
-            Set<String> roleNames = user.getRoles().stream()
-                    .map(Role::getName)
-                    .collect(Collectors.toSet());
-
-            authResponse.setRoles(roleNames);
+            if (user.getRole() != null) {
+                authResponse.setRoles(Set.of(user.getRole().getName()));
+            } else {
+                authResponse.setRoles(Set.of());
+            }
         }
 
         return authResponse;

@@ -29,8 +29,8 @@ public class JwtUtil {
     private static final long REFRESH_EXPIRATION = 7 * 24 * 60 * 60 * 1000L; // 7 days
 
     private final RedisTemplate<String, String> redisTemplate;
-    public String createTokenWithRole(String username, Long userId, Set<Role> roles) {
-        List<String> roleNames = roles.stream().map(Role::getName).toList();
+    public String createTokenWithRole(String username, Long userId, Role role) {
+        List<String> roleNames = role != null ? List.of(role.getName()) : List.of();
         String jti = UUID.randomUUID().toString().replace("-", "");
 
         String token = Jwts.builder()
