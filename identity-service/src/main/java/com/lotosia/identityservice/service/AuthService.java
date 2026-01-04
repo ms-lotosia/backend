@@ -251,9 +251,12 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setPassword(hashedPassword);
 
-        // Find existing USER role
         Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("USER role not found. Please ensure roles are properly seeded."));
+                .orElseGet(() -> {
+                    Role newUserRole = new Role();
+                    newUserRole.setName("USER");
+                    return roleRepository.save(newUserRole);
+                });
 
         newUser.getRoles().add(userRole);
 
