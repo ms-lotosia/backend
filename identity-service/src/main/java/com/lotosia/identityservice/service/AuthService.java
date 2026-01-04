@@ -251,10 +251,11 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setPassword(hashedPassword);
 
-        Role roleUser = new Role();
-        roleUser.setName("USER");
-        roleUser.setUser(newUser);
-        newUser.getRoles().add(roleUser);
+        // Find existing USER role
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("USER role not found. Please ensure roles are properly seeded."));
+
+        newUser.getRoles().add(userRole);
 
         User savedUser = userRepository.save(newUser);
 
