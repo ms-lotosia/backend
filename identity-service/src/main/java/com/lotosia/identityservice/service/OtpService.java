@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
 @Service
@@ -64,7 +64,7 @@ public class OtpService {
         }
 
         final String otp = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
-        final LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(OTP_VALID_MINUTES);
+        final Instant expirationTime = Instant.now().plusSeconds(OTP_VALID_MINUTES * 60);
 
         Otp otpEntity = otpRepository.findByEmail(email).orElseGet(Otp::new);
         otpEntity.setEmail(email);
@@ -73,11 +73,21 @@ public class OtpService {
         otpEntity.setFirstName(firstName);
         otpEntity.setLastName(lastName);
         otpEntity.setHashedPassword(passwordEncoder.encode(rawPassword));
-        otpEntity.setCreatedAt(LocalDateTime.now());
+        otpEntity.setCreatedAt(Instant.now());
 
-        otpRepository.save(otpEntity);
+        System.out.println("DEBUG: About to save OTP entity: " + otpEntity.getEmail() + " - " + otpEntity.getOtpCode());
+        try {
+            Otp savedOtp = otpRepository.save(otpEntity);
+            System.out.println("DEBUG: OTP saved successfully with ID: " + savedOtp.getId());
+        } catch (Exception e) {
+            System.err.println("DEBUG: Failed to save OTP to MongoDB: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to see the error
+        }
+
         try {
             emailService.sendOtpEmailHtml(email, otp);
+            System.out.println("DEBUG: OTP email sent successfully to: " + email);
         } catch (Exception e) {
             System.err.println("Failed to send OTP email to " + email + ": " + e.getMessage());
         }
@@ -206,7 +216,7 @@ public class OtpService {
         Otp entity = otpRepository.findByEmail(email)
                 .orElseThrow(() -> new InvalidOtpException("No OTP found for this email."));
 
-        if (entity.getExpirationTime().isBefore(LocalDateTime.now())) {
+        if (entity.getExpirationTime().isBefore(Instant.now())) {
             throw new ExpiredOtpException("OTP has expired. Please request a new one.");
         }
 

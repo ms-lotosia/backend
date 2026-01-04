@@ -8,7 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "otp_details")
 @Getter
@@ -25,12 +25,11 @@ public class Otp {
 
     private String otpCode;
 
-    @Indexed(expireAfterSeconds = 0)
-    private LocalDateTime expirationTime;
+    private Instant expirationTime;
 
     private String firstName;
     private String lastName;
     private String hashedPassword;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }
