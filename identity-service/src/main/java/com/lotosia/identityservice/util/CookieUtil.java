@@ -15,10 +15,14 @@ public class CookieUtil {
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String CSRF_TOKEN_HTTP_ONLY_COOKIE_NAME = "csrfTokenHttpOnly";
+    private static final String CSRF_TOKEN_JS_COOKIE_NAME = "csrfToken";
     private static final String ACCESS_TOKEN_PATH = "/";
     private static final String REFRESH_TOKEN_PATH = "/";
+    private static final String CSRF_TOKEN_PATH = "/";
     private static final int ACCESS_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60;
     private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+    private static final int CSRF_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60;
 
     private ResponseCookie createCookie(String name, String value, boolean httpOnly, String path, int maxAge, String sameSite) {
         return ResponseCookie.from(name, value)
@@ -52,24 +56,12 @@ public class CookieUtil {
     }
 
     public void addCsrfTokenCookie(HttpServletResponse response, String csrfToken) {
-        // SECURITY: Dual-Cookie CSRF Pattern
-        // HttpOnly cookie for server-side validation (secure, XSS cannot read)
-        // Non-HttpOnly cookie for browser JS access (enables CSRF protection)
-        // Both cookies have identical values - client reads non-HttpOnly, server validates against HttpOnly
-
-        // HttpOnly CSRF cookie - secure server validation
-        ResponseCookie httpOnlyCookie = createCookie("csrfTokenHttpOnly", csrfToken, true, "/",
-                                                  24 * 60 * 60, "Lax");
+        ResponseCookie httpOnlyCookie = createCookie(CSRF_TOKEN_HTTP_ONLY_COOKIE_NAME, csrfToken, true,
+                                                  CSRF_TOKEN_PATH, CSRF_TOKEN_MAX_AGE_SECONDS, "Lax");
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
-        // JS-readable CSRF cookie - explicit security attributes
-        ResponseCookie jsCookie = ResponseCookie.from("csrfToken", csrfToken)
-                .httpOnly(false)  // Explicit: JS must be able to read this
-                .secure(cookieSecure)  // Secure when HTTPS enabled
-                .path("/")
-                .maxAge(24 * 60 * 60)
-                .sameSite("Lax")
-                .build();
+        ResponseCookie jsCookie = createCookie(CSRF_TOKEN_JS_COOKIE_NAME, csrfToken, false,
+                                            CSRF_TOKEN_PATH, CSRF_TOKEN_MAX_AGE_SECONDS, "Lax");
         response.addHeader("Set-Cookie", jsCookie.toString());
     }
 
@@ -106,18 +98,12 @@ public class CookieUtil {
     }
 
     public void clearCsrfTokenCookie(HttpServletResponse response) {
-        // Clear HttpOnly CSRF cookie
-        ResponseCookie httpOnlyCookie = createCookie("csrfTokenHttpOnly", "", true, "/", 0, "Lax");
+        ResponseCookie httpOnlyCookie = createCookie(CSRF_TOKEN_HTTP_ONLY_COOKIE_NAME, "", true,
+                                                  CSRF_TOKEN_PATH, 0, "Lax");
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
-        // Clear JS-readable CSRF cookie - explicit security attributes
-        ResponseCookie jsCookie = ResponseCookie.from("csrfToken", "")
-                .httpOnly(false)  // Explicit: matches creation settings
-                .secure(cookieSecure)  // Secure when HTTPS enabled
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
+        ResponseCookie jsCookie = createCookie(CSRF_TOKEN_JS_COOKIE_NAME, "", false,
+                                            CSRF_TOKEN_PATH, 0, "Lax");
         response.addHeader("Set-Cookie", jsCookie.toString());
     }
 
