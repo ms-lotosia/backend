@@ -6,38 +6,38 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebInputException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("code", "INTERNAL_SERVER_ERROR");
-        error.put("message", "An unexpected error occurred in the API Gateway");
-        error.put("timestamp", System.currentTimeMillis());
+    public ResponseEntity<ApiError> handleGenericException(Exception ex) {
+        ApiError error = ApiError.builder()
+                .code("INTERNAL_SERVER_ERROR")
+                .message("An unexpected error occurred in the API Gateway")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
     @ExceptionHandler(ServerWebInputException.class)
-    public ResponseEntity<Map<String, Object>> handleServerWebInputException(ServerWebInputException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("code", "BAD_REQUEST");
-        error.put("message", "Invalid request format");
-        error.put("timestamp", System.currentTimeMillis());
+    public ResponseEntity<ApiError> handleServerWebInputException(ServerWebInputException ex) {
+        ApiError error = ApiError.builder()
+                .code("BAD_REQUEST")
+                .message("Invalid request format")
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("code", "BAD_REQUEST");
-        error.put("message", ex.getMessage());
-        error.put("timestamp", System.currentTimeMillis());
+    public ResponseEntity<ApiError> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ApiError error = ApiError.builder()
+                .code("BAD_REQUEST")
+                .message(ex.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
