@@ -168,7 +168,8 @@ public class AuthFilterConfig {
 
             ServerWebExchange modifiedExchange = exchange;
             if (isStateChangingMethod(method) && path.startsWith("/api/v1/") &&
-                !path.contains("/login") && !path.contains("/request-otp") && !path.contains("/verify-otp") && !path.contains("/logout")) {
+                !path.contains("/login") && !path.contains("/request-otp") && !path.contains("/verify-otp") &&
+                !path.contains("/send-reset-password-link") && !path.contains("/reset-password")) {
                 String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
                 String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
 
