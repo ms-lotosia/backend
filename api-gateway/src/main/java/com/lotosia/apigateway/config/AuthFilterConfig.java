@@ -167,7 +167,6 @@ public class AuthFilterConfig {
             exchange.getResponse().getHeaders().add("Server", "");
 
             ServerWebExchange modifiedExchange = exchange;
-            // Define exempted paths for CSRF validation (public endpoints that don't require auth)
             boolean isCsrfExemptedPath = path.equals("/api/v1/auth/login") ||
                                         path.equals("/api/v1/auth/request-otp") ||
                                         path.equals("/api/v1/auth/verify-otp") ||

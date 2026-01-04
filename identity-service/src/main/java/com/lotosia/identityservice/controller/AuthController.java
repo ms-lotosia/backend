@@ -105,7 +105,6 @@ public class AuthController {
         cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
 
-        // Generate CSRF token for double-submit cookie pattern
         String csrfToken = UUID.randomUUID().toString().replace("-", "");
         cookieUtil.addCsrfTokenCookie(response, csrfToken);
 
@@ -129,8 +128,6 @@ public class AuthController {
         try {
             authService.sendResetPasswordLink(email);
         } catch (Exception e) {
-            // Always return the same response to prevent user enumeration
-            // Log the error for monitoring but don't expose it to client
         }
         return ResponseEntity.ok(Map.of(
                 "message", "If an account with this email exists, a password reset link has been sent."
