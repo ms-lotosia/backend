@@ -141,16 +141,13 @@ public class OtpService {
         List<String> keys = Arrays.asList(attemptsKey, lastAttemptKey);
         List<String> args = Arrays.asList(String.valueOf(currentTime));
 
-        // Combine keys and args into single array for Redis eval
         byte[][] keysAndArgs = new byte[keys.size() + args.size()][];
         int index = 0;
 
-        // Add keys first
         for (String key : keys) {
             keysAndArgs[index++] = key.getBytes();
         }
 
-        // Add args
         for (String arg : args) {
             keysAndArgs[index++] = arg.getBytes();
         }

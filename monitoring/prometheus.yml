@@ -7,7 +7,6 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # Spring Boot /actuator/prometheus
   - job_name: 'api-gateway'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
@@ -62,9 +61,6 @@ scrape_configs:
     static_configs:
       - targets: ['payment-service:8087']
 
-  # Non-Spring: media-service - health check via blackbox exporter
-
-  # Exporters (HTTP)
   - job_name: 'redis-exporter'
     scrape_interval: 10s
     static_configs:
@@ -105,14 +101,12 @@ scrape_configs:
     static_configs:
       - targets: ['postgres-exporter-payment:9187']
 
-  # Jaeger all-in-one metrics (admin port)
   - job_name: 'jaeger'
     metrics_path: '/metrics'
     scrape_interval: 10s
     static_configs:
       - targets: ['jaeger:14269']
 
-  # External HTTP health probing via blackbox exporter (distroless-safe)
   - job_name: 'spring-health'
     metrics_path: /probe
     params:

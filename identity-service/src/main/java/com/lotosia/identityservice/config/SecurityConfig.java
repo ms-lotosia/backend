@@ -74,14 +74,18 @@ public class SecurityConfig {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-            Map<String, Object> errorDetails = new HashMap<>();
-            errorDetails.put("status", HttpStatus.UNAUTHORIZED.value());
-            errorDetails.put("error", "Unauthorized");
-            errorDetails.put("message", "Authentication is required to access this resource");
-            errorDetails.put("path", request.getRequestURI());
+            try {
+                Map<String, Object> errorDetails = new HashMap<>();
+                errorDetails.put("status", HttpStatus.UNAUTHORIZED.value());
+                errorDetails.put("error", "Unauthorized");
+                errorDetails.put("message", "Authentication is required to access this resource");
+                errorDetails.put("path", request.getRequestURI());
 
-            ObjectMapper mapper = new ObjectMapper();
-            response.getWriter().write(mapper.writeValueAsString(errorDetails));
+                ObjectMapper mapper = new ObjectMapper();
+                response.getWriter().write(mapper.writeValueAsString(errorDetails));
+            } catch (Exception e) {
+                response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication is required\"}");
+            }
         };
     }
 
@@ -91,14 +95,18 @@ public class SecurityConfig {
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-            Map<String, Object> errorDetails = new HashMap<>();
-            errorDetails.put("status", HttpStatus.FORBIDDEN.value());
-            errorDetails.put("error", "Forbidden");
-            errorDetails.put("message", "You don't have permission to access this resource");
-            errorDetails.put("path", request.getRequestURI());
+            try {
+                Map<String, Object> errorDetails = new HashMap<>();
+                errorDetails.put("status", HttpStatus.FORBIDDEN.value());
+                errorDetails.put("error", "Forbidden");
+                errorDetails.put("message", "You don't have permission to access this resource");
+                errorDetails.put("path", request.getRequestURI());
 
-            ObjectMapper mapper = new ObjectMapper();
-            response.getWriter().write(mapper.writeValueAsString(errorDetails));
+                ObjectMapper mapper = new ObjectMapper();
+                response.getWriter().write(mapper.writeValueAsString(errorDetails));
+            } catch (Exception e) {
+                response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
+            }
         };
     }
 }

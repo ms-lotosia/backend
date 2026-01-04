@@ -57,8 +57,7 @@ eureka:
 
 logging:
   level:
-    com.healthcare: DEBUG
-    org.springframework.security: DEBUG
+    com.lotosia: INFO
 
 management:
   endpoints:

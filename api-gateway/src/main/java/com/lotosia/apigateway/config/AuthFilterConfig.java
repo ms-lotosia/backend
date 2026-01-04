@@ -6,7 +6,9 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -15,6 +17,12 @@ import java.util.List;
 
 @Configuration
 public class AuthFilterConfig {
+
+    private final RedisTemplate<String, String> redisTemplate;
+
+    public AuthFilterConfig(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String SECRET_KEY = "my-hardcoded-secret-key-for-testing-purposes";
     private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
@@ -38,6 +46,11 @@ public class AuthFilterConfig {
             }
 
             if (token != null && !token.isEmpty()) {
+                String blacklistKey = "blacklist:" + token;
+                if (Boolean.TRUE.equals(redisTemplate.hasKey(blacklistKey))) {
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                }
 
                 try {
                     Claims claims = Jwts.parserBuilder()

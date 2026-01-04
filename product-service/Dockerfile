@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.6
 
 FROM gcr.io/distroless/java17-debian12@sha256:fd925ba431f3a6c1f1c8114ce1999ca38803220baf0fdf25a4c71b38db8af67f
 

@@ -7,13 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,19 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, String> redisTemplate;
-    private final UserDetailsService userDetailsService;
-    private final CookieUtil cookieUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        String path = request.getRequestURI();
 
         String userEmail = request.getHeader("X-User-Email");
         String userIdStr = request.getHeader("X-User-Id");
@@ -57,35 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } catch (Exception e) {
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.getWriter().write("Invalid forwarded authentication data");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Invalid authentication data\"}");
                 return;
-            }
-        } else {
-            String token = cookieUtil.getAccessTokenFromCookies(request);
-
-            if (token != null) {
-                try {
-                    String redisKey = "blacklist:" + token;
-                    if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                        response.getWriter().write("Token is blacklisted");
-                        return;
-                    }
-
-                    String email = jwtUtil.getEmailFromToken(token);
-                    Long userId = jwtUtil.getUserIdFromToken(token);
-
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                    authToken.setDetails(userId);
-
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } catch (Exception e) {
-                    // Invalid token or user not found - let Spring Security handle it
-                    // Don't throw exception, just don't set authentication
-                }
             }
         }
 
