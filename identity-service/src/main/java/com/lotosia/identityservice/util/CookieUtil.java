@@ -17,7 +17,7 @@ public class CookieUtil {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final String ACCESS_TOKEN_PATH = "/";
     private static final String REFRESH_TOKEN_PATH = "/";
-    private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60; // 24 hours
+    private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
     public ResponseCookie createAccessTokenCookie(String accessToken) {
         return ResponseCookie.from(ACCESS_TOKEN_COOKIE_NAME, accessToken)

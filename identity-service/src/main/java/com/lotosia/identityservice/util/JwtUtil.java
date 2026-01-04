@@ -24,7 +24,7 @@ public class JwtUtil {
     private static final Key SIGNING_KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     private static final long JWT_EXPIRATION = 24 * 60 * 60 * 1000L; // 24 hours
-    private static final long REFRESH_EXPIRATION = 24 * 60 * 60 * 1000L;
+    private static final long REFRESH_EXPIRATION = 7 * 24 * 60 * 60 * 1000L; // 7 days
 
     private final RedisTemplate<String, String> redisTemplate;
     public String createTokenWithRole(String username, Long userId, Set<Role> roles) {
