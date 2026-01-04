@@ -64,7 +64,11 @@ public class CookieUtil {
     }
 
     public void addCsrfTokenCookie(HttpServletResponse response, String csrfToken) {
-        // HttpOnly cookie for server-side validation (secure)
+        // SECURITY: Dual-Cookie CSRF Pattern
+        // HttpOnly cookie for server-side validation (secure, XSS cannot read)
+        // Non-HttpOnly cookie for browser JS access (enables CSRF protection)
+        // Both cookies have identical values - client reads non-HttpOnly, server validates against HttpOnly
+
         ResponseCookie httpOnlyCookie = ResponseCookie.from("csrfTokenHttpOnly", csrfToken)
                 .httpOnly(true)
                 .secure(cookieSecure)
@@ -74,7 +78,6 @@ public class CookieUtil {
                 .build();
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
-        // Non-HttpOnly cookie for browser JS access (CSRF protection)
         ResponseCookie jsCookie = ResponseCookie.from("csrfToken", csrfToken)
                 .path("/")
                 .maxAge(24 * 60 * 60)

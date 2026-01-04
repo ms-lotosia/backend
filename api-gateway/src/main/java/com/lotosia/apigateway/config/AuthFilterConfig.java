@@ -161,7 +161,11 @@ public class AuthFilterConfig {
                                         path.equals("/api/v1/auth/send-reset-password-link") ||
                                         path.equals("/api/v1/auth/reset-password");
 
-            // CSRF validation: Only check for authenticated users (those with CSRF cookies)
+            // CRITICAL SECURITY: CSRF Protection
+            // NEVER auto-inject X-CSRF-Token header from cookies!
+            // This would completely bypass CSRF protection.
+            // Client MUST explicitly send X-CSRF-Token header.
+
             String cookieCsrfToken = getCsrfTokenFromCookies(exchange.getRequest());
             if (cookieCsrfToken != null && (isStateChangingMethod(method) || (method.equals("GET") && path.equals("/api/v1/auth/me"))) && path.startsWith("/api/v1/") && !isCsrfExemptedPath) {
                 String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
