@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebInputException;
 
+import java.net.ConnectException;
+import java.util.concurrent.TimeoutException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -40,5 +43,29 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(ConnectException.class)
+    public ResponseEntity<ApiError> handleConnectException(ConnectException ex) {
+        ApiError error = ApiError.builder()
+                .code("SERVICE_UNAVAILABLE")
+                .message("The requested service is currently unavailable. Please try again later.")
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header("Retry-After", "60")
+                .body(error);
+    }
+
+    @ExceptionHandler(TimeoutException.class)
+    public ResponseEntity<ApiError> handleTimeoutException(TimeoutException ex) {
+        ApiError error = ApiError.builder()
+                .code("GATEWAY_TIMEOUT")
+                .message("The request timed out while waiting for the service to respond.")
+                .status(HttpStatus.GATEWAY_TIMEOUT.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(error);
     }
 }
