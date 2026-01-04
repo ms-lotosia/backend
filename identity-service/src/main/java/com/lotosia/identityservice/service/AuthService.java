@@ -206,13 +206,12 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setPassword(hashedPassword);
 
-        Role roleUser = roleRepository.findByName("USER").orElseGet(() -> {
+        Role userRole = roleRepository.findByName("USER").orElseGet(() -> {
             Role newRole = new Role();
             newRole.setName("USER");
-            return newRole;
+            return roleRepository.save(newRole);
         });
-        roleUser.setUser(newUser);
-        newUser.getRoles().add(roleUser);
+        newUser.getRoles().add(userRole);
 
         User savedUser = userRepository.save(newUser);
 

@@ -45,12 +45,8 @@ public class AdminService {
                         .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
                 .collect(Collectors.toList());
 
-        user.getRoles().forEach(role -> role.setUser(null));
         user.getRoles().clear();
-        for (Role role : roles) {
-            user.getRoles().add(role);
-            role.setUser(user);
-        }
+        user.getRoles().addAll(roles);
 
         return userRepository.save(user);
     }
@@ -118,7 +114,6 @@ public class AdminService {
         adminUser.setLastName("User");
 
         adminUser.getRoles().add(adminRole);
-        adminRole.setUser(adminUser);
 
         userRepository.save(adminUser);
         return "CREATED";
