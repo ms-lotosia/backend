@@ -71,9 +71,10 @@ public class AuthService {
 
         String accessToken = jwtUtil.createTokenWithRole(user.getEmail(), user.getId(), user.getRoles());
         String refreshToken = jwtUtil.createRefreshToken(user.getEmail(), user.getId());
+        String csrfToken = UUID.randomUUID().toString().replace("-", "");
 
         AuthResponse authResponse = buildAuthResponseDto(user, accessToken);
-        return new LoginResult(authResponse, accessToken, refreshToken);
+        return new LoginResult(authResponse, accessToken, refreshToken, csrfToken);
     }
 
     public void logout(String token) {

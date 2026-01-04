@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -104,9 +103,7 @@ public class AuthController {
 
         cookieUtil.addAccessTokenCookie(response, result.getAccessToken());
         cookieUtil.addRefreshTokenCookie(response, result.getRefreshToken());
-
-        String csrfToken = UUID.randomUUID().toString().replace("-", "");
-        cookieUtil.addCsrfTokenCookie(response, csrfToken);
+        cookieUtil.addCsrfTokenCookie(response, result.getCsrfToken());
 
         return new ResponseEntity<>(result.getAuthResponse(), HttpStatus.OK);
     }

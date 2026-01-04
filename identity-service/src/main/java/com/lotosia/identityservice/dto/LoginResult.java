@@ -13,4 +13,5 @@ public class LoginResult {
     private AuthResponse authResponse;
     private String accessToken;
     private String refreshToken;
+    private String csrfToken;
 }
