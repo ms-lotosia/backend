@@ -9,6 +9,11 @@ spring:
     redis:
       host: redis
       port: 6379
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: identity_db
+      authentication-database: admin
   datasource:
     url: jdbc:postgresql://postgres-identity:5432/lotosia
     username: postgres

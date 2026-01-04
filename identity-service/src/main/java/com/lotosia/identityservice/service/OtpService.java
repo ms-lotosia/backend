@@ -92,6 +92,7 @@ public class OtpService {
         otpEntity.setFirstName(firstName);
         otpEntity.setLastName(lastName);
         otpEntity.setHashedPassword(passwordEncoder.encode(rawPassword));
+        otpEntity.setCreatedAt(LocalDateTime.now());
 
         otpRepository.save(otpEntity);
         eventPublisher.publishEvent(new OtpCreatedEvent(email, otp));

@@ -1,37 +1,36 @@
 package com.lotosia.identityservice.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-@Entity
-@Table(name = "otp_details")
+
+@Document(collection = "otp_details")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Otp extends BaseEntity {
+public class Otp {
 
-    @Column(nullable = false, unique = true)
+    @Id
+    private String id;
+
+    @Indexed(unique = true)
     private String email;
 
-    @Column(name = "otp_code", nullable = false)
     private String otpCode;
 
-    @Column(name = "expiration_time", nullable = false)
+    @Indexed(expireAfterSeconds = 0)
     private LocalDateTime expirationTime;
 
-    @Column(name = "first_name")
     private String firstName;
-
-    @Column(name = "last_name")
     private String lastName;
-
-    @Column(name = "hashed_password")
     private String hashedPassword;
+
+    private LocalDateTime createdAt;
 }
