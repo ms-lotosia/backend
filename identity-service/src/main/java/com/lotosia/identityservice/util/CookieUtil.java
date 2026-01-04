@@ -57,20 +57,27 @@ public class CookieUtil {
         // Non-HttpOnly cookie for browser JS access (enables CSRF protection)
         // Both cookies have identical values - client reads non-HttpOnly, server validates against HttpOnly
 
+        // HttpOnly CSRF cookie - secure server validation
         ResponseCookie httpOnlyCookie = createCookie("csrfTokenHttpOnly", csrfToken, true, "/",
                                                   24 * 60 * 60, "Lax");
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
-        ResponseCookie jsCookie = createCookie("csrfToken", csrfToken, false, "/",
-                                              24 * 60 * 60, "Lax");
+        // JS-readable CSRF cookie - explicit security attributes
+        ResponseCookie jsCookie = ResponseCookie.from("csrfToken", csrfToken)
+                .httpOnly(false)  // Explicit: JS must be able to read this
+                .secure(cookieSecure)  // Secure when HTTPS enabled
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .sameSite("Lax")
+                .build();
         response.addHeader("Set-Cookie", jsCookie.toString());
     }
 
-    public String getAccessTokenFromCookies(HttpServletRequest request) {
+    private String getCookieValue(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
+                if (cookieName.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
@@ -78,16 +85,12 @@ public class CookieUtil {
         return null;
     }
 
+    public String getAccessTokenFromCookies(HttpServletRequest request) {
+        return getCookieValue(request, ACCESS_TOKEN_COOKIE_NAME);
+    }
+
     public String getRefreshTokenFromCookies(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
+        return getCookieValue(request, REFRESH_TOKEN_COOKIE_NAME);
     }
 
     public void clearAccessTokenCookie(HttpServletResponse response) {
@@ -107,8 +110,14 @@ public class CookieUtil {
         ResponseCookie httpOnlyCookie = createCookie("csrfTokenHttpOnly", "", true, "/", 0, "Lax");
         response.addHeader("Set-Cookie", httpOnlyCookie.toString());
 
-        // Clear non-HttpOnly CSRF cookie
-        ResponseCookie jsCookie = createCookie("csrfToken", "", false, "/", 0, "Lax");
+        // Clear JS-readable CSRF cookie - explicit security attributes
+        ResponseCookie jsCookie = ResponseCookie.from("csrfToken", "")
+                .httpOnly(false)  // Explicit: matches creation settings
+                .secure(cookieSecure)  // Secure when HTTPS enabled
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
         response.addHeader("Set-Cookie", jsCookie.toString());
     }
 
