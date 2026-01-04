@@ -45,6 +45,12 @@ public class AuthFilterConfig {
         return path.startsWith("/api/v1/admin/") &&
                !path.equals("/api/v1/admin/create-admin");
     }
+
+    private boolean isPublicEndpoint(String path) {
+        return path.equals("/api/v1/auth/request-otp") ||
+               path.equals("/api/v1/auth/verify-otp") ||
+               path.equals("/api/v1/admin/create-admin");
+    }
     private int getRateLimit(String path) {
         if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/auth/verify-otp")) {
             return AUTH_RATE_LIMIT;
@@ -101,12 +107,12 @@ public class AuthFilterConfig {
             String path = exchange.getRequest().getPath().value();
             String clientIP = getClientIP(exchange.getRequest());
 
-            if (isBlocked(clientIP)) {
+            if (!isPublicEndpoint(path) && isBlocked(clientIP)) {
                 exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
                 return exchange.getResponse().setComplete();
             }
 
-            if (isRateLimited(clientIP, path)) {
+            if (!isPublicEndpoint(path) && isRateLimited(clientIP, path)) {
                 exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
                 return exchange.getResponse().setComplete();
             }
@@ -129,7 +135,9 @@ public class AuthFilterConfig {
                                   path.equals("/api/v1/auth/logout");
 
             if (requiresAuth && (token == null || token.isEmpty())) {
-                recordFailedAttempt(clientIP);
+                if (!path.equals("/api/v1/auth/verify-otp")) {
+                    recordFailedAttempt(clientIP);
+                }
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
@@ -179,7 +187,9 @@ public class AuthFilterConfig {
 
                 } catch (Exception e) {
                     if (requiresAuth) {
-                        recordFailedAttempt(clientIP);
+                        if (!path.equals("/api/v1/auth/verify-otp")) {
+                            recordFailedAttempt(clientIP);
+                        }
                         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                         return exchange.getResponse().setComplete();
                     }
