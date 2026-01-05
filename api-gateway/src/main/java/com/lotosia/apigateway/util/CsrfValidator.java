@@ -10,24 +10,29 @@ public class CsrfValidator {
     }
 
     public static Mono<Void> validateCsrfToken(ServerWebExchange exchange, String path, String method) {
-        boolean isCsrfExemptedPath = PathValidator.isCsrfExempted(path);
-        boolean isAdminPath = path.startsWith("/api/v1/admin/");
-        String cookieCsrfToken = RequestUtils.extractCsrfTokenFromCookies(exchange.getRequest());
+        try {
+            boolean isCsrfExemptedPath = PathValidator.isCsrfExempted(path);
+            boolean isAdminPath = path.startsWith("/api/v1/admin/");
+            String cookieCsrfToken = RequestUtils.extractCsrfTokenFromCookies(exchange.getRequest());
 
-        if (cookieCsrfToken != null &&
-            (RequestUtils.isStateChangingMethod(method) ||
-             (method.equals("GET") && path.equals("/api/v1/auth/me")) ||
-             isAdminPath) &&
-            PathValidator.startsWithApiV1(path) &&
-            !isCsrfExemptedPath) {
+            if (cookieCsrfToken != null &&
+                (RequestUtils.isStateChangingMethod(method) ||
+                 (method.equals("GET") && path.equals("/api/v1/auth/me")) ||
+                 isAdminPath) &&
+                PathValidator.startsWithApiV1(path) &&
+                !isCsrfExemptedPath) {
 
-            String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
+                String requestCsrfToken = exchange.getRequest().getHeaders().getFirst("X-CSRF-Token");
 
-            if (requestCsrfToken == null || !requestCsrfToken.equals(cookieCsrfToken)) {
-                return ResponseUtils.respondWithForbidden(exchange.getResponse());
+                if (requestCsrfToken == null || !requestCsrfToken.equals(cookieCsrfToken)) {
+                    return ResponseUtils.respondWithForbidden(exchange.getResponse());
+                }
             }
-        }
 
-        return Mono.empty();
+            return Mono.empty();
+        } catch (Exception e) {
+            // If anything goes wrong, default to allowing the request
+            return Mono.empty();
+        }
     }
 }
