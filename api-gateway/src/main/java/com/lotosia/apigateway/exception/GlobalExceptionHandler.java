@@ -50,13 +50,13 @@ public class GlobalExceptionHandler {
         if (ex.getStatusCode().is5xxServerError()) {
             return ErrorResponseBuilder.serviceUnavailable("The service is experiencing issues. Please try again later.");
         } else if (ex.getStatusCode().is4xxClientError()) {
-            return ErrorResponseBuilder.build(ex.getStatusCode().value(), ex.getStatusText(), ex.getMessage());
+            return ErrorResponseBuilder.badRequest(ex.getStatusText() + ": " + ex.getMessage());
         }
         return ErrorResponseBuilder.internalServerError("Service communication error");
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFoundException(NotFoundException ex) {
-        return ErrorResponseBuilder.notFound("The requested service or resource was not found.");
+        return ErrorResponseBuilder.badRequest("The requested service or resource was not found.");
     }
 }
