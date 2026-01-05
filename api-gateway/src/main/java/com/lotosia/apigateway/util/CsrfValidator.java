@@ -11,10 +11,13 @@ public class CsrfValidator {
 
     public static Mono<Void> validateCsrfToken(ServerWebExchange exchange, String path, String method) {
         boolean isCsrfExemptedPath = PathValidator.isCsrfExempted(path);
+        boolean isAdminPath = path.startsWith("/api/v1/admin/");
         String cookieCsrfToken = RequestUtils.extractCsrfTokenFromCookies(exchange.getRequest());
 
         if (cookieCsrfToken != null &&
-            (RequestUtils.isStateChangingMethod(method) || (method.equals("GET") && path.equals("/api/v1/auth/me"))) &&
+            (RequestUtils.isStateChangingMethod(method) ||
+             (method.equals("GET") && path.equals("/api/v1/auth/me")) ||
+             isAdminPath) &&
             PathValidator.startsWithApiV1(path) &&
             !isCsrfExemptedPath) {
 
