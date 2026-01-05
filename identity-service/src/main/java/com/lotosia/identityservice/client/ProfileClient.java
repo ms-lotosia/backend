@@ -1,6 +1,5 @@
 package com.lotosia.identityservice.client;
 
-import com.lotosia.identityservice.dto.ProfileRequest;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,6 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ProfileClient {
 
     @PostMapping("/internal")
-    void createProfile(@RequestBody ProfileRequest profileRequest);
+    void createProfile(@RequestBody CreateProfileRequest profileRequest);
 }
 
