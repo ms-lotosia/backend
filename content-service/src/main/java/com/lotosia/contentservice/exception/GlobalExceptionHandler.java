@@ -1,62 +1,42 @@
 package com.lotosia.contentservice.exception;
 
-import com.lotosia.contentservice.dto.ErrorResponse;
-import org.springframework.http.HttpStatus;
+import com.lotosia.contentservice.util.ExceptionHandlerUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.builder()
-                        .message(ex.getMessage())
-                        .path(request.getDescription(false))
-                        .build());
+    public ResponseEntity<ApiError> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        return ExceptionHandlerUtils.badRequestError("BAD_REQUEST", ex.getMessage(), request.getDescription(false));
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(BadRequestException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.builder()
-                        .message(ex.getMessage())
-                        .path(request.getDescription(false))
-                        .build());
+    public ResponseEntity<ApiError> handleNotFoundException(NotFoundException ex, WebRequest request) {
+        return ExceptionHandlerUtils.notFoundError("NOT_FOUND", ex.getMessage(), request.getDescription(false));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(BadRequestException ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.builder()
-                        .message(ex.getMessage())
-                        .path(request.getDescription(false))
-                        .build());
+    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex, WebRequest request) {
+        return ExceptionHandlerUtils.notFoundError("RESOURCE_NOT_FOUND", ex.getMessage(), request.getDescription(false));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, WebRequest request) {
+    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, WebRequest request) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getField() + " " + error.getDefaultMessage())
                 .orElse(ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.builder()
-                        .message(message)
-                        .path(request.getDescription(false))
-                        .build());
+        return ExceptionHandlerUtils.badRequestError("VALIDATION_ERROR", message, request.getDescription(false));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, WebRequest request) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponse.builder()
-                        .message(ex.getMessage())
-                        .path(request.getDescription(false))
-                        .build());
+    public ResponseEntity<ApiError> handleGeneric(Exception ex, WebRequest request) {
+        return ExceptionHandlerUtils.internalServerError("INTERNAL_SERVER_ERROR", "An unexpected error occurred", request.getDescription(false));
     }
 }
