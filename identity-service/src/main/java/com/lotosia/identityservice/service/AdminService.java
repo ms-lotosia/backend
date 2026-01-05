@@ -11,6 +11,7 @@ import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.exception.AdminAlreadyExistsException;
 import com.lotosia.identityservice.exception.AdminUpgradeException;
 import com.lotosia.identityservice.exception.AlreadyExistsException;
+import com.lotosia.identityservice.exception.BadRequestException;
 import com.lotosia.identityservice.exception.PermissionNotFoundException;
 import com.lotosia.identityservice.exception.RoleNotFoundException;
 import com.lotosia.identityservice.exception.UserNotFoundException;
@@ -66,6 +67,7 @@ public class AdminService {
         return RoleDto.builder()
                 .id(role.getId())
                 .name(role.getName())
+                .enabled(role.isEnabled())
                 .permissions(role.getPermissions().stream()
                         .map(Permission::getName)
                         .collect(Collectors.toSet()))
@@ -143,6 +145,20 @@ public class AdminService {
 
         role.getPermissions().clear();
         role.getPermissions().addAll(permissions);
+        Role savedRole = roleRepository.save(role);
+        return convertToRoleDto(savedRole);
+    }
+
+    public RoleDto toggleRoleStatus(Long roleId, boolean enabled) {
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RoleNotFoundException("Role not found with ID: " + roleId));
+
+        if (!enabled && ("ADMIN".equals(role.getName()) || "USER".equals(role.getName()))) {
+            throw new BadRequestException("CANNOT_DISABLE_SYSTEM_ROLE",
+                    "System roles (ADMIN, USER) cannot be disabled for system security");
+        }
+
+        role.setEnabled(enabled);
         Role savedRole = roleRepository.save(role);
         return convertToRoleDto(savedRole);
     }
