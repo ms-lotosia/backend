@@ -815,3 +815,4 @@ volumes:
 networks:
   microservices-network:
     driver: bridge
+

@@ -34,6 +34,6 @@ public class GatewayConfig {
 
     @Bean
     public RedisRateLimiter redisRateLimiter() {
-        return new RedisRateLimiter(10, 20, 1); // replenishRate, burstCapacity, requestedTokens
+        return new RedisRateLimiter(10, 20, 1); 
     }
 }
