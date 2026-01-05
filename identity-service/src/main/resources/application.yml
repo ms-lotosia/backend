@@ -17,7 +17,7 @@ spring:
       password: admin123
       authentication-database: admin
   datasource:
-    url: jdbc:postgresql://postgres-identity:5432/lotosia
+    url: jdbc:postgresql://postgres-identity:5432/identity_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
