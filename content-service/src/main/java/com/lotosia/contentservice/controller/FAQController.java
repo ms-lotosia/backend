@@ -39,6 +39,7 @@ public class FAQController {
     public ResponseModel<PageableResponse<FAQResponse>> getAll(@ModelAttribute PageCriteria pageCriteria) {
         PageableResponse<FAQResponse> response = faqService.getAllFAQs(pageCriteria);
         return ResponseModel.<PageableResponse<FAQResponse>>builder()
+                .message("FAQs retrieved successfully")
                 .data(response)
                 .build();
     }
@@ -48,6 +49,7 @@ public class FAQController {
     public ResponseModel<FAQResponse> getById(@PathVariable Long id) {
         FAQResponse response = faqService.getFAQById(id);
         return ResponseModel.<FAQResponse>builder()
+                .message("FAQ retrieved successfully")
                 .data(response)
                 .build();
     }
@@ -61,6 +63,7 @@ public class FAQController {
         FAQResponse response = new FAQResponse(faq.getId(), faq.getQuestion(), faq.getAnswer());
 
         return ResponseModel.<FAQResponse>builder()
+                .message("FAQ created successfully")
                 .data(response)
                 .build();
     }
@@ -73,7 +76,8 @@ public class FAQController {
         faqService.updateFAQ(id, dto);
 
         return ResponseModel.<String>builder()
-                .data("FAQ updated successfully")
+                .message("FAQ updated successfully")
+                .data("OK")
                 .build();
     }
 
@@ -85,7 +89,8 @@ public class FAQController {
         faqService.deleteFAQ(id);
 
         return ResponseModel.<String>builder()
-                .data("FAQ deleted successfully")
+                .message("FAQ deleted successfully")
+                .data("OK")
                 .build();
     }
 }
