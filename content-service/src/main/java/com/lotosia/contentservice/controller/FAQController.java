@@ -36,61 +36,38 @@ public class FAQController {
     @Operation(summary = "Get all FAQs")
     @GetMapping("/all")
     @ResponseStatus(OK)
-    public ResponseModel<PageableResponse<FAQResponse>> getAll(@ModelAttribute PageCriteria pageCriteria) {
-        PageableResponse<FAQResponse> response = faqService.getAllFAQs(pageCriteria);
-        return ResponseModel.<PageableResponse<FAQResponse>>builder()
-                .message("FAQs retrieved successfully")
-                .data(response)
-                .build();
+    public PageableResponse<FAQResponse> getAll(@ModelAttribute PageCriteria pageCriteria) {
+        return faqService.getAllFAQs(pageCriteria);
     }
 
     @Operation(summary = "Get FAQ by ID")
     @GetMapping("/{id}")
-    public ResponseModel<FAQResponse> getById(@PathVariable Long id) {
-        FAQResponse response = faqService.getFAQById(id);
-        return ResponseModel.<FAQResponse>builder()
-                .message("FAQ retrieved successfully")
-                .data(response)
-                .build();
+    public FAQResponse getById(@PathVariable Long id) {
+        return faqService.getFAQById(id);
     }
 
     @Operation(summary = "Create a new FAQ")
     @PostMapping("/create")
     @ResponseStatus(CREATED)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseModel<FAQResponse> create(@Valid @RequestBody FAQRequest dto) {
+    public FAQResponse create(@Valid @RequestBody FAQRequest dto) {
         FAQ faq = faqService.createFAQ(dto);
-        FAQResponse response = new FAQResponse(faq.getId(), faq.getQuestion(), faq.getAnswer());
-
-        return ResponseModel.<FAQResponse>builder()
-                .message("FAQ created successfully")
-                .data(response)
-                .build();
+        return new FAQResponse(faq.getId(), faq.getQuestion(), faq.getAnswer());
     }
 
     @Operation(summary = "Update FAQ by ID")
     @PutMapping("/update/{id}")
     @ResponseStatus(OK)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseModel<String> update(@PathVariable Long id, @Valid @RequestBody FAQRequest dto) {
+    public void update(@PathVariable Long id, @Valid @RequestBody FAQRequest dto) {
         faqService.updateFAQ(id, dto);
-
-        return ResponseModel.<String>builder()
-                .message("FAQ updated successfully")
-                .data("OK")
-                .build();
     }
 
     @Operation(summary = "Delete FAQ by ID")
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseModel<String> delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         faqService.deleteFAQ(id);
-
-        return ResponseModel.<String>builder()
-                .message("FAQ deleted successfully")
-                .data("OK")
-                .build();
     }
 }
