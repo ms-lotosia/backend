@@ -4,7 +4,7 @@ import com.lotosia.identityservice.client.BasketClient;
 import com.lotosia.identityservice.client.ProfileClient;
 import com.lotosia.identityservice.dto.AuthResponse;
 import com.lotosia.identityservice.dto.CreateBasketRequest;
-import com.lotosia.identityservice.dto.CreateCreateProfileRequest;
+import com.lotosia.identityservice.dto.CreateProfileRequest;
 import com.lotosia.identityservice.dto.LoginResult;
 import com.lotosia.identityservice.dto.RefreshResult;
 import com.lotosia.identityservice.dto.RefreshTokenResponse;

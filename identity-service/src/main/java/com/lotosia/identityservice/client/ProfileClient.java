@@ -1,5 +1,6 @@
 package com.lotosia.identityservice.client;
 
+import com.lotosia.identityservice.dto.CreateProfileRequest;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.springframework.cloud.openfeign.FeignClient;

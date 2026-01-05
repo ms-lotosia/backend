@@ -38,6 +38,7 @@ subprojects {
 	}
 
 	tasks.named('test') {
-		onlyIf { false }
+		// Enable tests for development
+		onlyIf { true }
 	}
 }
