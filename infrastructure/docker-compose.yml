@@ -550,7 +550,7 @@ services:
           cpus: '0.25'
 
   nginx:
-    image: nginx:alpine-brotli
+    image: nginx:alpine
     container_name: nginx
     ports:
       - "80:80"
