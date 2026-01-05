@@ -13,3 +13,4 @@ public class BadRequestException extends RuntimeException {
         return code;
     }
 }
+

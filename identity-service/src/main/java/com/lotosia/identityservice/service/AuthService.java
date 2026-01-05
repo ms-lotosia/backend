@@ -24,6 +24,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -130,6 +132,7 @@ public class AuthService {
         emailService.sendResetPasswordEmailHtml(email, resetLink);
     }
 
+    @CacheEvict(value = {"userByEmail", "userInfo", "userExists"}, key = "#email")
     public void resetPassword(String token, String newPassword) {
         String email = redisTemplate.keys("*:reset").stream()
                 .filter(key -> {
@@ -187,10 +190,12 @@ public class AuthService {
         return new RefreshResult(response, newRefreshToken);
     }
 
+    @Cacheable(value = "userExists", key = "#email")
     public boolean isUserExists(String email) {
         return userRepository.existsByEmail(email);
     }
 
+    @Cacheable(value = "userByEmail", key = "#email")
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND", "User not found"));
@@ -287,6 +292,7 @@ public class AuthService {
         return new RegisterResult(authResponse, accessToken, refreshToken);
     }
 
+    @Cacheable(value = "userInfo", key = "#email")
     public AuthResponse getCurrentUserInfo(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND", "User not found"));

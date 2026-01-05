@@ -6,18 +6,30 @@ spring:
   application:
     name: support-service
   datasource:
-    url: jdbc:postgresql://postgres-identity:5432/lotosia
+    url: jdbc:postgresql://postgres-support:5432/support_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: support-service-pool
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
   data:
     redis:
       host: redis

@@ -6,24 +6,36 @@ spring:
   application:
     name: profile-service
   datasource:
-    url: jdbc:postgresql://localhost:5435/profile_db
+    url: jdbc:postgresql://postgres-profile:5432/profile_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: profile-service-pool
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:29092
 
 file:
   upload-dir: uploads/products

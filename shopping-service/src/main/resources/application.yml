@@ -6,24 +6,36 @@ spring:
   application:
     name: shopping-service
   datasource:
-    url: jdbc:postgresql://localhost:5436/shopping_db
+    url: jdbc:postgresql://postgres-shopping:5432/shopping_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 25
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: shopping-service-pool
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:29092
     consumer:
       group-id: shopping-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

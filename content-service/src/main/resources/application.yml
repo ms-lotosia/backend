@@ -6,10 +6,18 @@ spring:
   application:
     name: content-service
   datasource:
-    url: jdbc:postgresql://localhost:5433/content_db
+    url: jdbc:postgresql://postgres-content:5432/content_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      pool-name: content-service-pool
   jpa:
     hibernate:
       ddl-auto: update
