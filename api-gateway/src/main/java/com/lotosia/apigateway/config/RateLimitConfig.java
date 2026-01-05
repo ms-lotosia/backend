@@ -28,6 +28,9 @@ public class RateLimitConfig {
         limits.put("contactUs.create.post", 5);
         limits.put("contactUs.read", 30);
 
+        limits.put("faq.write", 10);
+        limits.put("faq.read", 50);
+
         limits.put("general.write", 60);
         limits.put("general.read", 300);
     }
@@ -74,6 +77,10 @@ public class RateLimitConfig {
             return "admin.create-admin.post";
         } else if (path.startsWith("/api/v1/admin/") && isWrite) {
             return "admin.write";
+        } else if (path.startsWith("/api/v1/faqs") && isWrite) {
+            return "faq.write";
+        } else if (path.startsWith("/api/v1/faqs") && isRead) {
+            return "faq.read";
         } else if (path.startsWith("/api/v1/contactUs") && isWrite) {
             return "contactUs.create.post";
         } else if (path.startsWith("/api/v1/contactUs") && isRead) {

@@ -18,6 +18,11 @@ public class PathValidator {
         "/api/v1/auth/logout"
     );
 
+    public static boolean requiresAuthForContent(String path) {
+        return path.startsWith("/api/v1/faqs/") ||
+               isContactUsAdminEndpoint(path);
+    }
+
     private PathValidator() {
     }
 
@@ -28,7 +33,7 @@ public class PathValidator {
     public static boolean requiresAuth(String path) {
         return path.startsWith("/api/v1/admin/") ||
                AUTH_REQUIRED_PATHS.contains(path) ||
-               isContactUsAdminEndpoint(path);
+               requiresAuthForContent(path);
     }
 
     private static boolean isContactUsAdminEndpoint(String path) {
