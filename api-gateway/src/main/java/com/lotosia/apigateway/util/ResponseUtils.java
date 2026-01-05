@@ -49,6 +49,7 @@ public class ResponseUtils {
 
     public static Mono<Void> respondWithForbidden(ServerHttpResponse response) {
         response.setStatusCode(HttpStatus.FORBIDDEN);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         return response.setComplete();
     }
 

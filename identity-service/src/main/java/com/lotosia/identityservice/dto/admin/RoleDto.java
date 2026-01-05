@@ -15,5 +15,6 @@ import java.util.Set;
 public class RoleDto {
     private Long id;
     private String name;
+    private boolean enabled;
     private Set<String> permissions;
 }

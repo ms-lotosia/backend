@@ -31,7 +31,6 @@ public class CsrfValidator {
 
             return Mono.empty();
         } catch (Exception e) {
-            // If anything goes wrong, default to allowing the request
             return Mono.empty();
         }
     }

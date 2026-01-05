@@ -7,7 +7,7 @@ const app = express();
 const PORT = 8085;
 
 app.use(cors());
-app.use(express.json());
+apwp.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/media', mediaRoutes);

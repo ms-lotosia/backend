@@ -47,4 +47,8 @@ public class ExceptionHandlerUtils {
     public static ResponseEntity<ApiError> internalServerError(String code, String message, String path) {
         return buildErrorResponse(code, message, HttpStatus.INTERNAL_SERVER_ERROR, path);
     }
+
+    public static ResponseEntity<ApiError> methodNotAllowedError(String code, String message, String path) {
+        return buildErrorResponse(code, message, HttpStatus.METHOD_NOT_ALLOWED, path);
+    }
 }

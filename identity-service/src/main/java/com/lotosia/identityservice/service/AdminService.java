@@ -111,6 +111,12 @@ public class AdminService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Role role = roleFinder.findByIdentifier(roleIdentifier);
+
+        if (!role.isEnabled()) {
+            throw new BadRequestException("CANNOT_ASSIGN_DISABLED_ROLE",
+                    "Cannot assign user to disabled role: " + role.getName());
+        }
+
         user.setRole(role);
 
         User savedUser = userRepository.save(user);
