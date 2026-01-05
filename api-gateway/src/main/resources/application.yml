@@ -18,7 +18,6 @@ spring:
             - Path=/api/v1/auth/**,/api/v1/admin/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=identity-service
             - RequestRateLimiter=redisRateLimiter
             - name: Retry
               args:
@@ -34,7 +33,6 @@ spring:
             - Path=/api/v1/contactUs/**,/api/v1/faqs/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=content-service
             - name: Retry
               args:
                 retries: 3
@@ -49,7 +47,6 @@ spring:
             - Path=/api/v1/complaints/**,/api/v1/suggestions/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=support-service
             - name: Retry
               args:
                 retries: 3
@@ -64,7 +61,6 @@ spring:
             - Path=/api/v1/cards/**,/api/v1/payments/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=payment-service
             - name: Retry
               args:
                 retries: 3
@@ -79,7 +75,6 @@ spring:
             - Path=/api/v1/categories/**,/api/v1/products/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=product-service
             - name: Retry
               args:
                 retries: 3
@@ -94,7 +89,6 @@ spring:
             - Path=/api/v1/addresses/**,/api/v1/favorites/**,/api/v1/profiles/**,/api/v1/reviews/**,/api/v1/preferences/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=profile-service
             - name: Retry
               args:
                 retries: 3
@@ -109,7 +103,6 @@ spring:
             - Path=/api/v1/baskets/**,/api/v1/orders/**
           filters:
             - StripPrefix=0
-            - CircuitBreaker=shopping-service
             - name: Retry
               args:
                 retries: 3
