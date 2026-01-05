@@ -17,9 +17,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -53,25 +56,36 @@ public class FAQController {
     @PostMapping("/create")
     @ResponseStatus(CREATED)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public FAQ create(@ModelAttribute FAQRequest dto) {
+    public ResponseModel<FAQResponse> create(@Valid @RequestBody FAQRequest dto) {
         FAQ faq = faqService.createFAQ(dto);
+        FAQResponse response = new FAQResponse(faq.getId(), faq.getQuestion(), faq.getAnswer());
 
-        return faq;
+        return ResponseModel.<FAQResponse>builder()
+                .data(response)
+                .build();
     }
 
     @Operation(summary = "Update FAQ by ID")
     @PutMapping("/update/{id}")
     @ResponseStatus(OK)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public void update(@PathVariable Long id, @ModelAttribute FAQRequest dto) {
+    public ResponseModel<String> update(@PathVariable Long id, @Valid @RequestBody FAQRequest dto) {
         faqService.updateFAQ(id, dto);
+
+        return ResponseModel.<String>builder()
+                .data("FAQ updated successfully")
+                .build();
     }
 
     @Operation(summary = "Delete FAQ by ID")
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
     @PreAuthorize("hasAuthority('ADMIN')")
-    public void delete(@PathVariable Long id) {
+    public ResponseModel<String> delete(@PathVariable Long id) {
         faqService.deleteFAQ(id);
+
+        return ResponseModel.<String>builder()
+                .data("FAQ deleted successfully")
+                .build();
     }
 }
