@@ -7,7 +7,6 @@ import reactor.core.publisher.Mono;
 public class CsrfValidator {
 
     private CsrfValidator() {
-        // Utility class
     }
 
     public static Mono<Void> validateCsrfToken(ServerWebExchange exchange, String path, String method) {

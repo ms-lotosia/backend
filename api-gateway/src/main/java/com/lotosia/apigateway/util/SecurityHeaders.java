@@ -5,7 +5,6 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 public class SecurityHeaders {
 
     private SecurityHeaders() {
-        // Utility class
     }
 
     public static void addSecurityHeaders(ServerHttpResponse response) {

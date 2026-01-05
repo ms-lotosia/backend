@@ -18,7 +18,6 @@ public class PathValidator {
     );
 
     private PathValidator() {
-        // Utility class
     }
 
     public static boolean isCsrfExempted(String path) {

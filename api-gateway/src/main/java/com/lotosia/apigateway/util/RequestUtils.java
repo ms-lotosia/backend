@@ -6,7 +6,6 @@ import org.springframework.web.server.ServerWebExchange;
 public class RequestUtils {
 
     private RequestUtils() {
-        // Utility class
     }
 
     public static String extractClientIP(ServerHttpRequest request) {

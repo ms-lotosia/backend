@@ -1,13 +1,21 @@
 package com.lotosia.apigateway.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lotosia.apigateway.exception.ApiError;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+
 public class ResponseUtils {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private ResponseUtils() {
-        // Utility class
     }
 
     public static Mono<Void> respondWithStatus(ServerHttpResponse response, HttpStatus status) {
@@ -17,10 +25,26 @@ public class ResponseUtils {
 
     public static Mono<Void> respondWithTooManyRequests(ServerHttpResponse response) {
         response.setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         response.getHeaders().add("X-RateLimit-Remaining", "0");
         response.getHeaders().add("X-RateLimit-Reset", String.valueOf(System.currentTimeMillis() + 60000));
         response.getHeaders().add("Retry-After", "60");
-        return response.setComplete();
+
+        ApiError error = ApiError.builder()
+                .code("TOO_MANY_REQUESTS")
+                .message("Rate limit exceeded. Please wait 1 minute before making another request.")
+                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .path("/api/rate-limited")
+                .timestamp(System.currentTimeMillis())
+                .build();
+
+        try {
+            String jsonResponse = OBJECT_MAPPER.writeValueAsString(error);
+            byte[] bytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+            return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
+        } catch (JsonProcessingException e) {
+            return response.setComplete();
+        }
     }
 
     public static Mono<Void> respondWithForbidden(ServerHttpResponse response) {

@@ -13,29 +13,24 @@ public class RateLimitConfig {
 
     private Map<String, Integer> limits = new HashMap<>();
 
-    // Default constructor with default values
     public RateLimitConfig() {
-        // Auth endpoints
         limits.put("auth.login.post", 5);
         limits.put("auth.verify-otp.post", 5);
         limits.put("auth.request-otp.post", 3);
         limits.put("auth.send-reset-password-link.post", 2);
         limits.put("auth.reset-password.post", 5);
 
-        // Admin endpoints
         limits.put("admin.create-admin.post", 2);
         limits.put("admin.write", 30);
 
-        // Checkout endpoints
         limits.put("checkout.write", 10);
 
-        // General limits
         limits.put("general.write", 60);
         limits.put("general.read", 300);
     }
 
     public int getLimit(String key) {
-        return limits.getOrDefault(key, 300); // Default to 300 if not found
+        return limits.getOrDefault(key, 300);
     }
 
     public boolean isCheckoutEndpoint(String path) {
@@ -87,7 +82,6 @@ public class RateLimitConfig {
         return "general.read";
     }
 
-    // Getters and setters for configuration properties binding
     public Map<String, Integer> getLimits() {
         return limits;
     }

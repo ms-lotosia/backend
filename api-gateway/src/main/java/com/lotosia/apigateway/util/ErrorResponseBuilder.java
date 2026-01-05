@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 public class ErrorResponseBuilder {
 
     private ErrorResponseBuilder() {
-        // Utility class
     }
 
     public static ResponseEntity<ApiError> buildError(HttpStatus status, String code, String message) {
@@ -32,7 +31,6 @@ public class ErrorResponseBuilder {
                 .body(error);
     }
 
-    // Common error responses
     public static ResponseEntity<ApiError> internalServerError(String message) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", message);
     }
