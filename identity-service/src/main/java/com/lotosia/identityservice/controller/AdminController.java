@@ -74,6 +74,25 @@ public class AdminController {
         return ResponseEntity.ok(roles);
     }
 
+    @Operation(summary = "Get roles by status",
+               description = "Filter roles by their enabled/disabled status")
+    @GetMapping("/roles/status/{enabled}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<List<RoleDto>> getRolesByStatus(@PathVariable boolean enabled) {
+        List<RoleDto> roles = adminService.getRolesByStatus(enabled);
+        return ResponseEntity.ok(roles);
+    }
+
+    @Operation(summary = "Disable or enable a role",
+               description = "Disable a role to prevent new assignments while keeping existing user assignments intact. " +
+                           "Enable a previously disabled role.")
+    @PutMapping("/roles/{roleId}/status")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<RoleDto> toggleRoleStatus(@PathVariable Long roleId, @RequestParam boolean enabled) {
+        RoleDto role = adminService.toggleRoleStatus(roleId, enabled);
+        return ResponseEntity.ok(role);
+    }
+
     @Operation(summary = "Update role permissions",
                description = "Update role permissions by providing permission IDs or normalized names. " +
                            "IDs are preferred for precision, names are case-insensitive and trimmed. " +

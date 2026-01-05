@@ -135,6 +135,13 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    public List<RoleDto> getRolesByStatus(boolean enabled) {
+        return roleRepository.findAll().stream()
+                .filter(role -> role.isEnabled() == enabled)
+                .map(this::convertToRoleDto)
+                .collect(Collectors.toList());
+    }
+
     public RoleDto updateRolePermissions(Long roleId, List<String> permissionIdentifiers) {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with ID: " + roleId));
