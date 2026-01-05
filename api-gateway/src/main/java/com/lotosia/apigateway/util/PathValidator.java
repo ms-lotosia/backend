@@ -14,7 +14,8 @@ public class PathValidator {
 
     private static final Set<String> AUTH_REQUIRED_PATHS = Set.of(
         "/api/v1/auth/me",
-        "/api/v1/auth/logout"
+        "/api/v1/auth/logout",
+        "/api/v1/contactUs"
     );
 
     private PathValidator() {
