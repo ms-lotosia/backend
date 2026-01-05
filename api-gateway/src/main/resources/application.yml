@@ -18,6 +18,15 @@ spring:
             - Path=/api/v1/auth/**,/api/v1/admin/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=identity-service
+            - RequestRateLimiter=redisRateLimiter
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: content-service
           uri: lb://content-service
@@ -25,6 +34,14 @@ spring:
             - Path=/api/v1/contactUs/**,/api/v1/faqs/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=content-service
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: support-service
           uri: lb://support-service
@@ -32,6 +49,14 @@ spring:
             - Path=/api/v1/complaints/**,/api/v1/suggestions/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=support-service
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: payment-service
           uri: lb://payment-service
@@ -39,6 +64,14 @@ spring:
             - Path=/api/v1/cards/**,/api/v1/payments/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=payment-service
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: product-service
           uri: lb://product-service
@@ -46,6 +79,14 @@ spring:
             - Path=/api/v1/categories/**,/api/v1/products/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=product-service
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: profile-service
           uri: lb://profile-service
@@ -53,6 +94,14 @@ spring:
             - Path=/api/v1/addresses/**,/api/v1/favorites/**,/api/v1/profiles/**,/api/v1/reviews/**,/api/v1/preferences/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=profile-service
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: shopping-service
           uri: lb://shopping-service
@@ -60,6 +109,14 @@ spring:
             - Path=/api/v1/baskets/**,/api/v1/orders/**
           filters:
             - StripPrefix=0
+            - CircuitBreaker=shopping-service
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST,PUT,DELETE
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
 
         - id: media-service
           uri: http://media-service:8085
@@ -72,6 +129,96 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://service-discovery:8761/eureka/}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      identity-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      content-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      support-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      payment-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      product-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      profile-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      shopping-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  timelimiter:
+    instances:
+      identity-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      content-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      support-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      payment-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      product-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      profile-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+      shopping-service:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
 
 management:
   endpoints:

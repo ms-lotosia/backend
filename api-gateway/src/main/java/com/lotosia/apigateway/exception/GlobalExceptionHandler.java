@@ -1,9 +1,12 @@
 package com.lotosia.apigateway.exception;
 
 import com.lotosia.apigateway.util.ErrorResponseBuilder;
+import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebInputException;
 
 import java.net.ConnectException;
@@ -35,5 +38,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TimeoutException.class)
     public ResponseEntity<ApiError> handleTimeoutException(TimeoutException ex) {
         return ErrorResponseBuilder.gatewayTimeout("The request timed out while waiting for the service to respond.");
+    }
+
+    @ExceptionHandler(WebClientRequestException.class)
+    public ResponseEntity<ApiError> handleWebClientRequestException(WebClientRequestException ex) {
+        return ErrorResponseBuilder.serviceUnavailable("Unable to connect to the requested service. Please try again later.");
+    }
+
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<ApiError> handleWebClientResponseException(WebClientResponseException ex) {
+        if (ex.getStatusCode().is5xxServerError()) {
+            return ErrorResponseBuilder.serviceUnavailable("The service is experiencing issues. Please try again later.");
+        } else if (ex.getStatusCode().is4xxClientError()) {
+            return ErrorResponseBuilder.build(ex.getStatusCode().value(), ex.getStatusText(), ex.getMessage());
+        }
+        return ErrorResponseBuilder.internalServerError("Service communication error");
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFoundException(NotFoundException ex) {
+        return ErrorResponseBuilder.notFound("The requested service or resource was not found.");
     }
 }
