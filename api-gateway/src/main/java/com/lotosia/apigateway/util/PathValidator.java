@@ -19,8 +19,17 @@ public class PathValidator {
     );
 
     public static boolean requiresAuthForContent(String path) {
-        return path.startsWith("/api/v1/faqs/") ||
-               isContactUsAdminEndpoint(path);
+        // FAQ write operations require auth, read operations are public
+        if (path.startsWith("/api/v1/faqs/")) {
+            return isFaqWriteOperation(path);
+        }
+        return isContactUsAdminEndpoint(path);
+    }
+
+    private static boolean isFaqWriteOperation(String path) {
+        return path.contains("/create") ||
+               path.contains("/update") ||
+               path.contains("/delete");
     }
 
     private PathValidator() {

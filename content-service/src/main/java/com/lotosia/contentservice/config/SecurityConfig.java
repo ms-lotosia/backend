@@ -44,8 +44,10 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/faqs/create", "/api/v1/faqs/update/**", "/api/v1/faqs/delete/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/faqs/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/faqs/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/faqs/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/faqs/delete/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/faqs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/contactUs").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/contactUs/{id}", "/api/v1/contactUs/all").hasAuthority("ADMIN")
                         .anyRequest().denyAll()
