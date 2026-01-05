@@ -9,13 +9,13 @@ public class PathValidator {
         "/api/v1/auth/request-otp",
         "/api/v1/auth/verify-otp",
         "/api/v1/auth/send-reset-password-link",
-        "/api/v1/auth/reset-password"
+        "/api/v1/auth/reset-password",
+        "/api/v1/contactUs"
     );
 
     private static final Set<String> AUTH_REQUIRED_PATHS = Set.of(
         "/api/v1/auth/me",
-        "/api/v1/auth/logout",
-        "/api/v1/contactUs"
+        "/api/v1/auth/logout"
     );
 
     private PathValidator() {
@@ -27,7 +27,13 @@ public class PathValidator {
 
     public static boolean requiresAuth(String path) {
         return path.startsWith("/api/v1/admin/") ||
-               AUTH_REQUIRED_PATHS.contains(path);
+               AUTH_REQUIRED_PATHS.contains(path) ||
+               isContactUsAdminEndpoint(path);
+    }
+
+    private static boolean isContactUsAdminEndpoint(String path) {
+        return path.startsWith("/api/v1/contactUs/") &&
+               (path.matches("/api/v1/contactUs/\\d+") || path.equals("/api/v1/contactUs/all"));
     }
 
     public static boolean isAdminRoute(String path) {
