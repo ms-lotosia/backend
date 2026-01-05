@@ -37,7 +37,7 @@ public class FAQService {
 
         FAQ faq = faqRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("FAQ_NOT_FOUND",
-                        String.format("ActionLog.getFAQ.id %s not found", id)));
+                        String.format("FAQ with ID %s not found", id)));
 
         return mapToDto(faq);
     }
@@ -51,7 +51,7 @@ public class FAQService {
         FAQ faq = faqRepository.findById(id).orElseThrow(
                 () -> new NotFoundException(
                 "FAQ_NOT_FOUND",
-                String.format("ActionLog.updateFAQ.id %s not found", id)));
+                String.format("FAQ with ID %s not found", id)));
 
         faq.setQuestion(dto.getQuestion());
         faq.setAnswer(dto.getAnswer());
@@ -63,7 +63,7 @@ public class FAQService {
         FAQ faq = faqRepository.findById(id).orElseThrow(
                 () -> new NotFoundException(
                         "FAQ_NOT_FOUND",
-                        String.format("ActionLog.updateFAQ.id %s not found", id)));
+                        String.format("FAQ with ID %s not found", id)));
 
         faqRepository.delete(faq);
     }
