@@ -18,11 +18,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-content:
     image: postgres:15-alpine
@@ -42,11 +42,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-support:
     image: postgres:15-alpine
@@ -66,11 +66,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-product:
     image: postgres:15-alpine
@@ -90,11 +90,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-profile:
     image: postgres:15-alpine
@@ -114,11 +114,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-shopping:
     image: postgres:15-alpine
@@ -138,11 +138,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   postgres-payment:
     image: postgres:15-alpine
@@ -162,11 +162,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   pgadmin:
     image: dpage/pgadmin4:8
@@ -198,11 +198,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   prometheus:
     image: prom/prometheus:latest
@@ -223,11 +223,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '0.5'
+          memory: 256M
+          cpus: '0.2'
         reservations:
-          memory: 512M
-          cpus: '0.25'
+          memory: 128M
+          cpus: '0.1'
 
   grafana:
     image: grafana/grafana:latest
@@ -254,11 +254,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
+          memory: 128M
+          cpus: '0.2'
         reservations:
-          memory: 512M
-          cpus: '0.5'
+          memory: 64M
+          cpus: '0.1'
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -271,16 +271,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   redis:
     image: redis:7-alpine
     container_name: redis
-    command: redis-server --appendonly yes --appendfsync everysec --maxmemory 256mb --maxmemory-policy allkeys-lru --tcp-keepalive 300
+    command: redis-server --appendonly yes --appendfsync everysec --maxmemory 128mb --maxmemory-policy allkeys-lru --tcp-keepalive 300
     volumes:
       - redis_data:/data
     networks: [microservices-network]
@@ -292,11 +292,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
           memory: 256M
-          cpus: '0.25'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   mongodb:
     image: mongo:7-jammy
@@ -316,11 +316,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   redis-exporter:
     image: oliver006/redis_exporter:latest
@@ -497,11 +497,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -516,7 +516,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xms512m -Xmx1g"
+      KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
       KAFKA_NUM_PARTITIONS: 3
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     networks: [microservices-network]
@@ -528,11 +528,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-          cpus: '2.0'
+          memory: 512M
+          cpus: '0.5'
         reservations:
-          memory: 1G
-          cpus: '1.0'
+          memory: 256M
+          cpus: '0.25'
 
   service-discovery:
     image: ghcr.io/ms-lotosia/ms-lotosia/service-discovery:latest
@@ -543,11 +543,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   nginx:
     image: nginx:alpine
@@ -580,11 +580,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   identity-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/identity-service:latest
@@ -611,11 +611,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   content-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/content-service:latest
@@ -640,11 +640,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   support-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/support-service:latest
@@ -673,11 +673,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   product-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/product-service:latest
@@ -698,11 +698,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   profile-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/profile-service:latest
@@ -723,11 +723,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   shopping-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/shopping-service:latest
@@ -749,11 +749,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   payment-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/payment-service:latest
@@ -774,11 +774,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
           memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   media-service:
     image: ghcr.io/ms-lotosia/ms-lotosia/media-service:latest
@@ -792,11 +792,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
           memory: 256M
-          cpus: '0.5'
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
 
 volumes:
   postgres_identity_data:
