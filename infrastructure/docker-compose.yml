@@ -521,7 +521,7 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     networks: [microservices-network]
     healthcheck:
-      test: ["CMD", "kafka-topics", "--list", "--bootstrap-server", "localhost:29092"]
+      test: ["CMD", "nc", "-z", "localhost", "29092"]
       interval: 10s
       timeout: 5s
       retries: 5
