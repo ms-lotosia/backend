@@ -1,6 +1,6 @@
 package com.lotosia.identityservice.service.email.retry;
 
-import com.lotosia.identityservice.dto.EmailMessage;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
 
 public interface EmailRetryHandler {
 

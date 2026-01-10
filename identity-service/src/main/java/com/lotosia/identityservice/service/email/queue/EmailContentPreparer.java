@@ -1,9 +1,9 @@
 package com.lotosia.identityservice.service.email.queue;
 
 import com.lotosia.identityservice.config.EmailProperties;
-import com.lotosia.identityservice.dto.EmailMessage;
-import com.lotosia.identityservice.util.EmailContentBuilder;
-import com.lotosia.identityservice.util.EmailTemplateProcessor;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
+import com.lotosia.identityservice.service.email.util.EmailContentBuilder;
+import com.lotosia.identityservice.service.email.support.EmailTemplateProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.service.persistence;
 
 import com.lotosia.identityservice.exception.PermissionNotFoundException;
 import com.lotosia.identityservice.exception.RoleNotFoundException;

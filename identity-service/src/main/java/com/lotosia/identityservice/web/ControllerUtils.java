@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

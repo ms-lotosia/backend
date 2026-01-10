@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.service.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

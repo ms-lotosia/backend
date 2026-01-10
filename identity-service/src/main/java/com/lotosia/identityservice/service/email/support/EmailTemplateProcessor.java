@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.service.email.support;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.core.io.ClassPathResource;

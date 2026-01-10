@@ -1,6 +1,6 @@
 package com.lotosia.identityservice.service.email.strategy;
 
-import com.lotosia.identityservice.config.EmailConstants;
+import com.lotosia.identityservice.service.email.config.EmailConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;

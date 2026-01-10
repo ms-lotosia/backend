@@ -1,12 +1,12 @@
 package com.lotosia.identityservice.service.email.sender;
 
-import com.lotosia.identityservice.config.EmailConstants;
+import com.lotosia.identityservice.service.email.config.EmailConstants;
 import com.lotosia.identityservice.config.EmailProperties;
 import com.lotosia.identityservice.exception.RetryableEmailException;
 import com.lotosia.identityservice.service.email.sender.EmailErrorClassifier;
-import com.lotosia.identityservice.util.EmailContentBuilder;
-import com.lotosia.identityservice.util.EmailTemplateProcessor;
-import com.lotosia.identityservice.util.EmailValidator;
+import com.lotosia.identityservice.service.email.util.EmailContentBuilder;
+import com.lotosia.identityservice.service.email.support.EmailTemplateProcessor;
+import com.lotosia.identityservice.service.email.util.EmailValidator;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

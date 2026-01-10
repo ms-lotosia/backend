@@ -1,11 +1,8 @@
-package com.lotosia.identityservice.messaging.kafka.email;
+package com.lotosia.identityservice.service;
 
 import com.lotosia.identityservice.service.email.config.EmailConstants;
-import com.lotosia.identityservice.dto.EmailMessage;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
 import com.lotosia.identityservice.exception.RetryableEmailException;
-import com.lotosia.identityservice.service.email.queue.EmailQueueService;
-import com.lotosia.identityservice.service.email.retry.EmailRetryHandler;
-import com.lotosia.identityservice.service.email.sender.AsyncEmailSender;
 import com.lotosia.identityservice.service.email.util.EmailContentBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;

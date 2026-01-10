@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.security;
 
 import com.lotosia.identityservice.entity.Role;
 import com.lotosia.identityservice.service.RedisTokenService;

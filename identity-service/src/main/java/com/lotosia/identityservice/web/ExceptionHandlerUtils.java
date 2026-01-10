@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.web;
 
 import com.lotosia.identityservice.exception.ApiError;
 import jakarta.servlet.http.HttpServletRequest;

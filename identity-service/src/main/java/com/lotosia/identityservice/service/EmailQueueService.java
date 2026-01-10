@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service.email.queue;
+package com.lotosia.identityservice.service;
 
 import com.lotosia.identityservice.service.email.config.EmailConstants;
 import com.lotosia.identityservice.service.email.model.EmailMessage;

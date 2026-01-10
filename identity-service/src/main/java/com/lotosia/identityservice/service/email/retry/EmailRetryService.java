@@ -1,7 +1,7 @@
 package com.lotosia.identityservice.service.email.retry;
 
-import com.lotosia.identityservice.config.EmailConstants;
-import com.lotosia.identityservice.dto.EmailMessage;
+import com.lotosia.identityservice.service.email.config.EmailConstants;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
 import com.lotosia.identityservice.service.email.strategy.BackoffStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;

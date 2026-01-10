@@ -1,7 +1,7 @@
 package com.lotosia.identityservice.messaging.kafka.email;
 
 import com.lotosia.identityservice.service.email.config.EmailConstants;
-import com.lotosia.identityservice.dto.EmailMessage;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
 import com.lotosia.identityservice.exception.RetryableEmailException;
 import com.lotosia.identityservice.service.email.queue.EmailQueueService;
 import com.lotosia.identityservice.service.email.retry.EmailRetryHandler;

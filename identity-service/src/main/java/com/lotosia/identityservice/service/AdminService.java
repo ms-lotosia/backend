@@ -18,7 +18,7 @@ import com.lotosia.identityservice.exception.UserNotFoundException;
 import com.lotosia.identityservice.repository.PermissionRepository;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
-import com.lotosia.identityservice.util.EntityFinder;
+import com.lotosia.identityservice.service.persistence.EntityFinder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

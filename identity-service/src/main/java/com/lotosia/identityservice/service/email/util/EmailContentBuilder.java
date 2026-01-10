@@ -1,7 +1,7 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.service.email.util;
 
 import com.lotosia.identityservice.config.EmailProperties;
-import com.lotosia.identityservice.dto.EmailMessage;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
 
 public class EmailContentBuilder {
 

@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.dto;
+package com.lotosia.identityservice.service.email.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.util;
+package com.lotosia.identityservice.service.email.util;
 
 import org.springframework.stereotype.Component;
 

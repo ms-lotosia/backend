@@ -1,6 +1,6 @@
-package com.lotosia.identityservice.config;
+package com.lotosia.identityservice.messaging.kafka;
 
-import com.lotosia.identityservice.dto.EmailMessage;
+import com.lotosia.identityservice.service.email.model.EmailMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
