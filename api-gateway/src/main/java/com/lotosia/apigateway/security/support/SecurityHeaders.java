@@ -1,4 +1,4 @@
-package com.lotosia.apigateway.util;
+package com.lotosia.apigateway.security.support;
 
 import org.springframework.http.server.reactive.ServerHttpResponse;
 

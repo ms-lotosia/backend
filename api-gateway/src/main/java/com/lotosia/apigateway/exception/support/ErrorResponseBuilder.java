@@ -1,4 +1,4 @@
-package com.lotosia.apigateway.util;
+package com.lotosia.apigateway.exception.support;
 
 import com.lotosia.apigateway.exception.ApiError;
 import org.springframework.http.HttpStatus;

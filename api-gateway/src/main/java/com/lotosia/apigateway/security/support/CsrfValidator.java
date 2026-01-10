@@ -1,5 +1,7 @@
-package com.lotosia.apigateway.util;
+package com.lotosia.apigateway.security.support;
 
+import com.lotosia.apigateway.web.support.RequestUtils;
+import com.lotosia.apigateway.web.support.ResponseUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;

@@ -1,6 +1,6 @@
 package com.lotosia.apigateway.exception;
 
-import com.lotosia.apigateway.util.ErrorResponseBuilder;
+import com.lotosia.apigateway.exception.support.ErrorResponseBuilder;
 import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,4 +1,4 @@
-package com.lotosia.apigateway.util;
+package com.lotosia.apigateway.web.support;
 
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;

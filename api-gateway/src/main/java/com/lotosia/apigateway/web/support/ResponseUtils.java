@@ -1,4 +1,4 @@
-package com.lotosia.apigateway.util;
+package com.lotosia.apigateway.web.support;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
