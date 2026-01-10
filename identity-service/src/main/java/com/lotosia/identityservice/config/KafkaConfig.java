@@ -32,12 +32,28 @@ public class KafkaConfig {
     @Value("${spring.kafka.consumer.value-deserializer}")
     private String valueDeserializer;
 
+    @Value("${spring.kafka.consumer.max-poll-records}")
+    private int maxPollRecords;
+
+    @Value("${spring.kafka.producer.acks}")
+    private String acks;
+
+    @Value("${spring.kafka.producer.retries}")
+    private int retries;
+
+    @Value("${spring.kafka.producer.enable-idempotence}")
+    private boolean enableIdempotence;
+
     @Bean
     public ProducerFactory<String, EmailMessage> emailProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        configProps.put(ProducerConfig.ACKS_CONFIG, acks);
+        configProps.put(ProducerConfig.RETRIES_CONFIG, retries);
+        configProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, enableIdempotence);
 
         return new DefaultKafkaProducerFactory<>(configProps);
     }
@@ -53,7 +69,11 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
+        configProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
+
+        configProps.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1024);
+        configProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 500);
+        configProps.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 1048576);
 
         try {
             configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, Class.forName(keyDeserializer));
@@ -73,7 +93,7 @@ public class KafkaConfig {
 
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
 
-        factory.setConcurrency(3);
+        factory.setConcurrency(5);
 
         return factory;
     }

@@ -20,28 +20,11 @@ public class EmailMessage {
     private String recipientEmail;
     private String otpCode;
     private String resetLink;
+    private String subject;
+    private String plainText;
+    private String htmlContent;
     private long timestamp;
     private int retryCount;
-
-    public static EmailMessage otpEmail(String recipientEmail, String otpCode) {
-        return EmailMessage.builder()
-                .type(EmailType.OTP)
-                .recipientEmail(recipientEmail)
-                .otpCode(otpCode)
-                .timestamp(System.currentTimeMillis())
-                .retryCount(0)
-                .build();
-    }
-
-    public static EmailMessage passwordResetEmail(String recipientEmail, String resetLink) {
-        return EmailMessage.builder()
-                .type(EmailType.PASSWORD_RESET)
-                .recipientEmail(recipientEmail)
-                .resetLink(resetLink)
-                .timestamp(System.currentTimeMillis())
-                .retryCount(0)
-                .build();
-    }
 
     public boolean isExpired(long maxAgeMillis) {
         return System.currentTimeMillis() - timestamp > maxAgeMillis;

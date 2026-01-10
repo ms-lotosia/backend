@@ -17,3 +17,4 @@ public class CreateProfileRequest {
     @NotNull
     private Long userId;
 }
+

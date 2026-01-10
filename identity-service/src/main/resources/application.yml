@@ -56,6 +56,9 @@ spring:
           connectiontimeout: 10000
           timeout: 10000
           writetimeout: 10000
+          connectionpool: true
+          connectionpoolsize: 5
+          connectionpooltimeout: 30000
     from: lotosia2025@gmail.com
   kafka:
     bootstrap-servers: kafka:29092

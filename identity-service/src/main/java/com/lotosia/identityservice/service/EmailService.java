@@ -1,5 +1,7 @@
 package com.lotosia.identityservice.service;
 
+import com.lotosia.identityservice.service.email.queue.EmailQueueService;
+import com.lotosia.identityservice.service.email.sender.AsyncEmailSender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,21 +13,29 @@ public class EmailService {
     private final EmailQueueService emailQueueService;
 
     public void sendOtpEmailHtml(String recipientEmail, String otp) {
-        sendEmailWithFallback(
-            () -> asyncEmailSender.sendOtpEmailHtml(recipientEmail, otp),
-            () -> emailQueueService.queueOtpEmail(recipientEmail, otp),
-            () -> asyncEmailSender.sendSimpleEmail(recipientEmail, "Qeydiyyat üçün OTP Kodu",
-                "OTP kodunuz: " + otp + "\nBu kod 5 dəqiqə ərzində keçərlidir.\n\nBu kodu heç kəslə paylaşmayın.")
-        );
+        try {
+            emailQueueService.queueOtpEmail(recipientEmail, otp);
+        } catch (Exception e) {
+            sendEmailWithFallback(
+                () -> asyncEmailSender.sendOtpEmailHtml(recipientEmail, otp),
+                () -> {},
+                () -> asyncEmailSender.sendSimpleEmail(recipientEmail, "Qeydiyyat üçün OTP Kodu",
+                    "OTP kodunuz: " + otp + "\nBu kod 5 dəqiqə ərzində keçərlidir.\n\nBu kodu heç kəslə paylaşmayın.")
+            );
+        }
     }
 
     public void sendResetPasswordEmailHtml(String recipientEmail, String resetLink) {
-        sendEmailWithFallback(
-            () -> asyncEmailSender.sendResetPasswordEmailHtml(recipientEmail, resetLink),
-            () -> emailQueueService.queuePasswordResetEmail(recipientEmail, resetLink),
-            () -> asyncEmailSender.sendSimpleEmail(recipientEmail, "Reset Your Lotosia Password",
-                "Click the link to reset your password: " + resetLink + "\n\nIf you didn't request this, you can ignore this email.")
-        );
+        try {
+            emailQueueService.queuePasswordResetEmail(recipientEmail, resetLink);
+        } catch (Exception e) {
+            sendEmailWithFallback(
+                () -> asyncEmailSender.sendResetPasswordEmailHtml(recipientEmail, resetLink),
+                () -> {},
+                () -> asyncEmailSender.sendSimpleEmail(recipientEmail, "Reset Your Lotosia Password",
+                    "Click the link to reset your password: " + resetLink + "\n\nIf you didn't request this, you can ignore this email.")
+            );
+        }
     }
 
     private void sendEmailWithFallback(Runnable primarySender, Runnable queueSender, Runnable fallbackSender) {

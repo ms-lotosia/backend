@@ -2,8 +2,6 @@ HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### STS ###
 .apt_generated
@@ -48,6 +46,14 @@ out/
 
 # Gradle temporary user home used in CI/local runs
 .gradle-tmp/
+
+# Additional build artifacts
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+**/*.log
 
 # Logs and reports
 *.log

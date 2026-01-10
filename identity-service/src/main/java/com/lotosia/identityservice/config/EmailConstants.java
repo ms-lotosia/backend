@@ -11,6 +11,10 @@ public class EmailConstants {
     public static final int MAX_RETRY_ATTEMPTS = 5;
     public static final long MAX_MESSAGE_AGE = 24 * 60 * 60 * 1000L;
 
+    public static final long BASE_RETRY_DELAY_MS = 1000L;
+    public static final long MAX_RETRY_DELAY_MS = 5 * 60 * 1000L;
+    public static final double JITTER_FACTOR = 0.25;
+
     public static final String OTP_SUBJECT = "Lotosia - Qeydiyyat üçün OTP Kodu";
     public static final String PASSWORD_RESET_SUBJECT = "Reset Your Lotosia Password";
     public static final String SIMPLE_EMAIL_SUBJECT_PREFIX = "Lotosia - ";
