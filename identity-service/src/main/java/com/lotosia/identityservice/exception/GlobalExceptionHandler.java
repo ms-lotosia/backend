@@ -1,7 +1,7 @@
 package com.lotosia.identityservice.exception;
 
 import com.lotosia.identityservice.dto.admin.AdminBootstrapResponse;
-import com.lotosia.identityservice.web.ExceptionHandlerUtils;
+import com.lotosia.identityservice.util.ExceptionHandlerUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

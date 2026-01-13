@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service;
+package com.lotosia.identityservice.service.user;
 
 import com.lotosia.identityservice.entity.User;
 import com.lotosia.identityservice.repository.UserRepository;

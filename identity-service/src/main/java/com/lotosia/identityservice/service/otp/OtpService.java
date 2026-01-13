@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service;
+package com.lotosia.identityservice.service.otp;
 
 import com.lotosia.identityservice.config.EmailProperties;
 import com.lotosia.identityservice.dto.RegisterRequest;
@@ -7,6 +7,7 @@ import com.lotosia.identityservice.exception.ExpiredOtpException;
 import com.lotosia.identityservice.exception.InvalidOtpException;
 import com.lotosia.identityservice.exception.TooManyRequestsException;
 import com.lotosia.identityservice.repository.OtpRepository;
+import com.lotosia.identityservice.service.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import java.security.SecureRandom;
 import java.time.Instant;

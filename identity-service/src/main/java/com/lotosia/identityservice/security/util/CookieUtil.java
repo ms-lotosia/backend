@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.security;
+package com.lotosia.identityservice.security.util;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

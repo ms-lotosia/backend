@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service;
+package com.lotosia.identityservice.service.token;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service;
+package com.lotosia.identityservice.service.admin;
 
 import com.lotosia.identityservice.dto.admin.AdminBootstrapResponse;
 import com.lotosia.identityservice.dto.admin.PageResponse;
@@ -12,7 +12,6 @@ import com.lotosia.identityservice.exception.AdminAlreadyExistsException;
 import com.lotosia.identityservice.exception.AdminUpgradeException;
 import com.lotosia.identityservice.exception.AlreadyExistsException;
 import com.lotosia.identityservice.exception.BadRequestException;
-import com.lotosia.identityservice.exception.PermissionNotFoundException;
 import com.lotosia.identityservice.exception.RoleNotFoundException;
 import com.lotosia.identityservice.exception.UserNotFoundException;
 import com.lotosia.identityservice.repository.PermissionRepository;
@@ -21,7 +20,6 @@ import com.lotosia.identityservice.repository.UserRepository;
 import com.lotosia.identityservice.service.persistence.EntityFinder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

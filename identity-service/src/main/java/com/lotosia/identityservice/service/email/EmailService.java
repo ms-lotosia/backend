@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service;
+package com.lotosia.identityservice.service.email;
 
 import com.lotosia.identityservice.service.email.queue.EmailQueueService;
 import com.lotosia.identityservice.service.email.sender.AsyncEmailSender;

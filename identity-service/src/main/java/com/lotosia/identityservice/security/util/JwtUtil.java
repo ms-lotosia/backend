@@ -1,7 +1,6 @@
-package com.lotosia.identityservice.security;
+package com.lotosia.identityservice.security.util;
 
 import com.lotosia.identityservice.entity.Role;
-import com.lotosia.identityservice.service.RedisTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;

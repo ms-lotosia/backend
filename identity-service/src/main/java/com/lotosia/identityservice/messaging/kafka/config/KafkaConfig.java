@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.messaging.kafka;
+package com.lotosia.identityservice.messaging.kafka.config;
 
 import com.lotosia.identityservice.service.email.model.EmailMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

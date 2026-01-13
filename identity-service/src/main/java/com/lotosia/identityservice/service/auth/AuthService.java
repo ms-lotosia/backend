@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.service;
+package com.lotosia.identityservice.service.auth;
 
 import com.lotosia.identityservice.client.BasketClient;
 import com.lotosia.identityservice.client.ProfileClient;
@@ -17,8 +17,9 @@ import com.lotosia.identityservice.exception.InvalidCredentialsException;
 import com.lotosia.identityservice.exception.NotFoundException;
 import com.lotosia.identityservice.repository.RoleRepository;
 import com.lotosia.identityservice.repository.UserRepository;
-import com.lotosia.identityservice.security.CookieUtil;
-import com.lotosia.identityservice.security.JwtUtil;
+import com.lotosia.identityservice.security.util.CookieUtil;
+import com.lotosia.identityservice.security.util.JwtUtil;
+import com.lotosia.identityservice.service.email.EmailService;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -27,15 +28,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {

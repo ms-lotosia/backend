@@ -1,4 +1,4 @@
-package com.lotosia.identityservice.messaging.kafka.email;
+package com.lotosia.identityservice.messaging.kafka.consumer;
 
 import com.lotosia.identityservice.service.email.config.EmailConstants;
 import com.lotosia.identityservice.service.email.model.EmailMessage;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class EmailConsumerService {
+public class EmailConsumer {
 
     private final AsyncEmailSender asyncEmailSender;
     private final EmailQueueService emailQueueService;

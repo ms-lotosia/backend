@@ -1,6 +1,6 @@
 package com.lotosia.identityservice.security.filter;
 
-import com.lotosia.identityservice.security.JwtUtil;
+import com.lotosia.identityservice.security.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
