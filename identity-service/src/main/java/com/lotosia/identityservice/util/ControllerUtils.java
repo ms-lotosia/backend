@@ -1,5 +1,6 @@
 package com.lotosia.identityservice.util;
 
+import com.lotosia.identityservice.security.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
